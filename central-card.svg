@@ -1,15 +1,15 @@
-<svg width="391" height="390" viewBox="0 0 391 390" fill="none" xmlns="http://www.w3.org/2000/svg">
+﻿<svg width="391" height="390" viewBox="0 0 391 390" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_211_11)">
 <g filter="url(#filter0_iiiii_211_11)">
 <path d="M345.892 0H45.9616C24.7607 0 14.1602 0 7.55867 6.57997C0.957181 13.1599 0.922582 23.7604 0.853381 44.9612L0.0620019 287.415C0.0314988 296.76 0.0162472 301.432 1.76241 305.628C3.50858 309.824 6.8345 313.106 13.4864 319.67L71.5829 376.999C78.0848 383.415 81.3358 386.623 85.4503 388.312C89.5648 390 94.1321 390 103.267 390H288.677C297.896 390 302.505 390 306.65 388.283C310.795 386.566 314.055 383.307 320.573 376.788L377.788 319.573C384.307 313.055 387.566 309.795 389.283 305.65C391 301.505 391 296.896 391 287.677V45.1084C391 23.8441 391 13.212 384.394 6.60598C377.788 0 367.156 0 345.892 0Z" fill="#181818"/>
 </g>
-<!-- Branded BLACK-HAT.FX Header -->
+<!-- Branded veterian-fx Header -->
 <g transform="translate(31, 28)">
   <svg width="22" height="21" viewBox="0 0 22 21" fill="none" xmlns="http://www.w3.org/2000/svg" x="0" y="0">
     <path d="M0 20.3577C2.34897 20.3577 4.44864 20.0461 6.49972 19.1508C8.82062 18.1378 10.8559 16.5681 12.4252 14.5806C12.9067 13.9708 13.4219 13.1242 13.9046 12.2436C15.3623 9.58466 15.6598 6.51379 15.6598 3.48152V1.12347C15.6598 0.502996 15.1568 0 14.5363 0H0V4.69793H11.4725C11.496 5.46776 11.4396 6.24075 11.3026 7.00443C10.9792 8.80727 10.2162 10.5025 9.08109 11.9401C7.946 13.3776 6.47392 14.5129 4.79523 15.2456C3.28287 15.9057 1.82697 16.1818 0 16.1818V20.3577Z" fill="#ffffff"/>
     <rect x="17.2266" y="20.3584" width="20.3577" height="4.69793" transform="rotate(-90 17.2266 20.3584)" fill="#ffffff"/>
   </svg>
-  <text x="32" y="16" fill="#ffffff" font-family="Inter, system-ui, -apple-system, sans-serif" font-weight="700" font-size="18" letter-spacing="-0.4" text-transform="uppercase">BLACK-HAT.FX</text>
+  <text x="32" y="16" fill="#ffffff" font-family="Inter, system-ui, -apple-system, sans-serif" font-weight="700" font-size="18" letter-spacing="-0.4" text-transform="uppercase">veterian-fx</text>
 </g>
 
 <!-- Branded Bottom Emblem -->

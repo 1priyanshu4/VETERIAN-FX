@@ -1,11 +1,11 @@
-﻿# Black Hat FX
+﻿# veterian-fx
 
 **Protect Your Funded Account. Trade Smarter. Get Paid Faster.**
 
-Black Hat FX is a complete trading companion built especially for prop firm traders. It is designed to make the entire funded account journey simple, safe, and stress-free.
+veterian-fx is a complete trading companion built especially for prop firm traders. It is designed to make the entire funded account journey simple, safe, and stress-free.
 
 > **Short version:**  
-> Black Hat FX protects your prop firm funded accounts, stops rule breaches, gives AI trade guidance, copy trading, money management & psychology support, free funded account alerts, prop firm friendly bots, and also provides ready broker accounts with fast crypto deposits & withdrawals.
+> veterian-fx protects your prop firm funded accounts, stops rule breaches, gives AI trade guidance, copy trading, money management & psychology support, free funded account alerts, prop firm friendly bots, and also provides ready broker accounts with fast crypto deposits & withdrawals.
 
 ---
 
