@@ -1,4 +1,4 @@
-# Black Hat FX
+﻿# Black Hat FX
 
 **Protect Your Funded Account. Trade Smarter. Get Paid Faster.**
 
@@ -67,7 +67,7 @@ Black Hat FX is a complete trading companion built especially for prop firm trad
 - `support.html` / `support/index.html` — Help & Support Desk
 - `sign-in.html` / `sign-in/index.html` — Sign In
 - `sign-up.html` / `sign-up/index.html` — Sign Up
-- `_next/static/` — CSS stylesheets, JavaScript client chunks, and typography
+- `static_assets/static/` — CSS stylesheets, JavaScript client chunks, and typography
 - `logos/` — Partner and broker logos (MT4/MT5, TradingView, Stripe, etc.)
 - `avatars/` — Trader profile avatars
 - `cdn_assets/` — Media, vector SVGs, and animations
