@@ -767,13 +767,6 @@ class GlobalAssetDataProvider {
       this.onDepthUpdate?.(bids, asks);
     }, 1000);
   }
-        bids.push([bp, bQty]);
-        asks.push([ap, aQty]);
-      }
-
-      this.onDepthUpdate?.(bids, asks);
-    }, 1200);
-  }
 
   setLayers(layers) {
     this.layers = { ...this.layers, ...layers };
@@ -3720,7 +3713,12 @@ class TapeDeltaTerminal {
 if (typeof window !== 'undefined') {
   const mountTerminal = () => {
     const target = document.getElementById('tapedelta-terminal-root');
-    if (target && !window.__td_terminal_instance) {
+    if (target && (!target.firstElementChild || !target.querySelector('.td-toolbar'))) {
+      try {
+        if (window.__td_terminal_instance && typeof window.__td_terminal_instance.destroy === 'function') {
+          window.__td_terminal_instance.destroy();
+        }
+      } catch (e) {}
       window.__td_terminal_instance = new TapeDeltaTerminal('tapedelta-terminal-root');
       window.__td_terminal_instance.init();
     }
@@ -3731,4 +3729,9 @@ if (typeof window !== 'undefined') {
   } else {
     mountTerminal();
   }
+
+  window.addEventListener('load', mountTerminal);
+  setTimeout(mountTerminal, 300);
+  setTimeout(mountTerminal, 1000);
 }
+
