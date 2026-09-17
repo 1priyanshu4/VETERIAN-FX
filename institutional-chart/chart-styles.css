@@ -1,0 +1,549 @@
+/* ============================================================================
+   VETERIAN-FX INSTITUTIONAL CHART • LIQUIDITY EDGE
+   Dark Professional Trading Terminal CSS
+   ============================================================================ */
+
+:root {
+  /* --- Terminal Base Colors --- */
+  --vfx-bg-primary: #06080d;
+  --vfx-bg-secondary: #0b0f18;
+  --vfx-bg-panel: #0e1219;
+  --vfx-bg-input: #141820;
+  --vfx-bg-hover: #181d28;
+  --vfx-bg-active: #1c2230;
+  --vfx-border: #1e2533;
+  --vfx-border-subtle: #161b26;
+
+  /* --- Text --- */
+  --vfx-text-primary: #e8ecf4;
+  --vfx-text-secondary: #8892a4;
+  --vfx-text-muted: #505a6e;
+  --vfx-text-dim: #3a4256;
+
+  /* --- Trading Colors --- */
+  --vfx-buy: #0ecb81;
+  --vfx-buy-dim: rgba(14,203,129,0.15);
+  --vfx-buy-text: #0ecb81;
+  --vfx-sell: #f6465d;
+  --vfx-sell-dim: rgba(246,70,93,0.15);
+  --vfx-sell-text: #f6465d;
+
+  /* --- Candle Colors --- */
+  --vfx-candle-up-body: #0ecb81;
+  --vfx-candle-up-wick: #0ecb81;
+  --vfx-candle-down-body: #f6465d;
+  --vfx-candle-down-wick: #f6465d;
+
+  /* --- Imbalance Colors --- */
+  --vfx-imb-buy: rgba(14,203,129,0.35);
+  --vfx-imb-sell: rgba(246,70,93,0.35);
+  --vfx-imb-stack-buy: rgba(14,203,129,0.55);
+  --vfx-imb-stack-sell: rgba(246,70,93,0.55);
+
+  /* --- POC / Profile --- */
+  --vfx-poc: #f0b90b;
+  --vfx-vah: rgba(240,185,11,0.4);
+  --vfx-val: rgba(240,185,11,0.4);
+  --vfx-profile-bar: rgba(88,130,207,0.3);
+
+  /* --- Status Colors --- */
+  --vfx-live: #0ecb81;
+  --vfx-delayed: #f0b90b;
+  --vfx-disconnected: #f6465d;
+  --vfx-reconnecting: #f0b90b;
+  --vfx-stale: #e67e22;
+
+  /* --- Footprint Heatmap Gradient --- */
+  --vfx-heat-0: rgba(88,130,207,0.05);
+  --vfx-heat-1: rgba(88,130,207,0.15);
+  --vfx-heat-2: rgba(88,130,207,0.30);
+  --vfx-heat-3: rgba(88,130,207,0.50);
+  --vfx-heat-4: rgba(88,130,207,0.75);
+  --vfx-heat-5: rgba(255,200,50,0.80);
+
+  /* --- Sizing --- */
+  --vfx-header-h: 36px;
+  --vfx-statusbar-h: 24px;
+  --vfx-dom-w: 220px;
+  --vfx-tape-w: 260px;
+  --vfx-sub-pane-h: 120px;
+  --vfx-font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+  --vfx-font-sans: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* --- Chart Container (replaces Coming Soon area) --- */
+#vfx-chart-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100vh - 64px);
+  min-height: 500px;
+  background: var(--vfx-bg-primary);
+  color: var(--vfx-text-primary);
+  font-family: var(--vfx-font-sans);
+  font-size: 12px;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* --- Top Toolbar --- */
+#vfx-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--vfx-header-h);
+  min-height: var(--vfx-header-h);
+  padding: 0 8px;
+  background: var(--vfx-bg-secondary);
+  border-bottom: 1px solid var(--vfx-border);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.vfx-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.vfx-toolbar-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--vfx-border);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.vfx-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--vfx-text-secondary);
+  font-family: var(--vfx-font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.vfx-toolbar-btn:hover {
+  background: var(--vfx-bg-hover);
+  color: var(--vfx-text-primary);
+}
+.vfx-toolbar-btn.active {
+  background: var(--vfx-bg-active);
+  color: var(--vfx-text-primary);
+  border-color: var(--vfx-border);
+}
+
+.vfx-symbol-btn {
+  font-family: var(--vfx-font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--vfx-text-primary);
+  letter-spacing: 0.5px;
+}
+
+.vfx-symbol-btn .vfx-price-tag {
+  font-weight: 400;
+  font-size: 11px;
+  margin-left: 6px;
+}
+.vfx-price-up { color: var(--vfx-buy); }
+.vfx-price-down { color: var(--vfx-sell); }
+
+/* --- Feed Status Badge --- */
+.vfx-feed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-family: var(--vfx-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+.vfx-feed-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.vfx-feed-badge.live { background: rgba(14,203,129,0.12); color: var(--vfx-live); border: 1px solid rgba(14,203,129,0.25); }
+.vfx-feed-badge.live .dot { background: var(--vfx-live); animation: vfx-pulse 2s ease-in-out infinite; }
+.vfx-feed-badge.disconnected { background: rgba(246,70,93,0.12); color: var(--vfx-disconnected); border: 1px solid rgba(246,70,93,0.25); }
+.vfx-feed-badge.disconnected .dot { background: var(--vfx-disconnected); }
+.vfx-feed-badge.reconnecting { background: rgba(240,185,11,0.12); color: var(--vfx-reconnecting); border: 1px solid rgba(240,185,11,0.25); }
+.vfx-feed-badge.reconnecting .dot { background: var(--vfx-reconnecting); animation: vfx-pulse 0.8s ease-in-out infinite; }
+.vfx-feed-badge.stale { background: rgba(230,126,34,0.12); color: var(--vfx-stale); border: 1px solid rgba(230,126,34,0.25); }
+.vfx-feed-badge.stale .dot { background: var(--vfx-stale); }
+.vfx-feed-badge.not-configured { background: rgba(136,146,164,0.12); color: var(--vfx-text-secondary); border: 1px solid rgba(136,146,164,0.2); }
+
+@keyframes vfx-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* --- Main Content Area --- */
+#vfx-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* --- Chart + Sub-Panes Column --- */
+#vfx-chart-col {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* --- Main Chart Canvas Container --- */
+#vfx-chart-area {
+  flex: 1;
+  min-height: 200px;
+  position: relative;
+  overflow: hidden;
+  background: var(--vfx-bg-primary);
+  border-bottom: 1px solid var(--vfx-border-subtle);
+}
+
+#vfx-chart-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- Sub-Pane (CVD / Delta Histogram) --- */
+.vfx-sub-pane {
+  height: var(--vfx-sub-pane-h);
+  min-height: 60px;
+  position: relative;
+  overflow: hidden;
+  background: var(--vfx-bg-primary);
+  border-bottom: 1px solid var(--vfx-border-subtle);
+  flex-shrink: 0;
+}
+.vfx-sub-pane canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.vfx-sub-pane-label {
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--vfx-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* --- Right Side Panel (DOM + Tape) --- */
+#vfx-right-panel {
+  display: flex;
+  flex-direction: column;
+  width: var(--vfx-dom-w);
+  min-width: var(--vfx-dom-w);
+  border-left: 1px solid var(--vfx-border);
+  background: var(--vfx-bg-secondary);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* --- DOM Ladder --- */
+#vfx-dom {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#vfx-dom-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#vfx-dom-header {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--vfx-bg-panel);
+  border-bottom: 1px solid var(--vfx-border-subtle);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--vfx-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  flex-shrink: 0;
+}
+#vfx-dom-header span { flex: 1; text-align: center; }
+#vfx-dom-header .hdr-bid { color: var(--vfx-buy-text); }
+#vfx-dom-header .hdr-ask { color: var(--vfx-sell-text); }
+
+#vfx-dom-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.vfx-dom-row {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  font-family: var(--vfx-font-mono);
+  font-size: 11px;
+  border-bottom: 1px solid var(--vfx-border-subtle);
+  position: relative;
+}
+.vfx-dom-row .bid-cell,
+.vfx-dom-row .ask-cell {
+  flex: 1;
+  text-align: right;
+  padding: 0 6px;
+  position: relative;
+  z-index: 1;
+}
+.vfx-dom-row .bid-cell { color: var(--vfx-buy-text); }
+.vfx-dom-row .ask-cell { color: var(--vfx-sell-text); text-align: left; }
+.vfx-dom-row .price-cell {
+  width: 72px;
+  min-width: 72px;
+  text-align: center;
+  color: var(--vfx-text-primary);
+  font-weight: 600;
+  font-size: 10.5px;
+  z-index: 2;
+  background: var(--vfx-bg-secondary);
+}
+.vfx-dom-row.at-trade .price-cell {
+  background: var(--vfx-bg-active);
+  color: #fff;
+  font-weight: 700;
+}
+/* Depth bars behind bid/ask cells */
+.vfx-dom-row .bid-bar,
+.vfx-dom-row .ask-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+}
+.vfx-dom-row .bid-bar { right: 0; background: var(--vfx-buy-dim); }
+.vfx-dom-row .ask-bar { left: 0; background: var(--vfx-sell-dim); }
+
+.vfx-dom-row.wall .bid-cell,
+.vfx-dom-row.wall .ask-cell { font-weight: 700; }
+.vfx-dom-row.wall .bid-bar { background: rgba(14,203,129,0.25); }
+.vfx-dom-row.wall .ask-bar { background: rgba(246,70,93,0.25); }
+
+/* --- Spread Row --- */
+.vfx-dom-spread {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  font-family: var(--vfx-font-mono);
+  font-size: 10px;
+  color: var(--vfx-text-muted);
+  background: var(--vfx-bg-panel);
+  border-top: 1px solid var(--vfx-border-subtle);
+  border-bottom: 1px solid var(--vfx-border-subtle);
+}
+
+/* --- Smart Tape --- */
+#vfx-tape {
+  height: 220px;
+  min-height: 120px;
+  border-top: 1px solid var(--vfx-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+#vfx-tape-header {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--vfx-bg-panel);
+  border-bottom: 1px solid var(--vfx-border-subtle);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--vfx-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  flex-shrink: 0;
+  gap: 4px;
+}
+#vfx-tape-header span { flex: 1; }
+
+#vfx-tape-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--vfx-border) transparent;
+}
+#vfx-tape-body::-webkit-scrollbar { width: 4px; }
+#vfx-tape-body::-webkit-scrollbar-thumb { background: var(--vfx-border); border-radius: 2px; }
+
+.vfx-tape-row {
+  display: flex;
+  align-items: center;
+  height: 19px;
+  padding: 0 8px;
+  font-family: var(--vfx-font-mono);
+  font-size: 10.5px;
+  border-bottom: 1px solid var(--vfx-border-subtle);
+}
+.vfx-tape-row.buy { color: var(--vfx-buy-text); }
+.vfx-tape-row.sell { color: var(--vfx-sell-text); }
+.vfx-tape-row.large { font-weight: 700; }
+.vfx-tape-row .t-time { width: 58px; color: var(--vfx-text-muted); flex-shrink: 0; font-size: 10px; }
+.vfx-tape-row .t-price { width: 72px; flex-shrink: 0; text-align: right; }
+.vfx-tape-row .t-size { flex: 1; text-align: right; padding-right: 4px; }
+.vfx-tape-row .t-side { width: 12px; flex-shrink: 0; text-align: center; font-weight: 700; font-size: 9px; }
+
+/* --- Status Bar --- */
+#vfx-statusbar {
+  display: flex;
+  align-items: center;
+  height: var(--vfx-statusbar-h);
+  min-height: var(--vfx-statusbar-h);
+  padding: 0 8px;
+  background: var(--vfx-bg-secondary);
+  border-top: 1px solid var(--vfx-border);
+  font-family: var(--vfx-font-mono);
+  font-size: 10px;
+  color: var(--vfx-text-muted);
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.vfx-stat { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.vfx-stat-label { color: var(--vfx-text-dim); }
+.vfx-stat-value { color: var(--vfx-text-secondary); }
+.vfx-stat-value.good { color: var(--vfx-live); }
+.vfx-stat-value.warn { color: var(--vfx-delayed); }
+.vfx-stat-value.bad { color: var(--vfx-disconnected); }
+.vfx-stat-sep { width: 1px; height: 12px; background: var(--vfx-border); }
+
+/* --- Dropdown Menus --- */
+.vfx-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 160px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--vfx-bg-panel);
+  border: 1px solid var(--vfx-border);
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  z-index: 100;
+  padding: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--vfx-border) transparent;
+}
+.vfx-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--vfx-text-secondary);
+  font-family: var(--vfx-font-mono);
+  transition: background 0.08s;
+}
+.vfx-dropdown-item:hover { background: var(--vfx-bg-hover); color: var(--vfx-text-primary); }
+.vfx-dropdown-item.active { background: var(--vfx-bg-active); color: var(--vfx-text-primary); font-weight: 600; }
+.vfx-dropdown-divider { height: 1px; background: var(--vfx-border-subtle); margin: 4px 0; }
+.vfx-dropdown-label {
+  padding: 4px 10px 2px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--vfx-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* --- Symbol Search Input --- */
+.vfx-search-input {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--vfx-bg-input);
+  border: 1px solid var(--vfx-border);
+  border-radius: 4px;
+  color: var(--vfx-text-primary);
+  font-family: var(--vfx-font-mono);
+  font-size: 11px;
+  outline: none;
+  margin-bottom: 4px;
+}
+.vfx-search-input:focus { border-color: rgba(88,130,207,0.5); }
+.vfx-search-input::placeholder { color: var(--vfx-text-dim); }
+
+/* --- Config Screen (when feed not configured) --- */
+#vfx-config-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px;
+  text-align: center;
+  height: 100%;
+}
+#vfx-config-screen h3 { font-size: 18px; font-weight: 700; color: var(--vfx-text-primary); margin: 0; }
+#vfx-config-screen p { font-size: 13px; color: var(--vfx-text-secondary); max-width: 400px; margin: 0; }
+
+/* --- No Data / Loading states --- */
+.vfx-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--vfx-text-muted);
+  font-size: 11px;
+  font-style: italic;
+}
+
+/* --- Responsive --- */
+@media (max-width: 900px) {
+  :root {
+    --vfx-dom-w: 180px;
+    --vfx-tape-w: 200px;
+  }
+  #vfx-tape { height: 160px; }
+}
+
+@media (max-width: 640px) {
+  #vfx-right-panel { display: none; }
+  .vfx-toolbar-btn span.hide-mobile { display: none; }
+}
