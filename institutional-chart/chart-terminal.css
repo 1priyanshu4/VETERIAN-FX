@@ -425,3 +425,199 @@ body.tapedelta-fullscreen-active #tapedelta-terminal-root {
     display: none;
   }
 }
+
+/* ============================================================================
+   PHASE 2: ORDER-FLOW VISUALIZATION STYLES
+   ============================================================================ */
+
+/* --- Order Flow Layer Toggles in Toolbar --- */
+.td-layers-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--td-panel-bg);
+  border: 1px solid var(--td-border);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.td-layer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--td-text-muted);
+  font-family: var(--td-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.td-layer-btn:hover {
+  color: var(--td-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.td-layer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--td-text-dim);
+  transition: all 0.2s ease;
+}
+
+/* Specific Layer Active Themes */
+.td-layer-btn.active {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 1. Heatmap (Gold) */
+.td-layer-btn[data-layer="heatmap"].active {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+.td-layer-btn[data-layer="heatmap"].active .td-layer-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+}
+
+/* 2. Footprint (Cyan) */
+.td-layer-btn[data-layer="footprint"].active {
+  background: rgba(56, 189, 248, 0.16);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+.td-layer-btn[data-layer="footprint"].active .td-layer-dot {
+  background: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+}
+
+/* 3. VRVP (Indigo) */
+.td-layer-btn[data-layer="vrvp"].active {
+  background: rgba(129, 140, 248, 0.16);
+  border-color: rgba(129, 140, 248, 0.4);
+  color: #a5b4fc;
+}
+.td-layer-btn[data-layer="vrvp"].active .td-layer-dot {
+  background: #818cf8;
+  box-shadow: 0 0 8px rgba(129, 140, 248, 0.8);
+}
+
+/* 4. Liquidation (Rose/Red) */
+.td-layer-btn[data-layer="liq"].active {
+  background: rgba(244, 63, 94, 0.16);
+  border-color: rgba(244, 63, 94, 0.4);
+  color: #fb7185;
+}
+.td-layer-btn[data-layer="liq"].active .td-layer-dot {
+  background: #f43f5e;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.8);
+}
+
+/* 5. CVD (Emerald) */
+.td-layer-btn[data-layer="cvd"].active {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+.td-layer-btn[data-layer="cvd"].active .td-layer-dot {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+}
+
+/* 6. OI (Purple) */
+.td-layer-btn[data-layer="oi"].active {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+}
+.td-layer-btn[data-layer="oi"].active .td-layer-dot {
+  background: #a855f7;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.8);
+}
+
+/* --- Footprint Zoom Indicator Hint --- */
+.td-footprint-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(12, 15, 23, 0.88);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 4px;
+  color: #38bdf8;
+  font-family: var(--td-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 15;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  animation: td-fade-in 0.3s ease;
+}
+
+@keyframes td-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Liquidation Interactive Tooltip Card --- */
+.td-liq-tooltip {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  padding: 8px 12px;
+  background: rgba(10, 13, 20, 0.96);
+  border: 1px solid var(--td-border);
+  border-radius: 6px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(10px);
+  z-index: 60;
+  font-family: var(--td-font-mono);
+  font-size: 11px;
+  color: var(--td-text);
+  min-width: 170px;
+  line-height: 1.45;
+}
+
+.td-liq-tooltip-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.td-liq-tooltip-title.long {
+  color: var(--td-down);
+}
+.td-liq-tooltip-title.short {
+  color: var(--td-up);
+}
+
+.td-liq-val-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+}
+.td-liq-val-row span:first-child {
+  color: var(--td-text-muted);
+}
+.td-liq-val-row span:last-child {
+  font-weight: 600;
+  color: #ffffff;
+}
