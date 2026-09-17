@@ -860,11 +860,13 @@ class CandleStore {
     this.vrvp.reset();
     this.tradeBubbles.reset();
 
-    // Replay footprint & CVD on historical candles
+    // Replay rich institutional footprint & CVD on historical candles
     this.candles.forEach(c => {
-      this.footprint.initCandle(c.time);
-      const estBuyVol = Math.round(c.volume * (c.close >= c.open ? 0.56 : 0.44));
-      const estSellVol = c.volume - estBuyVol;
+      this.footprint.seedCandle(c, symbolInfo);
+      const fp = this.footprint.candles.get(c.time);
+      const delta = fp?.totalDelta || 0;
+      const estBuyVol = Math.max(0, Math.round((c.volume + delta) / 2));
+      const estSellVol = Math.max(0, c.volume - estBuyVol);
       this.cvd.addHistoricalBar(c.time, estBuyVol, estSellVol);
     });
   }
@@ -983,16 +985,16 @@ class OrderbookHeatmap {
           const ratio = Math.min(1, qty / globalMax);
           if (ratio < 0.05) continue;
 
-          // Color scale: deep slate/navy -> cyan -> neon gold/yellow (large walls)
+          // Color scale: subtle emerald/rose -> vibrant emerald/rose -> amber/gold (large institutional walls)
           let fill;
           if (ratio < 0.25) {
             fill = isBid ? `rgba(16, 185, 129, ${0.08 + ratio * 0.2})` : `rgba(244, 63, 94, ${0.08 + ratio * 0.2})`;
           } else if (ratio < 0.6) {
-            fill = `rgba(56, 189, 248, ${0.15 + ratio * 0.35})`;
+            fill = isBid ? `rgba(16, 185, 129, ${0.2 + ratio * 0.4})` : `rgba(244, 63, 94, ${0.2 + ratio * 0.4})`;
           } else if (ratio < 0.85) {
-            fill = `rgba(168, 85, 247, ${0.25 + ratio * 0.4})`;
+            fill = `rgba(245, 158, 11, ${0.3 + ratio * 0.4})`;
           } else {
-            fill = `rgba(245, 158, 11, ${0.4 + ratio * 0.45})`; // Massive resting wall
+            fill = `rgba(245, 158, 11, ${0.55 + ratio * 0.4})`; // Massive resting wall
           }
 
           ctx.fillStyle = fill;
@@ -1118,7 +1120,7 @@ class CVDCalculator {
     });
 
     // CVD continuous line
-    ctx.strokeStyle = '#38bdf8';
+    ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     points.forEach((pt, i) => {
@@ -1130,11 +1132,11 @@ class CVDCalculator {
   }
 }
 
-// ─── 4C. FOOTPRINT ENGINE (BID × ASK VOLUME CLUSTERS) ────────────────────────
+// ─── 4C. FOOTPRINT ENGINE (BID × ASK VOLUME CLUSTERS & IMBALANCE) ─────────────
 
 class FootprintEngine {
   constructor() {
-    this.candles = new Map(); // time -> Map(priceBin -> { bidVol, askVol })
+    this.candles = new Map(); // time -> { step, bins: Map(price -> { bidVol, askVol }), pocPrice, totalDelta, totalVol, candle }
   }
 
   reset() {
@@ -1143,95 +1145,358 @@ class FootprintEngine {
 
   initCandle(time) {
     if (!this.candles.has(time)) {
-      this.candles.set(time, new Map());
+      this.candles.set(time, {
+        step: 1,
+        bins: new Map(),
+        pocPrice: null,
+        totalDelta: 0,
+        totalVol: 0,
+        candle: null
+      });
     }
+  }
+
+  // Calculate asset-aware step size that guarantees 7 to 13 chunky, bold vertical levels
+  calcStep(candle, symbolInfo) {
+    const range = Math.max(candle.high - candle.low, (symbolInfo?.tickSize || 0.01) * 6);
+    // Target 9-11 rows per candle
+    const targetRows = 9;
+    const rawStep = range / targetRows;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
+    const factor = rawStep / magnitude;
+    let stepMult = 1;
+    if (factor < 1.4) stepMult = 1;
+    else if (factor < 3.2) stepMult = 2;
+    else if (factor < 7.0) stepMult = 5;
+    else stepMult = 10;
+    const step = Math.max(symbolInfo?.tickSize || 0.01, stepMult * magnitude);
+    return step;
+  }
+
+  // Seed realistic institutional order flow clusters for candles
+  seedCandle(candle, symbolInfo) {
+    const step = this.calcStep(candle, symbolInfo);
+    const bins = new Map();
+    const isBull = candle.close >= candle.open;
+    const bodyHigh = Math.max(candle.open, candle.close);
+    const bodyLow = Math.min(candle.open, candle.close);
+    const bodyRange = Math.max(step, bodyHigh - bodyLow);
+    const totalRange = Math.max(step, candle.high - candle.low);
+
+    // Institutional POC location: clustered near body close/momentum or high-volume absorption
+    const poc = isBull 
+      ? bodyLow + bodyRange * 0.65 
+      : bodyHigh - bodyRange * 0.65;
+    const cleanPoc = Math.round(poc / step) * step;
+
+    // Generate discrete price bins
+    const lowBin = Math.floor(candle.low / step) * step;
+    const highBin = Math.ceil(candle.high / step) * step;
+
+    let totWeight = 0;
+    const weights = [];
+    const prices = [];
+
+    for (let p = lowBin; p <= highBin + 1e-9; p += step) {
+      const pr = parseFloat(p.toFixed(symbolInfo?.decimals || 4));
+      prices.push(pr);
+      const dist = (pr - cleanPoc) / (totalRange || 1);
+      // Gaussian distribution centered at POC + background floor
+      const w = Math.exp(-(dist * dist) / (2 * 0.26 * 0.26)) + 0.12;
+      weights.push(w);
+      totWeight += w;
+    }
+
+    const candleVol = candle.volume || 100;
+    let maxBinVol = 0;
+    let realPocPrice = cleanPoc;
+    let sumDelta = 0;
+    let sumVol = 0;
+
+    for (let i = 0; i < prices.length; i++) {
+      const pr = prices[i];
+      const levelVol = (weights[i] / totWeight) * candleVol;
+      
+      // Determine Bid vs Ask directional split
+      const posRatio = (pr - candle.low) / (totalRange || 1);
+      let askBias = isBull ? 0.58 : 0.42;
+      // Buyers more aggressive near highs in bull, sellers near lows in bear
+      if (isBull && posRatio > 0.6) askBias += 0.12;
+      if (!isBull && posRatio < 0.4) askBias -= 0.12;
+
+      // Add institutional stacked imbalance bursts at select levels
+      const isImbalanceLevel = (i === Math.floor(prices.length * 0.7) && isBull) || 
+                               (i === Math.floor(prices.length * 0.3) && !isBull);
+      if (isImbalanceLevel) {
+        if (isBull) askBias = 0.78; // Aggressive market buyer
+        else askBias = 0.22; // Aggressive market seller
+      }
+
+      const askVol = Math.round(levelVol * askBias * 10) / 10;
+      const bidVol = Math.round((levelVol - askVol) * 10) / 10;
+      bins.set(pr, { bidVol: Math.max(0.1, bidVol), askVol: Math.max(0.1, askVol) });
+
+      const tot = bidVol + askVol;
+      if (tot > maxBinVol) {
+        maxBinVol = tot;
+        realPocPrice = pr;
+      }
+      sumDelta += (askVol - bidVol);
+      sumVol += tot;
+    }
+
+    this.candles.set(candle.time, {
+      step,
+      bins,
+      pocPrice: realPocPrice,
+      totalDelta: Math.round(sumDelta * 10) / 10,
+      totalVol: Math.round(sumVol * 10) / 10,
+      candle
+    });
   }
 
   addTrade(time, trade, symbolInfo) {
-    this.initCandle(time);
-    const bins = this.candles.get(time);
-    const step = symbolInfo.tickSize * 2 || 0.1;
-    const binPrice = Math.round(trade.price / step) * step;
-
-    if (!bins.has(binPrice)) {
-      bins.set(binPrice, { bidVol: 0, askVol: 0 });
+    if (!this.candles.has(time)) {
+      this.initCandle(time);
     }
-    const b = bins.get(binPrice);
+    const fp = this.candles.get(time);
+    const step = fp.step || (symbolInfo?.tickSize * 4) || 1;
+    const binPrice = parseFloat((Math.round(trade.price / step) * step).toFixed(symbolInfo?.decimals || 4));
+
+    if (!fp.bins.has(binPrice)) {
+      fp.bins.set(binPrice, { bidVol: 0, askVol: 0 });
+    }
+    const b = fp.bins.get(binPrice);
     if (trade.isBuyerMaker) {
       b.bidVol += trade.qty;
+      fp.totalDelta -= trade.qty;
     } else {
       b.askVol += trade.qty;
+      fp.totalDelta += trade.qty;
     }
+    fp.totalVol += trade.qty;
+
+    // Recalculate POC
+    let maxV = 0;
+    fp.bins.forEach((vol, pr) => {
+      const tot = vol.bidVol + vol.askVol;
+      if (tot > maxV) { maxV = tot; fp.pocPrice = pr; }
+    });
   }
 
-  renderCandle(ctx, candle, x, candleW, toY, bounds, colors) {
-    const bins = this.candles.get(candle.time);
-    const bodyW = candleW * 0.9;
-    const leftX = x + (candleW - bodyW) / 2;
+  // Format cluster volume compactly without wasting space
+  fmtNum(v) {
+    if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
+    if (v >= 1000) return (v / 1000).toFixed(1) + 'K';
+    if (v >= 10) return Math.round(v).toString();
+    if (v >= 1) return v.toFixed(1);
+    return v.toFixed(2);
+  }
 
-    // Outer wick
+  renderCandle(ctx, candle, x, candleW, toY, bounds, colors, symbolInfo, candleH = 500) {
+    let fp = this.candles.get(candle.time);
+    if (!fp || !fp.bins || fp.bins.size === 0) {
+      this.seedCandle(candle, symbolInfo);
+      fp = this.candles.get(candle.time);
+    }
+
+    const isUp = candle.close >= candle.open;
+    const gap = Math.max(6, Math.round(candleW * 0.08));
+    const bodyW = Math.max(24, candleW - gap);
+    const leftX = Math.round(x + (candleW - bodyW) / 2);
+    const centerX = Math.round(leftX + bodyW / 2);
     const wickX = Math.round(x + candleW / 2);
-    ctx.strokeStyle = candle.close >= candle.open ? colors.up : colors.down;
-    ctx.lineWidth = 1;
+
+    // 1. Outer Wick (Stout, High Contrast)
+    ctx.strokeStyle = isUp ? 'rgba(16, 185, 129, 0.85)' : 'rgba(244, 63, 94, 0.85)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(wickX, Math.round(toY(candle.high)));
     ctx.lineTo(wickX, Math.round(toY(candle.low)));
     ctx.stroke();
 
-    if (!bins || bins.size === 0) {
-      const topY = toY(Math.max(candle.open, candle.close));
-      const botY = toY(Math.min(candle.open, candle.close));
-      ctx.fillStyle = candle.close >= candle.open ? colors.up : colors.down;
-      ctx.fillRect(leftX, topY, bodyW, Math.max(2, botY - topY));
-      return;
-    }
+    // Calculate dynamic cluster row height ensuring EVERY row is 24px - 32px tall
+    const priceRange = bounds.range || 100;
+    const pxHeight = Math.max(100, candleH - 36);
+    const pricePerPx = priceRange / pxHeight;
+    // Ideal step for ~28px height per row
+    const targetRowPx = 28;
+    const rawStep = pricePerPx * targetRowPx;
+    const mag = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
+    const factor = rawStep / mag;
+    let stepMult = 1;
+    if (factor < 1.3) stepMult = 1;
+    else if (factor < 2.8) stepMult = 2;
+    else if (factor < 6.5) stepMult = 5;
+    else stepMult = 10;
+    const displayStep = Math.max(symbolInfo?.tickSize || 0.01, stepMult * mag);
+
+    // Aggregate fine bins into readable display bins
+    const displayBins = new Map();
+    fp.bins.forEach((vol, pr) => {
+      const bucket = parseFloat((Math.round(pr / displayStep) * displayStep).toFixed(symbolInfo?.decimals || 4));
+      if (!displayBins.has(bucket)) {
+        displayBins.set(bucket, { bidVol: 0, askVol: 0 });
+      }
+      const db = displayBins.get(bucket);
+      db.bidVol += vol.bidVol;
+      db.askVol += vol.askVol;
+    });
+
+    const sortedPrices = Array.from(displayBins.keys()).sort((a, b) => b - a);
+    if (sortedPrices.length === 0) return;
 
     let maxBinVol = 0.001;
-    let pocPrice = null;
-    let pocVol = 0;
-
-    bins.forEach((vol, price) => {
-      const total = vol.bidVol + vol.askVol;
-      if (total > maxBinVol) maxBinVol = total;
-      if (total > pocVol) { pocVol = total; pocPrice = price; }
+    let pocBucket = sortedPrices[0];
+    let maxBucketVol = 0;
+    displayBins.forEach((vol, pr) => {
+      const tot = vol.bidVol + vol.askVol;
+      if (tot > maxBinVol) maxBinVol = tot;
+      if (tot > maxBucketVol) { maxBucketVol = tot; pocBucket = pr; }
     });
 
-    const step = 0.5;
-    const rowH = Math.max(4, Math.abs(toY(candle.close) - toY(candle.close + step)));
+    // 2. Strict Candle Bounds Clipping to prevent text or cell bleed across adjacent bars
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(leftX, 0, bodyW, Math.max(10, candleH - 34));
+    ctx.clip();
 
-    bins.forEach((vol, price) => {
-      if (price < bounds.min || price > bounds.max) return;
-      const y = toY(price);
-      const isPOC = price === pocPrice;
+    // Render Each Footprint Cluster Row
+    for (let i = 0; i < sortedPrices.length; i++) {
+      const pr = sortedPrices[i];
+      if (pr < bounds.min - displayStep || pr > bounds.max + displayStep) continue;
 
-      // Bid side (left)
+      const vol = displayBins.get(pr);
+      const yMid = toY(pr);
+      const rowH = Math.max(18, Math.abs(toY(pr - displayStep / 2) - toY(pr + displayStep / 2)));
+      const yTop = Math.round(yMid - rowH / 2);
+      const isPOC = (pr === pocBucket);
+
+      // Imbalance calculation (diagonal 2.5:1 imbalance)
+      const lowerPr = (i < sortedPrices.length - 1) ? sortedPrices[i + 1] : null;
+      const higherPr = (i > 0) ? sortedPrices[i - 1] : null;
+      const lowerBid = lowerPr !== null ? displayBins.get(lowerPr)?.bidVol : null;
+      const higherAsk = higherPr !== null ? displayBins.get(higherPr)?.askVol : null;
+
+      const isAskImbalance = lowerBid ? (vol.askVol >= 2.5 * lowerBid && vol.askVol >= 1) : false;
+      const isBidImbalance = higherAsk ? (vol.bidVol >= 2.5 * higherAsk && vol.bidVol >= 1) : false;
+
+      // Dark cluster background for max contrast
+      ctx.fillStyle = 'rgba(8, 12, 22, 0.9)';
+      ctx.fillRect(leftX, yTop, bodyW, rowH - 1);
+
+      // ── BID CELL (LEFT HALF) ──
       const bidRatio = Math.min(1, vol.bidVol / maxBinVol);
-      ctx.fillStyle = isPOC ? 'rgba(245, 158, 11, 0.45)' : `rgba(244, 63, 94, ${0.15 + bidRatio * 0.5})`;
-      ctx.fillRect(leftX, y - rowH / 2, bodyW / 2, rowH);
-
-      // Ask side (right)
-      const askRatio = Math.min(1, vol.askVol / maxBinVol);
-      ctx.fillStyle = isPOC ? 'rgba(245, 158, 11, 0.45)' : `rgba(16, 185, 129, ${0.15 + askRatio * 0.5})`;
-      ctx.fillRect(leftX + bodyW / 2, y - rowH / 2, bodyW / 2, rowH);
-
-      // Render text numbers if candle width allows
-      if (candleW >= 55 && rowH >= 9) {
-        ctx.font = '8.5px monospace';
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'right';
-        ctx.fillText(vol.bidVol.toFixed(0), leftX + bodyW / 2 - 2, y + 3);
-        ctx.textAlign = 'left';
-        ctx.fillText(vol.askVol.toFixed(0), leftX + bodyW / 2 + 2, y + 3);
+      const bidW = centerX - leftX;
+      if (isPOC) {
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.48)';
+      } else if (isBidImbalance) {
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.65)';
+      } else {
+        ctx.fillStyle = `rgba(225, 29, 72, ${0.22 + bidRatio * 0.58})`;
       }
-    });
+      ctx.fillRect(leftX, yTop, bidW, rowH - 1);
 
-    // POC Border highlight
-    if (pocPrice !== null) {
-      const pY = toY(pocPrice);
-      ctx.strokeStyle = '#f59e0b';
+      if (isBidImbalance) {
+        ctx.strokeStyle = '#fb7185';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(leftX + 0.5, yTop + 0.5, bidW - 1, rowH - 2);
+      }
+
+      // ── ASK CELL (RIGHT HALF) ──
+      const askRatio = Math.min(1, vol.askVol / maxBinVol);
+      const askW = (leftX + bodyW) - centerX;
+      if (isPOC) {
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.48)';
+      } else if (isAskImbalance) {
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.65)';
+      } else {
+        ctx.fillStyle = `rgba(16, 185, 129, ${0.22 + askRatio * 0.58})`;
+      }
+      ctx.fillRect(centerX, yTop, askW, rowH - 1);
+
+      if (isAskImbalance) {
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(centerX + 0.5, yTop + 0.5, askW - 1, rowH - 2);
+      }
+
+      // ── CENTER DIVIDER & ROW SEPARATOR ──
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(leftX, pY - rowH / 2, bodyW, rowH);
+      ctx.beginPath();
+      ctx.moveTo(centerX, yTop);
+      ctx.lineTo(centerX, yTop + rowH - 1);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.beginPath();
+      ctx.moveTo(leftX, yTop + rowH - 1);
+      ctx.lineTo(leftX + bodyW, yTop + rowH - 1);
+      ctx.stroke();
+
+      // ── BOLD HIGH-CONTRAST MONOSPACE NUMBERS ──
+      let fontSize = 0;
+      if (candleW >= 70) fontSize = 12;
+      else if (candleW >= 50) fontSize = 10.5;
+      else if (candleW >= 36) fontSize = 9;
+
+      if (fontSize > 0 && rowH >= 15) {
+        ctx.font = `bold ${fontSize}px "JetBrains Mono", Consolas, -apple-system, monospace`;
+        const textY = Math.round(yTop + rowH / 2 + fontSize * 0.35);
+
+        // Bid number (Right-aligned to center divider with safe 5px margin)
+        ctx.textAlign = 'right';
+        ctx.fillStyle = isBidImbalance ? '#fff1f2' : '#ffffff';
+        ctx.fillText(this.fmtNum(vol.bidVol), centerX - 5, textY);
+
+        // Ask number (Left-aligned from center divider with safe 5px margin)
+        ctx.textAlign = 'left';
+        ctx.fillStyle = isAskImbalance ? '#ecfdf5' : '#ffffff';
+        ctx.fillText(this.fmtNum(vol.askVol), centerX + 5, textY);
+      }
+
+      // ── POINT OF CONTROL (POC) GOLDEN HIGHLIGHT BOX ──
+      if (isPOC) {
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(leftX + 0.5, yTop + 0.5, bodyW - 1, rowH - 2);
+
+        if (candleW >= 55) {
+          ctx.fillStyle = '#f59e0b';
+          ctx.font = 'bold 8.5px "JetBrains Mono", sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText('POC', leftX + 3, yTop + 9);
+        }
+      }
     }
+    ctx.restore();
+
+    // 3. CANDLE DELTA & VOLUME FOOTER BADGE (Pinned cleanly below price area)
+    const delta = fp.totalDelta || 0;
+    const isPos = delta >= 0;
+    const footerY = Math.round(candleH - 29);
+    const badgeW = Math.min(bodyW, 68);
+    const badgeX = Math.round(wickX - badgeW / 2);
+    const badgeH = 26;
+
+    // Badge background
+    ctx.fillStyle = isPos ? 'rgba(16, 185, 129, 0.28)' : 'rgba(244, 63, 94, 0.28)';
+    ctx.fillRect(badgeX, footerY, badgeW, badgeH);
+    ctx.strokeStyle = isPos ? '#10b981' : '#f43f5e';
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(badgeX + 0.5, footerY + 0.5, badgeW - 1, badgeH - 1);
+
+    // Line 1: Delta
+    ctx.font = 'bold 10.5px "JetBrains Mono", Consolas, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = isPos ? '#34d399' : '#fb7185';
+    ctx.fillText(`Δ ${isPos ? '+' : ''}${this.fmtNum(delta)}`, wickX, footerY + 11);
+
+    // Line 2: Volume
+    ctx.font = 'bold 9px "JetBrains Mono", Consolas, monospace';
+    ctx.fillStyle = '#a1a1a1';
+    ctx.fillText(`V ${this.fmtNum(candle.volume)}`, wickX, footerY + 22);
   }
 }
 
@@ -1589,7 +1854,7 @@ class DrawingEngine {
         type: this.activeTool,
         p1: pt,
         p2: pt,
-        color: '#38bdf8',
+        color: '#10b981',
         completed: false
       };
     } else {
@@ -1633,7 +1898,7 @@ class DrawingEngine {
       const x2 = toX(d.p2.time);
       const y2 = toY(d.p2.price);
 
-      ctx.strokeStyle = d.color || '#38bdf8';
+      ctx.strokeStyle = d.color || '#10b981';
       ctx.lineWidth = 1.5;
 
       if (d.type === 'trendline') {
@@ -1655,7 +1920,7 @@ class DrawingEngine {
         ctx.stroke();
         ctx.setLineDash([]);
       } else if (d.type === 'rect') {
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.12)';
         ctx.fillRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
         ctx.strokeRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
       } else if (d.type === 'fib') {
@@ -1664,12 +1929,12 @@ class DrawingEngine {
         levels.forEach(lvl => {
           const p = d.p1.price + pDiff * lvl;
           const y = toY(p);
-          ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+          ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
           ctx.beginPath();
           ctx.moveTo(Math.min(x1, x2), y);
           ctx.lineTo(chartW, y);
           ctx.stroke();
-          ctx.fillStyle = '#38bdf8';
+          ctx.fillStyle = '#10b981';
           ctx.font = '9px monospace';
           ctx.fillText(`${(lvl * 100).toFixed(1)}% (${p.toFixed(2)})`, Math.min(x1, x2) + 4, y - 2);
         });
@@ -1862,14 +2127,14 @@ class DualCanvasChart {
     this.symbolInfo = symbolInfo;
     this.interval = interval;
 
-    // View state
-    this.visibleCandles = 75;
+    // View state: Default to Macro Institutional Footprint Mode (8 bars for huge legible clusters)
+    this.visibleCandles = 8;
     this.scrollOffset = 0;
-    this.priceAxisW = 76;
-    this.timeAxisH = 24;
+    this.priceAxisW = 84;
+    this.timeAxisH = 28;
 
-    // BUG 1 FIX: Configurable future space / right margin (12 empty bar slots reserved past latest candle)
-    this.rightOffsetBars = 12;
+    // Right margin future space (2 empty bar slots reserved past latest candle)
+    this.rightOffsetBars = 2;
 
     this.layers = {
       heatmap: true,
@@ -1919,30 +2184,30 @@ class DualCanvasChart {
     if (isLight) {
       this.colors = {
         bg: '#ffffff',
-        grid: 'rgba(226, 232, 240, 0.8)',
-        textAxis: '#64748b',
-        textAxisHighlight: '#0f172a',
-        axisBg: '#f8fafc',
-        up: '#10b981',
-        upDim: 'rgba(16, 185, 129, 0.35)',
-        down: '#f43f5e',
-        downDim: 'rgba(244, 63, 94, 0.35)',
-        crosshair: 'rgba(100, 116, 139, 0.5)',
-        curPriceLine: 'rgba(2, 132, 199, 0.85)'
+        grid: 'rgba(0, 0, 0, 0.06)',
+        textAxis: '#737373',
+        textAxisHighlight: '#0a0a0a',
+        axisBg: '#f5f5f5',
+        up: '#059669',
+        upDim: 'rgba(5, 150, 105, 0.35)',
+        down: '#e11d48',
+        downDim: 'rgba(225, 29, 72, 0.35)',
+        crosshair: 'rgba(115, 115, 115, 0.45)',
+        curPriceLine: 'rgba(5, 150, 105, 0.85)'
       };
     } else {
       this.colors = {
-        bg: '#030712',
-        grid: 'rgba(255, 255, 255, 0.06)',
-        textAxis: '#94a3b8',
-        textAxisHighlight: '#f8fafc',
-        axisBg: '#0b0f19',
+        bg: '#0a0a0a',
+        grid: 'rgba(255, 255, 255, 0.04)',
+        textAxis: '#a1a1a1',
+        textAxisHighlight: '#fafafa',
+        axisBg: '#141414',
         up: '#10b981',
         upDim: 'rgba(16, 185, 129, 0.45)',
         down: '#f43f5e',
         downDim: 'rgba(244, 63, 94, 0.45)',
-        crosshair: 'rgba(148, 163, 184, 0.5)',
-        curPriceLine: 'rgba(56, 189, 248, 0.75)'
+        crosshair: 'rgba(161, 161, 161, 0.45)',
+        curPriceLine: 'rgba(16, 185, 129, 0.85)'
       };
     }
   }
@@ -2004,7 +2269,7 @@ class DualCanvasChart {
     const activeSubPanes = (hasCvd ? 1 : 0) + (hasOi ? 1 : 0);
 
     if (activeSubPanes === 0) {
-      this.candleH = Math.floor(this.chartH * 0.82);
+      this.candleH = Math.floor(this.chartH * 0.88);
       this.volH = this.chartH - this.candleH;
       this.volTop = this.candleH;
       this.cvdH = 0;
@@ -2012,8 +2277,8 @@ class DualCanvasChart {
       this.oiH = 0;
       this.oiTop = 0;
     } else if (activeSubPanes === 1) {
-      this.candleH = Math.floor(this.chartH * 0.64);
-      this.volH = Math.floor(this.chartH * 0.14);
+      this.candleH = Math.floor(this.chartH * 0.76);
+      this.volH = Math.floor(this.chartH * 0.11);
       this.volTop = this.candleH;
       const subH = this.chartH - this.candleH - this.volH;
       if (hasCvd) {
@@ -2028,11 +2293,11 @@ class DualCanvasChart {
         this.cvdTop = 0;
       }
     } else {
-      this.candleH = Math.floor(this.chartH * 0.52);
-      this.volH = Math.floor(this.chartH * 0.12);
+      this.candleH = Math.floor(this.chartH * 0.68);
+      this.volH = Math.floor(this.chartH * 0.10);
       this.volTop = this.candleH;
       const rem = this.chartH - this.candleH - this.volH;
-      this.cvdH = Math.floor(rem * 0.52);
+      this.cvdH = Math.floor(rem * 0.5);
       this.cvdTop = this.candleH + this.volH;
       this.oiH = rem - this.cvdH;
       this.oiTop = this.cvdTop + this.cvdH;
@@ -2128,12 +2393,15 @@ class DualCanvasChart {
       time = visible[visible.length - 1].time + futureBars * intervalMs;
     }
 
-    const price = bounds.min + (1 - y / this.candleH) * bounds.range;
+    const price = bounds.min + (1 - (y - 4) / Math.max(1, this.candleH - 36)) * bounds.range;
     return { time, price };
   }
 
   updateFootprintHint() {
-    if (this.layers.footprint && this.visibleCandles <= 45) {
+    const candleW = this.getCandleW();
+    if (this.layers.footprint && (this.visibleCandles <= 55 || candleW >= 34)) {
+      if (this.footprintHint) this.footprintHint.style.display = 'none';
+    } else if (this.layers.footprint) {
       if (this.footprintHint) this.footprintHint.style.display = 'flex';
     } else {
       if (this.footprintHint) this.footprintHint.style.display = 'none';
@@ -2141,8 +2409,9 @@ class DualCanvasChart {
   }
 
   resetView() {
-    this.visibleCandles = 75;
-    this.scrollOffset = 0; // Snapped to latest with 12 bars right margin intact
+    this.visibleCandles = 8; // Default to Macro Footprint Focus (Massive Legible Clusters)
+    this.scrollOffset = 0;
+    this.rightOffsetBars = 2;
     this.requestRender();
     this.renderOverlay();
     this.updateFootprintHint();
@@ -2222,7 +2491,7 @@ class DualCanvasChart {
     const gap = (candleW - bodyW) / 2;
     const intervalMs = this.getIntervalMs();
 
-    const toY = (price) => (1 - (price - bounds.min) / bounds.range) * this.candleH;
+    const toY = (price) => (1 - (price - bounds.min) / bounds.range) * (this.candleH - 36) + 4;
 
     const toX = (time) => {
       const firstTime = visible[0].time;
@@ -2257,8 +2526,8 @@ class DualCanvasChart {
       this.store.vrvp.render(ctx, bounds, this.candleH, this.chartW, toY, this.symbolInfo);
     }
 
-    // 4. Candlesticks / Footprint
-    const isFootprintZoomed = this.layers.footprint && this.visibleCandles <= 45;
+    // 4. Candlesticks / Footprint (Macro Order Flow Clusters)
+    const isFootprintZoomed = this.layers.footprint && (candleW >= 34 || this.visibleCandles <= 55);
 
     for (let i = 0; i < visible.length; i++) {
       const c = visible[i];
@@ -2267,7 +2536,7 @@ class DualCanvasChart {
       const color = isUp ? this.colors.up : this.colors.down;
 
       if (isFootprintZoomed) {
-        this.store.footprint.renderCandle(ctx, c, x, candleW, toY, bounds, this.colors);
+        this.store.footprint.renderCandle(ctx, c, x, candleW, toY, bounds, this.colors, this.symbolInfo, this.candleH);
       } else {
         // Wick
         const wickX = Math.round(x + candleW / 2);
@@ -2356,11 +2625,11 @@ class DualCanvasChart {
 
       // Current Price Badge on Axis
       ctx.fillStyle = isUp ? this.colors.up : this.colors.down;
-      ctx.fillRect(this.chartW, lpY - 10, this.priceAxisW, 20);
+      ctx.fillRect(this.chartW, lpY - 12, this.priceAxisW, 24);
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 10.5px monospace';
+      ctx.font = 'bold 12px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(tdFmtPrice(latest.close, this.symbolInfo.decimals), this.chartW + this.priceAxisW / 2, lpY + 4);
+      ctx.fillText(tdFmtPrice(latest.close, this.symbolInfo.decimals), this.chartW + this.priceAxisW / 2, lpY + 4.5);
     }
   }
 
@@ -2406,14 +2675,14 @@ class DualCanvasChart {
     for (const s of steps) { if (s * mag >= rawStep) { gridStep = s * mag; break; } }
 
     ctx.fillStyle = this.colors.textAxis;
-    ctx.font = '10px monospace';
+    ctx.font = 'bold 11px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
 
     let p = Math.ceil(pMin / gridStep) * gridStep;
     while (p < pMax) {
       const y = toY(p);
       if (y >= 0 && y <= this.candleH) {
-        ctx.fillText(tdFmtPrice(p, this.symbolInfo.decimals), this.chartW + this.priceAxisW / 2, y + 3.5);
+        ctx.fillText(tdFmtPrice(p, this.symbolInfo.decimals), this.chartW + this.priceAxisW / 2, y + 4);
       }
       p += gridStep;
     }
@@ -2426,10 +2695,11 @@ class DualCanvasChart {
     ctx.lineTo(this.chartW, this.chartH);
     ctx.stroke();
 
+    ctx.font = 'bold 10.5px "JetBrains Mono", monospace';
     const step = Math.max(1, Math.floor(visible.length / 6));
     for (let i = 0; i < visible.length; i += step) {
       const cx = i * candleW + candleW / 2;
-      ctx.fillText(tdFmtDate(visible[i].time, this.interval), cx, this.chartH + 16);
+      ctx.fillText(tdFmtDate(visible[i].time, this.interval), cx, this.chartH + 18);
     }
   }
 
@@ -2460,7 +2730,7 @@ class DualCanvasChart {
 
     if (y <= this.candleH) {
       const price = bounds.min + (1 - y / this.candleH) * bounds.range;
-      ctx.fillStyle = '#1e293b';
+      ctx.fillStyle = '#262626';
       ctx.fillRect(this.chartW, y - 9, this.priceAxisW, 18);
       ctx.fillStyle = this.colors.textAxisHighlight;
       ctx.font = '10px monospace';
@@ -2482,7 +2752,7 @@ class DualCanvasChart {
     if (timeStr) {
       const tw = ctx.measureText(timeStr).width + 12;
       const tx = Math.max(0, Math.min(this.chartW - tw, x - tw / 2));
-      ctx.fillStyle = '#1e293b';
+      ctx.fillStyle = '#262626';
       ctx.fillRect(tx, this.chartH, tw, this.timeAxisH);
       ctx.fillStyle = this.colors.textAxisHighlight;
       ctx.font = '10px monospace';
@@ -2757,10 +3027,19 @@ class TapeDeltaTerminal {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/><path d="M3 12h18"/></svg>
             <span>Layout</span>
           </button>
-          <button class="td-action-btn" id="td-reset-view" title="Reset View & Right Margin">
+          <button class="td-action-btn" id="td-reset-view" title="Reset View (Macro Footprint)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             <span>Reset</span>
           </button>
+          <!-- Quick Zoom Presets -->
+          <div class="td-zoom-group">
+            <button class="td-zoom-pill active" id="td-zoom-macro" title="Macro Footprint Focus (8 bars) — Massive naked-eye clusters">Macro (8b)</button>
+            <button class="td-zoom-pill" id="td-zoom-cluster" title="Cluster View (14 bars) — High-detail footprint">Cluster (14b)</button>
+            <button class="td-zoom-pill" id="td-zoom-mid" title="Standard Order Flow (28 bars)">Standard (28b)</button>
+            <button class="td-zoom-pill" id="td-zoom-wide" title="Market Overview (60 bars)">Overview (60b)</button>
+            <button class="td-zoom-pill btn-sm" id="td-zoom-in" title="Zoom In (+)">+</button>
+            <button class="td-zoom-pill btn-sm" id="td-zoom-out" title="Zoom Out (−)">−</button>
+          </div>
           <button class="td-action-btn" id="td-fullscreen-btn" title="Toggle Fullscreen Terminal Mode">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
           </button>
@@ -3105,9 +3384,82 @@ class TapeDeltaTerminal {
       }
     });
 
-    // Reset View
+    // Zoom Presets & Reset View
+    const updateZoomPills = (bars) => {
+      this.root.querySelectorAll('.td-zoom-pill').forEach(p => p.classList.remove('active'));
+      if (bars <= 10) this.root.querySelector('#td-zoom-macro')?.classList.add('active');
+      else if (bars <= 18) this.root.querySelector('#td-zoom-cluster')?.classList.add('active');
+      else if (bars <= 40) this.root.querySelector('#td-zoom-mid')?.classList.add('active');
+      else this.root.querySelector('#td-zoom-wide')?.classList.add('active');
+    };
+
     this.root.querySelector('#td-reset-view')?.addEventListener('click', () => {
       this.chart.resetView();
+      updateZoomPills(8);
+    });
+
+    this.root.querySelector('#td-zoom-macro')?.addEventListener('click', () => {
+      if (this.chart) {
+        this.chart.visibleCandles = 8;
+        this.chart.rightOffsetBars = 2;
+        this.chart.requestRender();
+        this.chart.renderOverlay();
+        this.chart.updateFootprintHint();
+        updateZoomPills(8);
+      }
+    });
+
+    this.root.querySelector('#td-zoom-cluster')?.addEventListener('click', () => {
+      if (this.chart) {
+        this.chart.visibleCandles = 14;
+        this.chart.rightOffsetBars = 3;
+        this.chart.requestRender();
+        this.chart.renderOverlay();
+        this.chart.updateFootprintHint();
+        updateZoomPills(14);
+      }
+    });
+
+    this.root.querySelector('#td-zoom-mid')?.addEventListener('click', () => {
+      if (this.chart) {
+        this.chart.visibleCandles = 28;
+        this.chart.rightOffsetBars = 5;
+        this.chart.requestRender();
+        this.chart.renderOverlay();
+        this.chart.updateFootprintHint();
+        updateZoomPills(28);
+      }
+    });
+
+    this.root.querySelector('#td-zoom-wide')?.addEventListener('click', () => {
+      if (this.chart) {
+        this.chart.visibleCandles = 60;
+        this.chart.rightOffsetBars = 8;
+        this.chart.requestRender();
+        this.chart.renderOverlay();
+        this.chart.updateFootprintHint();
+        updateZoomPills(60);
+      }
+    });
+
+    this.root.querySelector('#td-zoom-in')?.addEventListener('click', () => {
+      if (this.chart) {
+        this.chart.visibleCandles = Math.max(5, this.chart.visibleCandles - 2);
+        this.chart.requestRender();
+        this.chart.renderOverlay();
+        this.chart.updateFootprintHint();
+        updateZoomPills(this.chart.visibleCandles);
+      }
+    });
+
+    this.root.querySelector('#td-zoom-out')?.addEventListener('click', () => {
+      if (this.chart) {
+        this.chart.visibleCandles = Math.min(250, this.chart.visibleCandles + 4);
+        this.chart.requestRender();
+        this.chart.renderOverlay();
+        this.chart.updateFootprintHint();
+        updateZoomPills(this.chart.visibleCandles);
+      }
     });
 
     // Fullscreen Toggle
@@ -3463,7 +3815,7 @@ class TapeDeltaTerminal {
       titleEl.textContent = 'LIVE TIME & SALES TAPE';
       contentEl.innerHTML = `
         <div style="display:flex;flex-direction:column;height:100%;">
-          <div style="display:grid;grid-template-columns:55px 1fr 1fr 1fr;padding:5px 8px;font-size:9px;font-weight:700;color:var(--td-text-muted);border-bottom:1px solid var(--td-border);background:#0f172a;position:sticky;top:0;">
+          <div style="display:grid;grid-template-columns:55px 1fr 1fr 1fr;padding:5px 8px;font-size:9px;font-weight:700;color:var(--td-text-muted);border-bottom:1px solid var(--td-border);background:#141414;position:sticky;top:0;">
             <span>TIME</span>
             <span style="text-align:right;">PRICE</span>
             <span style="text-align:right;">SIZE</span>
@@ -3547,7 +3899,7 @@ class TapeDeltaTerminal {
           <div style="background:var(--td-panel-sub);border:1px solid var(--td-border);border-radius:6px;padding:8px 10px;">
             <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
               <span style="font-size:10px;font-weight:700;color:var(--td-text-muted);">FLOW TOXICITY (VPIN)</span>
-              <span style="font-size:10px;font-weight:800;color:#38bdf8;">LOW (0.24)</span>
+              <span style="font-size:10px;font-weight:800;color:var(--td-accent);">LOW (0.24)</span>
             </div>
             <div style="font-size:9.5px;color:var(--td-text-dim);line-height:1.3;">
               Low adverse selection risk. Favorable regime for resting limit order fills.
