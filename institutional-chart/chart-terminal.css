@@ -586,12 +586,90 @@ body.tapedelta-fullscreen-active #tapedelta-terminal-root {
   color: var(--td-accent);
 }
 
-/* --- DOM Ladder Table --- */
+/* --- Live Timestamp & Reconnect Status --- */
+.td-live-timestamp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--td-font-mono);
+  font-size: 10px;
+  color: var(--td-text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--td-border);
+  padding: 3px 8px;
+  border-radius: var(--td-radius-sm);
+  white-space: nowrap;
+}
+.td-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--td-up);
+  box-shadow: 0 0 6px var(--td-up);
+  animation: td-pulse 1.8s infinite;
+}
+.td-live-dot.reconnecting {
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+}
+
+.td-bubble-select {
+  height: 24px;
+  background: var(--td-bg);
+  border: 1px solid var(--td-border);
+  border-radius: var(--td-radius-sm);
+  color: var(--td-text);
+  font-family: var(--td-font-mono);
+  font-size: 10px;
+  padding: 0 4px;
+  outline: none;
+  cursor: pointer;
+}
+.td-bubble-select:hover {
+  border-color: var(--td-accent);
+}
+
+/* --- DOM Ladder Container & 3-Column Table --- */
 .td-dom-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   gap: 8px;
+}
+
+.td-dom-header-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 5px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--td-border);
+  border-radius: 6px;
+  font-family: var(--td-font-mono);
+  font-size: 10px;
+}
+.td-dom-stat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.td-dom-stat-chip .lbl {
+  font-size: 8.5px;
+  color: var(--td-text-dim);
+}
+.td-dom-stat-chip .val {
+  font-weight: 700;
+}
+.td-dom-stat-chip .val.green { color: var(--td-up); }
+.td-dom-stat-chip .val.red { color: var(--td-down); }
+
+.td-dom-table-scroll {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+  border: 1px solid var(--td-border);
+  border-radius: 6px;
+  background: var(--td-bg);
 }
 
 .td-dom-table {
@@ -601,49 +679,70 @@ body.tapedelta-fullscreen-active #tapedelta-terminal-root {
   border-collapse: collapse;
 }
 .td-dom-table th {
-  padding: 4px 6px;
+  position: sticky;
+  top: 0;
+  background: var(--td-card-bg);
+  z-index: 2;
+  padding: 5px 6px;
   color: var(--td-text-muted);
   font-weight: 600;
-  text-align: right;
   border-bottom: 1px solid var(--td-border);
-  font-size: 10px;
+  font-size: 9.5px;
+  letter-spacing: 0.03em;
 }
-.td-dom-table th:first-child { text-align: left; }
 .td-dom-table td {
   padding: 3px 6px;
-  text-align: right;
   position: relative;
+  white-space: nowrap;
 }
-.td-dom-table td:first-child { text-align: left; }
 .td-dom-row {
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.08s;
 }
-.td-dom-row:hover {
-  background: rgba(56, 189, 248, 0.15) !important;
+.td-dom-row:hover, .td-dom-row.active-ladder-row {
+  background: rgba(56, 189, 248, 0.16) !important;
 }
-.td-dom-row.ask td { color: var(--td-down); }
-.td-dom-row.bid td { color: var(--td-up); }
+
+.td-dom-row.best-ask {
+  background: rgba(255, 51, 102, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 51, 102, 0.4);
+}
+.td-dom-row.best-bid {
+  background: rgba(0, 255, 187, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(0, 255, 187, 0.4);
+}
+
+.td-dom-tag {
+  font-size: 7.5px;
+  font-weight: 800;
+  padding: 1px 3px;
+  border-radius: 3px;
+  margin-left: 3px;
+  vertical-align: middle;
+}
+.td-dom-tag.ask { background: rgba(255, 51, 102, 0.25); color: var(--td-down); }
+.td-dom-tag.bid { background: rgba(0, 255, 187, 0.25); color: var(--td-up); }
 
 .td-dom-bar-bg {
   position: absolute;
   top: 0;
   bottom: 0;
   pointer-events: none;
-  opacity: 0.18;
+  opacity: 0.22;
 }
 .td-dom-bar-bg.ask { right: 0; background: var(--td-down); }
-.td-dom-bar-bg.bid { right: 0; background: var(--td-up); }
+.td-dom-bar-bg.bid { left: 0; background: var(--td-up); }
 
 .td-dom-spread-row {
   background: rgba(255, 255, 255, 0.03);
   text-align: center;
   font-weight: 700;
-  padding: 6px 0;
+  padding: 5px 0;
   border-top: 1px solid var(--td-border);
   border-bottom: 1px solid var(--td-border);
   color: var(--td-text-muted);
-  font-size: 10.5px;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
 }
 
 /* --- Quick Order Entry Ticket (Connected to DOM) --- */
@@ -666,6 +765,26 @@ body.tapedelta-fullscreen-active #tapedelta-terminal-root {
   font-weight: 700;
   color: var(--td-text);
   font-family: var(--td-font-mono);
+}
+
+.td-demo-badge {
+  font-size: 8px;
+  font-weight: 800;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.td-demo-disclaimer {
+  font-size: 8.5px;
+  color: var(--td-text-dim);
+  letter-spacing: 0.03em;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--td-border);
+  padding: 3px 6px;
+  border-radius: 4px;
+  text-align: center;
 }
 
 .td-order-tabs {
