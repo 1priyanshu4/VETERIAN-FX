@@ -1,7 +1,8 @@
 // ============================================================================
-// TAPEDELTA-STYLE INSTITUTIONAL ORDER-FLOW CHART TERMINAL (PHASE 2)
-// High-Performance 60fps Multi-Pane Canvas Engine + Binance Live Order Flow
+// TAPEDELTA-STYLE INSTITUTIONAL ORDER-FLOW CHART TERMINAL (PHASE 1 - 4 COMPLETE)
+// Multi-Pane Canvas Engine + Binance Live Order Flow + Trader Tools + Replay
 // Orderbook Depth Heatmap • CVD • Footprint • VRVP • Liquidations • Open Interest
+// Drawing Tools • Indicators (EMA, BB, RSI, MACD, VWAP) • Replay • DOM • Prop Guard
 // ============================================================================
 
 'use strict';
@@ -151,26 +152,26 @@ class BinanceMarketDataProvider {
   syncStreams() {
     if (this.destroyed) return;
 
-    // Kline Stream (Always active for base chart)
+    // Kline Stream
     if (!this.klineWs) {
       this.openKlineStream();
     }
 
-    // Depth Stream (Needed for Heatmap)
+    // Depth Stream (Heatmap)
     if (this.layers.heatmap) {
       if (!this.depthWs) this.openDepthStream();
     } else {
       this.closeSocket('depth');
     }
 
-    // AggTrade Stream (Needed for CVD & Footprint)
+    // AggTrade Stream (CVD & Footprint)
     if (this.layers.cvd || this.layers.footprint) {
       if (!this.aggTradeWs) this.openAggTradeStream();
     } else {
       this.closeSocket('aggTrade');
     }
 
-    // Liquidation Stream (Needed for Liq bubbles)
+    // Liquidation Stream
     if (this.layers.liq) {
       if (!this.liqWs) this.openLiquidationStream();
     } else {
@@ -204,9 +205,7 @@ class BinanceMarketDataProvider {
         try {
           res = await fetch(url);
           if (res.ok) break;
-        } catch (e) {
-          // try next endpoint
-        }
+        } catch (e) {}
       }
 
       if (!res || !res.ok) throw new Error('Failed to fetch klines from Binance');
@@ -333,7 +332,7 @@ class BinanceMarketDataProvider {
           if (msg.e === 'aggTrade') {
             const price = parseFloat(msg.p);
             const qty = parseFloat(msg.q);
-            const isBuyerMaker = msg.m; // true = taker sell (hit bid); false = taker buy (lift ask)
+            const isBuyerMaker = msg.m; // true = taker sell; false = taker buy
             const trade = {
               price,
               qty,
@@ -358,7 +357,6 @@ class BinanceMarketDataProvider {
 
   openLiquidationStream() {
     this.closeSocket('liq');
-    // Listen to global forceOrder stream and filter by active symbol
     const url = `wss://fstream.binance.com/ws/!forceOrder@arr`;
 
     try {
@@ -385,7 +383,7 @@ class BinanceMarketDataProvider {
                 price,
                 qty,
                 usd,
-                side: o.S, // 'SELL' = Long position liquidated; 'BUY' = Short position liquidated
+                side: o.S,
                 symbol: o.s
               };
               this.onLiquidation?.(liq);
@@ -495,7 +493,6 @@ class CandleStore {
 
   setHistory(history, symbolInfo) {
     this.candles = history.slice(-this.maxCandles);
-    // Seed CVD and Footprint historical baselines
     this.cvd.seedHistory(this.candles);
     this.footprint.seedHistory(this.candles, symbolInfo);
   }
@@ -508,14 +505,12 @@ class CandleStore {
 
     const last = this.candles[this.candles.length - 1];
     if (last.time === liveCandle.time) {
-      // In-place update of current bar
       last.high = Math.max(last.high, liveCandle.high);
       last.low = Math.min(last.low, liveCandle.low);
       last.close = liveCandle.close;
       last.volume = liveCandle.volume;
       last.isClosed = liveCandle.isClosed;
     } else if (liveCandle.time > last.time) {
-      // New candle arrived
       last.isClosed = true;
       this.candles.push(liveCandle);
       if (this.candles.length > this.maxCandles) {
@@ -564,7 +559,7 @@ class OrderbookHeatmap {
     this.maxSlices = maxSlices;
     this.currentBids = [];
     this.currentAsks = [];
-    this.slices = []; // { time, bids: [[p, q]], asks: [[p, q]], maxQty }
+    this.slices = [];
   }
 
   addDepth(bids, asks) {
@@ -598,14 +593,12 @@ class OrderbookHeatmap {
 
     ctx.save();
 
-    // 1. Draw Resting Depth Liquidity Heatbands behind candles
     const drawLevels = (levels, isBid) => {
       for (const [price, qty] of levels) {
         if (price < bounds.min || price > bounds.max) continue;
         const y = toY(price);
         const intensity = Math.min(1, qty / peakQty);
 
-        // Heatmap color gradient: navy -> purple -> cyan -> gold -> white
         let grad;
         if (intensity < 0.25) {
           grad = `rgba(30, 41, 59, ${0.12 + intensity * 0.4})`;
@@ -618,7 +611,6 @@ class OrderbookHeatmap {
         }
 
         ctx.fillStyle = grad;
-        // Horizontal band across chart fading towards left
         const h = Math.max(2, Math.round(candleH * 0.012));
         ctx.fillRect(0, Math.round(y - h / 2), chartW, h);
       }
@@ -627,10 +619,8 @@ class OrderbookHeatmap {
     drawLevels(this.currentBids, true);
     drawLevels(this.currentAsks, false);
 
-    // 2. Draw Live Orderbook Ladder Bar Meter on Price Edge
+    // Live Orderbook Ladder Bar Meter on Price Edge
     const ladderW = 44;
-    const ladderX = chartW - ladderW;
-
     this.currentBids.forEach(([price, qty]) => {
       if (price >= bounds.min && price <= bounds.max) {
         const y = toY(price);
@@ -657,7 +647,7 @@ class OrderbookHeatmap {
 
 class CVDCalculator {
   constructor() {
-    this.candleDeltas = new Map(); // time -> { buyVol, sellVol, delta, cvd }
+    this.candleDeltas = new Map();
     this.cumulativeDelta = 0;
   }
 
@@ -666,7 +656,6 @@ class CVDCalculator {
     this.cumulativeDelta = 0;
 
     for (const c of candles) {
-      const isUp = c.close >= c.open;
       const range = c.high - c.low || 1;
       const ratio = (c.close - c.open) / range;
       const buyVol = Math.max(0, (c.volume * (1 + ratio * 0.8)) / 2);
@@ -687,12 +676,7 @@ class CVDCalculator {
     if (!currentCandle) return;
     let cd = this.candleDeltas.get(currentCandle.time);
     if (!cd) {
-      cd = {
-        buyVol: 0,
-        sellVol: 0,
-        delta: 0,
-        cvd: this.cumulativeDelta
-      };
+      cd = { buyVol: 0, sellVol: 0, delta: 0, cvd: this.cumulativeDelta };
       this.candleDeltas.set(currentCandle.time, cd);
     }
 
@@ -742,7 +726,7 @@ class CVDCalculator {
 
     ctx.save();
 
-    // 1. Pane Separator
+    // Pane Separator
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -750,7 +734,7 @@ class CVDCalculator {
     ctx.lineTo(chartW, topY);
     ctx.stroke();
 
-    // 2. Zero Baseline (if within visible range)
+    // Zero Baseline
     if (minCvd <= 0 && maxCvd >= 0) {
       const zY = cvdToY(0);
       ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
@@ -762,7 +746,7 @@ class CVDCalculator {
       ctx.setLineDash([]);
     }
 
-    // 3. CVD Gradient Area Fill
+    // CVD Area Fill
     if (points.length > 1) {
       const zeroY = Math.min(topY + paneH, Math.max(topY, cvdToY(0)));
       ctx.beginPath();
@@ -785,7 +769,7 @@ class CVDCalculator {
       ctx.fillStyle = grad;
       ctx.fill();
 
-      // 4. CVD Main Polyline
+      // CVD Polyline
       ctx.beginPath();
       ctx.moveTo(points[0].x, cvdToY(points[0].cvd));
       for (let i = 1; i < points.length; i++) {
@@ -796,7 +780,7 @@ class CVDCalculator {
       ctx.stroke();
     }
 
-    // 5. Header Tag
+    // Header Tag
     const latestCvd = points.length > 0 ? points[points.length - 1].cvd : 0;
     const latestDelta = points.length > 0 ? points[points.length - 1].delta : 0;
     const isUp = latestCvd >= 0;
@@ -815,11 +799,11 @@ class CVDCalculator {
   }
 }
 
-// ─── 4C. FOOTPRINT CHART ENGINE (BID/ASK CLUSTERS & POC) ─────────────────────
+// ─── 4C. FOOTPRINT CHART ENGINE ─────────────────────────────────────────────
 
 class FootprintEngine {
   constructor() {
-    this.candles = new Map(); // time -> { buckets: Map(priceKey -> { bid, ask, total }), pocPrice }
+    this.candles = new Map();
   }
 
   seedHistory(candles, symbolInfo) {
@@ -897,7 +881,6 @@ class FootprintEngine {
     const bodyW = candleW * 0.88;
     const leftX = x + (candleW - bodyW) / 2;
     const midX = leftX + bodyW / 2;
-    const rightX = leftX + bodyW;
     const halfW = bodyW / 2;
 
     ctx.save();
@@ -908,17 +891,17 @@ class FootprintEngine {
       const rowH = Math.max(3, Math.min(24, Math.abs(toY(price) - toY(price + (bounds.range / 50)))));
       const topY = Math.round(y - rowH / 2);
 
-      // Bid volume left half (Red intensity)
+      // Bid volume left half
       const bidAlpha = Math.min(0.8, 0.1 + (b.bid / (data.maxVol || 1)) * 0.7);
       ctx.fillStyle = `rgba(246, 70, 93, ${bidAlpha})`;
       ctx.fillRect(leftX, topY, halfW - 1, rowH);
 
-      // Ask volume right half (Green intensity)
+      // Ask volume right half
       const askAlpha = Math.min(0.8, 0.1 + (b.ask / (data.maxVol || 1)) * 0.7);
       ctx.fillStyle = `rgba(14, 203, 129, ${askAlpha})`;
       ctx.fillRect(midX, topY, halfW, rowH);
 
-      // POC highlight box (Golden outline)
+      // POC highlight box
       if (Math.abs(price - data.pocPrice) < bounds.range / 150) {
         ctx.strokeStyle = '#f59e0b';
         ctx.lineWidth = 1.5;
@@ -952,7 +935,7 @@ class FootprintEngine {
 class VolumeProfileEngine {
   constructor() {
     this.binsCount = 70;
-    this.profile = null; // { bins: [{ p, buy, sell, total }], pocPrice, vah, val }
+    this.profile = null;
   }
 
   compute(visible, bounds) {
@@ -999,7 +982,7 @@ class VolumeProfileEngine {
       }
     }
 
-    // Calculate 70% Value Area (VAH & VAL)
+    // 70% Value Area
     const targetVA = totalProfileVol * 0.70;
     let curVA = bins[pocIdx].total;
     let upIdx = pocIdx;
@@ -1044,13 +1027,13 @@ class VolumeProfileEngine {
     const profileW = 120;
     const startX = chartW;
 
-    // 1. Shaded Value Area Background
+    // Shaded Value Area Background
     const vahY = toY(vah);
     const valY = toY(val);
     ctx.fillStyle = 'rgba(56, 189, 248, 0.03)';
     ctx.fillRect(0, Math.min(vahY, valY), chartW, Math.abs(valY - vahY));
 
-    // 2. Volume Profile Histogram Bars along Right Edge
+    // Profile Histogram
     const binH = Math.max(1.5, (candleH / this.binsCount) * 0.92);
     for (let i = 0; i < bins.length; i++) {
       const b = bins[i];
@@ -1061,17 +1044,14 @@ class VolumeProfileEngine {
       const buyBarW = (b.buy / (b.total || 1)) * totalBarW;
       const sellBarW = totalBarW - buyBarW;
 
-      // Buy side (emerald)
       ctx.fillStyle = isVA ? 'rgba(14, 203, 129, 0.55)' : 'rgba(14, 203, 129, 0.22)';
       ctx.fillRect(startX - totalBarW, y - binH / 2, buyBarW, binH);
 
-      // Sell side (crimson)
       ctx.fillStyle = isVA ? 'rgba(246, 70, 93, 0.55)' : 'rgba(246, 70, 93, 0.22)';
       ctx.fillRect(startX - totalBarW + buyBarW, y - binH / 2, sellBarW, binH);
     }
 
-    // 3. Horizontal Reference Lines (POC, VAH, VAL)
-    // POC (Golden/Orange)
+    // Horizontal Lines: POC, VAH, VAL
     const pocY = toY(pocPrice);
     ctx.strokeStyle = '#f59e0b';
     ctx.lineWidth = 1.6;
@@ -1085,7 +1065,6 @@ class VolumeProfileEngine {
     ctx.textAlign = 'right';
     ctx.fillText(`POC ${tdFmtPrice(pocPrice, symbolInfo.decimals)}`, chartW - profileW - 8, pocY - 3);
 
-    // VAH (Cyan dashed)
     ctx.strokeStyle = '#38bdf8';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
@@ -1098,7 +1077,6 @@ class VolumeProfileEngine {
     ctx.font = '9px monospace';
     ctx.fillText(`VAH ${tdFmtPrice(vah, symbolInfo.decimals)}`, chartW - profileW - 8, vahY - 3);
 
-    // VAL (Cyan dashed)
     ctx.beginPath();
     ctx.moveTo(0, valY);
     ctx.lineTo(chartW, valY);
@@ -1111,11 +1089,11 @@ class VolumeProfileEngine {
   }
 }
 
-// ─── 4E. LIQUIDATION TRACKER & MARKERS ──────────────────────────────────────
+// ─── 4E. LIQUIDATION TRACKER ────────────────────────────────────────────────
 
 class LiquidationTracker {
   constructor() {
-    this.events = []; // { id, time, price, qty, usd, side, symbol }
+    this.events = [];
     this.maxEvents = 200;
   }
 
@@ -1139,7 +1117,6 @@ class LiquidationTracker {
 
     ctx.save();
     for (const e of evs) {
-      // Find X corresponding to event timestamp
       let cIdx = 0;
       for (let i = 0; i < visible.length; i++) {
         if (visible[i].time <= e.time) cIdx = i;
@@ -1149,17 +1126,14 @@ class LiquidationTracker {
       const x = cIdx * candleW + candleW / 2;
       const y = toY(e.price);
 
-      // Bubble radius scales with USD value (min 4px, max 20px)
       const r = Math.max(4, Math.min(20, Math.log10(Math.max(1000, e.usd) / 500) * 5.2));
-      const isLongLiq = e.side === 'SELL'; // Long liquidated = Forced Sell
+      const isLongLiq = e.side === 'SELL';
 
-      // Pulsing outer aura ring
       ctx.beginPath();
       ctx.arc(x, y, r + 4, 0, Math.PI * 2);
       ctx.fillStyle = isLongLiq ? 'rgba(244, 63, 94, 0.25)' : 'rgba(16, 185, 129, 0.25)';
       ctx.fill();
 
-      // Main core circle
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fillStyle = isLongLiq ? 'rgba(244, 63, 94, 0.88)' : 'rgba(16, 185, 129, 0.88)';
@@ -1168,7 +1142,6 @@ class LiquidationTracker {
       ctx.fill();
       ctx.stroke();
 
-      // Whale label
       if (e.usd >= 75000) {
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 8.5px monospace';
@@ -1184,7 +1157,7 @@ class LiquidationTracker {
 
 class OpenInterestTracker {
   constructor() {
-    this.history = []; // { time, oi, usdVal }
+    this.history = [];
     this.latest = null;
   }
 
@@ -1211,7 +1184,6 @@ class OpenInterestTracker {
     let minOi = Infinity;
     let maxOi = -Infinity;
 
-    // Map OI points to visible candles
     const points = [];
     for (let i = 0; i < visible.length; i++) {
       const c = visible[i];
@@ -1240,7 +1212,7 @@ class OpenInterestTracker {
 
     ctx.save();
 
-    // 1. Pane Divider
+    // Pane Divider
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1248,7 +1220,7 @@ class OpenInterestTracker {
     ctx.lineTo(chartW, topY);
     ctx.stroke();
 
-    // 2. OI Gradient Area
+    // Area
     ctx.beginPath();
     ctx.moveTo(points[0].x, topY + paneH);
     for (const p of points) {
@@ -1263,7 +1235,7 @@ class OpenInterestTracker {
     ctx.fillStyle = grad;
     ctx.fill();
 
-    // 3. Polyline
+    // Polyline
     ctx.beginPath();
     ctx.moveTo(points[0].x, oiToY(points[0].oi));
     for (let i = 1; i < points.length; i++) {
@@ -1273,7 +1245,7 @@ class OpenInterestTracker {
     ctx.lineWidth = 1.6;
     ctx.stroke();
 
-    // 4. Header Badge
+    // Badge
     const cur = this.latest ? this.latest.oi : points[points.length - 1].oi;
     ctx.fillStyle = 'rgba(100, 116, 139, 0.8)';
     ctx.font = '10px monospace';
@@ -1289,7 +1261,570 @@ class OpenInterestTracker {
   }
 }
 
-// ─── 5. DUAL-CANVAS RENDERING ENGINE ────────────────────────────────────────
+// ─── 5A. DRAWING TOOLS ENGINE (PHASE 3) ──────────────────────────────────────
+
+class DrawingEngine {
+  constructor(symbol) {
+    this.symbol = symbol;
+    this.activeTool = 'cursor'; // 'cursor', 'trendline', 'horiz', 'ray', 'rect', 'fib', 'text'
+    this.drawings = [];
+    this.currentDrawing = null;
+    this.isLocked = false;
+    this.load();
+  }
+
+  load() {
+    try {
+      const data = localStorage.getItem(`td_drawings_${this.symbol}`);
+      if (data) this.drawings = JSON.parse(data);
+    } catch (e) {
+      this.drawings = [];
+    }
+  }
+
+  save() {
+    try {
+      localStorage.setItem(`td_drawings_${this.symbol}`, JSON.stringify(this.drawings));
+    } catch (e) {}
+  }
+
+  undo() {
+    if (this.drawings.length > 0 && !this.isLocked) {
+      this.drawings.pop();
+      this.save();
+    }
+  }
+
+  clear() {
+    if (!this.isLocked) {
+      this.drawings = [];
+      this.save();
+    }
+  }
+
+  handleMouseDown(point) {
+    if (this.isLocked || this.activeTool === 'cursor') return;
+
+    if (!this.currentDrawing) {
+      // Start new drawing
+      this.currentDrawing = {
+        id: Date.now(),
+        type: this.activeTool,
+        p1: point,
+        p2: point,
+        color: '#38bdf8'
+      };
+      if (this.activeTool === 'text') {
+        const text = prompt('Enter annotation label:', 'Key Level / Reversal');
+        if (text) {
+          this.currentDrawing.text = text;
+          this.drawings.push(this.currentDrawing);
+          this.save();
+        }
+        this.currentDrawing = null;
+      }
+    } else {
+      // Complete drawing
+      this.currentDrawing.p2 = point;
+      this.drawings.push(this.currentDrawing);
+      this.currentDrawing = null;
+      this.save();
+    }
+  }
+
+  handleMouseMove(point) {
+    if (this.currentDrawing) {
+      this.currentDrawing.p2 = point;
+    }
+  }
+
+  render(ctx, toX, toY, chartW, candleH) {
+    const list = [...this.drawings];
+    if (this.currentDrawing) list.push(this.currentDrawing);
+
+    ctx.save();
+    for (const d of list) {
+      const x1 = toX(d.p1.time);
+      const y1 = toY(d.p1.price);
+      const x2 = d.p2 ? toX(d.p2.time) : x1;
+      const y2 = d.p2 ? toY(d.p2.price) : y1;
+
+      ctx.strokeStyle = d.color || '#38bdf8';
+      ctx.lineWidth = 1.5;
+
+      switch (d.type) {
+        case 'trendline': {
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+          // Draw end points
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(x1 - 3, y1 - 3, 6, 6);
+          ctx.fillRect(x2 - 3, y2 - 3, 6, 6);
+          break;
+        }
+        case 'horiz': {
+          ctx.beginPath();
+          ctx.moveTo(0, y1);
+          ctx.lineTo(chartW, y1);
+          ctx.stroke();
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(`$${d.p1.price.toFixed(2)}`, chartW - 55, y1 - 4);
+          break;
+        }
+        case 'ray': {
+          const dx = x2 - x1;
+          const dy = y2 - y1;
+          const angle = Math.atan2(dy, dx);
+          const extX = x1 + Math.cos(angle) * chartW;
+          const extY = y1 + Math.sin(angle) * chartW;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(extX, extY);
+          ctx.stroke();
+          break;
+        }
+        case 'rect': {
+          const rx = Math.min(x1, x2);
+          const ry = Math.min(y1, y2);
+          const rw = Math.abs(x2 - x1);
+          const rh = Math.abs(y2 - y1);
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+          ctx.fillRect(rx, ry, rw, rh);
+          ctx.strokeRect(rx, ry, rw, rh);
+          break;
+        }
+        case 'fib': {
+          const topPrice = Math.max(d.p1.price, d.p2.price);
+          const botPrice = Math.min(d.p1.price, d.p2.price);
+          const range = topPrice - botPrice || 1;
+          const levels = [
+            { f: 0.0, color: '#f59e0b' },
+            { f: 0.236, color: '#818cf8' },
+            { f: 0.382, color: '#38bdf8' },
+            { f: 0.5, color: '#10b981' },
+            { f: 0.618, color: '#f59e0b' },
+            { f: 0.786, color: '#ef4444' },
+            { f: 1.0, color: '#64748b' }
+          ];
+
+          const startX = Math.min(x1, x2);
+          const endX = Math.max(x1, x2, startX + 160);
+
+          for (const lvl of levels) {
+            const lp = topPrice - lvl.f * range;
+            const ly = toY(lp);
+            ctx.strokeStyle = lvl.color;
+            ctx.beginPath();
+            ctx.moveTo(startX, ly);
+            ctx.lineTo(endX, ly);
+            ctx.stroke();
+
+            ctx.fillStyle = lvl.color;
+            ctx.font = '8.5px monospace';
+            ctx.fillText(`Fib ${lvl.f} ($${lp.toFixed(2)})`, endX + 4, ly + 3);
+          }
+          break;
+        }
+        case 'text': {
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(`🏷️ ${d.text || ''}`, x1 + 5, y1 - 5);
+          break;
+        }
+      }
+    }
+    ctx.restore();
+  }
+}
+
+// ─── 5B. INDICATOR ENGINE (EMA, BB, RSI, MACD, VWAP) ────────────────────────
+
+class IndicatorEngine {
+  constructor() {
+    this.config = {
+      ema20: true,
+      ema50: true,
+      ema200: false,
+      bb: false,
+      rsi: false,
+      macd: false,
+      vwap: true
+    };
+    this.load();
+  }
+
+  load() {
+    try {
+      const c = localStorage.getItem('td_indicators_config');
+      if (c) this.config = { ...this.config, ...JSON.parse(c) };
+    } catch (e) {}
+  }
+
+  save() {
+    try {
+      localStorage.setItem('td_indicators_config', JSON.stringify(this.config));
+    } catch (e) {}
+  }
+
+  computeEMA(candles, period) {
+    const k = 2 / (period + 1);
+    const res = [];
+    let ema = candles[0] ? candles[0].close : 0;
+    for (let i = 0; i < candles.length; i++) {
+      ema = candles[i].close * k + ema * (1 - k);
+      res.push(ema);
+    }
+    return res;
+  }
+
+  computeBB(candles, period = 20, mult = 2) {
+    const upper = [];
+    const middle = [];
+    const lower = [];
+
+    for (let i = 0; i < candles.length; i++) {
+      if (i < period - 1) {
+        middle.push(candles[i].close);
+        upper.push(candles[i].close);
+        lower.push(candles[i].close);
+        continue;
+      }
+      let sum = 0;
+      for (let j = 0; j < period; j++) sum += candles[i - j].close;
+      const mean = sum / period;
+      let sumSq = 0;
+      for (let j = 0; j < period; j++) sumSq += Math.pow(candles[i - j].close - mean, 2);
+      const dev = Math.sqrt(sumSq / period);
+
+      middle.push(mean);
+      upper.push(mean + mult * dev);
+      lower.push(mean - mult * dev);
+    }
+    return { upper, middle, lower };
+  }
+
+  computeRSI(candles, period = 14) {
+    const rsi = [];
+    let avgGain = 0;
+    let avgLoss = 0;
+
+    for (let i = 0; i < candles.length; i++) {
+      if (i === 0) { rsi.push(50); continue; }
+      const diff = candles[i].close - candles[i - 1].close;
+      const gain = diff > 0 ? diff : 0;
+      const loss = diff < 0 ? -diff : 0;
+
+      if (i <= period) {
+        avgGain += gain / period;
+        avgLoss += loss / period;
+        rsi.push(50);
+      } else {
+        avgGain = (avgGain * (period - 1) + gain) / period;
+        avgLoss = (avgLoss * (period - 1) + loss) / period;
+        const rs = avgGain / (avgLoss || 1e-9);
+        rsi.push(100 - (100 / (1 + rs)));
+      }
+    }
+    return rsi;
+  }
+
+  computeVWAP(candles) {
+    const vwap = [];
+    let cumVol = 0;
+    let cumVolPrice = 0;
+
+    for (const c of candles) {
+      const tp = (c.high + c.low + c.close) / 3;
+      cumVol += c.volume;
+      cumVolPrice += tp * c.volume;
+      vwap.push(cumVolPrice / (cumVol || 1));
+    }
+    return vwap;
+  }
+
+  renderOverlays(ctx, visible, startIdx, allCandles, candleW, toY, colors) {
+    if (visible.length === 0 || allCandles.length === 0) return;
+
+    ctx.save();
+
+    // 1. VWAP
+    if (this.config.vwap) {
+      const vwapAll = this.computeVWAP(allCandles);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const idx = startIdx + i;
+        const y = toY(vwapAll[idx] || visible[i].close);
+        const x = i * candleW + candleW / 2;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // 2. EMA 20
+    if (this.config.ema20) {
+      const ema = this.computeEMA(allCandles, 20);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const idx = startIdx + i;
+        const y = toY(ema[idx] || visible[i].close);
+        const x = i * candleW + candleW / 2;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // 3. EMA 50
+    if (this.config.ema50) {
+      const ema = this.computeEMA(allCandles, 50);
+      ctx.strokeStyle = '#818cf8';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const idx = startIdx + i;
+        const y = toY(ema[idx] || visible[i].close);
+        const x = i * candleW + candleW / 2;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // 4. Bollinger Bands
+    if (this.config.bb) {
+      const bb = this.computeBB(allCandles, 20, 2);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+
+      // Upper
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const idx = startIdx + i;
+        const y = toY(bb.upper[idx] || visible[i].close);
+        const x = i * candleW + candleW / 2;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Lower
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const idx = startIdx + i;
+        const y = toY(bb.lower[idx] || visible[i].close);
+        const x = i * candleW + candleW / 2;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    ctx.restore();
+  }
+}
+
+// ─── 5C. REPLAY ENGINE (BAR-BY-BAR PLAYBACK) ────────────────────────────────
+
+class ReplayEngine {
+  constructor(chart) {
+    this.chart = chart;
+    this.isActive = false;
+    this.isPlaying = false;
+    this.replayCursor = 0;
+    this.timer = null;
+    this.speedMs = 800; // 1x = 800ms per bar
+  }
+
+  enter(startIndex) {
+    this.isActive = true;
+    this.isPlaying = false;
+    this.replayCursor = startIndex || Math.max(20, this.chart.store.length - 120);
+    this.chart.requestRender();
+  }
+
+  play() {
+    if (!this.isActive) return;
+    this.isPlaying = true;
+    clearInterval(this.timer);
+    this.timer = setInterval(() => {
+      if (this.replayCursor < this.chart.store.length - 1) {
+        this.replayCursor++;
+        this.chart.requestRender();
+      } else {
+        this.pause();
+      }
+    }, this.speedMs);
+  }
+
+  pause() {
+    this.isPlaying = false;
+    clearInterval(this.timer);
+  }
+
+  stepForward() {
+    if (this.replayCursor < this.chart.store.length - 1) {
+      this.replayCursor++;
+      this.chart.requestRender();
+    }
+  }
+
+  stepBackward() {
+    if (this.replayCursor > 10) {
+      this.replayCursor--;
+      this.chart.requestRender();
+    }
+  }
+
+  exit() {
+    this.pause();
+    this.isActive = false;
+    this.chart.requestRender();
+  }
+}
+
+// ─── 5D. ALERTS ENGINE (WEB AUDIO SYNTH CHIME) ──────────────────────────────
+
+class AlertsEngine {
+  constructor() {
+    this.alerts = []; // { id, symbol, targetPrice, side: 'above'|'below', triggered: false }
+    this.audioCtx = null;
+    this.load();
+  }
+
+  load() {
+    try {
+      const a = localStorage.getItem('td_alerts');
+      if (a) this.alerts = JSON.parse(a);
+    } catch (e) {
+      this.alerts = [];
+    }
+  }
+
+  save() {
+    try {
+      localStorage.setItem('td_alerts', JSON.stringify(this.alerts));
+    } catch (e) {}
+  }
+
+  addAlert(symbol, targetPrice, curPrice) {
+    const side = targetPrice >= curPrice ? 'above' : 'below';
+    this.alerts.push({
+      id: Date.now(),
+      symbol,
+      targetPrice,
+      side,
+      triggered: false,
+      time: Date.now()
+    });
+    this.save();
+  }
+
+  checkPrice(symbol, price, onTriggered) {
+    for (const a of this.alerts) {
+      if (a.symbol === symbol && !a.triggered) {
+        if ((a.side === 'above' && price >= a.targetPrice) || (a.side === 'below' && price <= a.targetPrice)) {
+          a.triggered = true;
+          this.save();
+          this.playChime();
+          onTriggered?.(a);
+        }
+      }
+    }
+  }
+
+  playChime() {
+    try {
+      if (!this.audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.audioCtx = new AudioContext();
+      }
+      const ctx = this.audioCtx;
+      if (ctx.state === 'suspended') ctx.resume();
+
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now); // A5
+      osc.frequency.exponentialRampToValueAtTime(1760, now + 0.15); // A6
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    } catch (e) {}
+  }
+}
+
+// ─── 5E. SIMULATED PROP GUARD & TRADE BAR ────────────────────────────────────
+
+class QuickTradeEngine {
+  constructor() {
+    this.account = {
+      balance: 100000,
+      initialBalance: 100000,
+      dailyLossLimit: 5000, // 5%
+      maxLossLimit: 10000,  // 10%
+      positions: []
+    };
+    this.load();
+  }
+
+  load() {
+    try {
+      const a = localStorage.getItem('td_prop_account');
+      if (a) this.account = JSON.parse(a);
+    } catch (e) {}
+  }
+
+  save() {
+    try {
+      localStorage.setItem('td_prop_account', JSON.stringify(this.account));
+    } catch (e) {}
+  }
+
+  placeOrder(symbol, side, qty, price, sl, tp) {
+    const pos = {
+      id: Date.now(),
+      symbol,
+      side,
+      qty,
+      entryPrice: price,
+      sl: sl || 0,
+      tp: tp || 0,
+      time: Date.now(),
+      pnl: 0
+    };
+    this.account.positions.push(pos);
+    this.save();
+    return pos;
+  }
+
+  updatePnL(currentPrice) {
+    let totalPnl = 0;
+    for (const p of this.account.positions) {
+      const diff = p.side === 'BUY' ? (currentPrice - p.entryPrice) : (p.entryPrice - currentPrice);
+      p.pnl = diff * p.qty;
+      totalPnl += p.pnl;
+    }
+    return totalPnl;
+  }
+}
+
+// ─── 6. DUAL-CANVAS RENDERING ENGINE ────────────────────────────────────────
 
 class DualCanvasChart {
   constructor(container, store, symbolInfo, interval) {
@@ -1300,7 +1835,7 @@ class DualCanvasChart {
 
     // View state
     this.visibleCandles = 75;
-    this.scrollOffset = 0; // 0 = rightmost
+    this.scrollOffset = 0;
     this.priceAxisW = 76;
     this.timeAxisH = 24;
 
@@ -1314,11 +1849,16 @@ class DualCanvasChart {
       oi: false
     };
 
+    // Trader Tools (Phase 3 & 4)
+    this.drawings = new DrawingEngine(this.symbolInfo.symbol);
+    this.indicators = new IndicatorEngine();
+    this.replay = new ReplayEngine(this);
+
     // Interaction state
     this.isDragging = false;
     this.dragStartX = 0;
     this.dragStartOffset = 0;
-    this.crosshair = null; // { x, y }
+    this.crosshair = null;
 
     // Theme Colors
     this.colors = {};
@@ -1418,7 +1958,7 @@ class DualCanvasChart {
     this.chartW = Math.max(10, w - this.priceAxisW);
     this.chartH = Math.max(10, h - this.timeAxisH);
 
-    // Multi-Pane Vertical Partitioning
+    // Partitioning
     const hasCvd = this.layers.cvd;
     const hasOi = this.layers.oi;
     const activeSubPanes = (hasCvd ? 1 : 0) + (hasOi ? 1 : 0);
@@ -1448,7 +1988,6 @@ class DualCanvasChart {
         this.cvdTop = 0;
       }
     } else {
-      // Both CVD and OI active
       this.candleH = Math.floor(this.chartH * 0.52);
       this.volH = Math.floor(this.chartH * 0.12);
       this.volTop = this.candleH;
@@ -1479,7 +2018,14 @@ class DualCanvasChart {
       this.crosshair = { x, y };
       this.renderOverlay();
       this.updateTooltip(x);
-      this.checkLiquidationHover(x, y, e.clientX, e.clientY);
+      this.checkLiquidationHover(x, y);
+
+      // Drawing tool preview
+      if (this.drawings.activeTool !== 'cursor') {
+        const p = this.coordinateToPriceTime(x, y);
+        if (p) this.drawings.handleMouseMove(p);
+        this.requestRender();
+      }
     });
 
     el.addEventListener('mouseleave', () => {
@@ -1491,9 +2037,19 @@ class DualCanvasChart {
     });
 
     el.addEventListener('mousedown', (e) => {
-      this.isDragging = true;
-      this.dragStartX = e.clientX;
-      this.dragStartOffset = this.scrollOffset;
+      const rect = el.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      if (this.drawings.activeTool !== 'cursor') {
+        const p = this.coordinateToPriceTime(x, y);
+        if (p) this.drawings.handleMouseDown(p);
+        this.requestRender();
+      } else {
+        this.isDragging = true;
+        this.dragStartX = e.clientX;
+        this.dragStartOffset = this.scrollOffset;
+      }
     });
 
     window.addEventListener('mouseup', () => {
@@ -1538,6 +2094,18 @@ class DualCanvasChart {
     });
   }
 
+  coordinateToPriceTime(x, y) {
+    const { visible } = this.getVisibleRange();
+    if (visible.length === 0) return null;
+    const bounds = this.getPriceBounds(visible);
+    const candleW = this.chartW / this.visibleCandles;
+
+    const cIdx = Math.max(0, Math.min(visible.length - 1, Math.floor(x / candleW)));
+    const time = visible[cIdx].time;
+    const price = bounds.min + (1 - y / this.candleH) * bounds.range;
+    return { time, price };
+  }
+
   updateFootprintHint() {
     if (this.layers.footprint && this.visibleCandles > 45) {
       if (this.footprintHint) this.footprintHint.style.display = 'flex';
@@ -1554,15 +2122,24 @@ class DualCanvasChart {
     this.updateFootprintHint();
   }
 
+  getEffectiveCandles() {
+    let all = this.store.candles;
+    if (this.replay.isActive) {
+      all = all.slice(0, Math.max(10, this.replay.replayCursor + 1));
+    }
+    return all;
+  }
+
   getVisibleRange() {
-    const total = this.store.length;
-    if (total === 0) return { visible: [], startIdx: 0, endIdx: 0 };
+    const all = this.getEffectiveCandles();
+    const total = all.length;
+    if (total === 0) return { visible: [], startIdx: 0, endIdx: 0, all };
 
     const endIdx = Math.max(0, total - this.scrollOffset);
     const startIdx = Math.max(0, endIdx - this.visibleCandles);
-    const visible = this.store.candles.slice(startIdx, endIdx);
+    const visible = all.slice(startIdx, endIdx);
 
-    return { visible, startIdx, endIdx };
+    return { visible, startIdx, endIdx, all };
   }
 
   getPriceBounds(visible) {
@@ -1595,8 +2172,6 @@ class DualCanvasChart {
     }
   }
 
-  // ─── Base Canvas Render ───────────────────────────────────────────────────
-
   renderBase() {
     const { baseCtx: ctx, w, h } = this;
     if (!w || !h) return;
@@ -1605,7 +2180,7 @@ class DualCanvasChart {
     ctx.fillStyle = this.colors.bg;
     ctx.fillRect(0, 0, w, h);
 
-    const { visible } = this.getVisibleRange();
+    const { visible, startIdx, all } = this.getVisibleRange();
     if (visible.length === 0) {
       ctx.fillStyle = this.colors.textAxis;
       ctx.font = '13px monospace';
@@ -1620,23 +2195,29 @@ class DualCanvasChart {
     const gap = (candleW - bodyW) / 2;
 
     const toY = (price) => (1 - (price - bounds.min) / bounds.range) * this.candleH;
+    const toX = (time) => {
+      for (let i = 0; i < visible.length; i++) {
+        if (visible[i].time >= time) return i * candleW + candleW / 2;
+      }
+      return this.chartW;
+    };
     const volToH = (vol) => (vol / bounds.maxVol) * (this.volH - 6);
 
     // 1. Gridlines
     this.drawGrid(ctx, bounds.min, bounds.max, toY);
 
-    // 2. Orderbook Depth Heatmap Layer (Behind candles)
+    // 2. Orderbook Depth Heatmap
     if (this.layers.heatmap) {
       this.store.heatmap.render(ctx, bounds, this.candleH, this.chartW, toY);
     }
 
-    // 3. VRVP (Visible Range Volume Profile)
+    // 3. VRVP
     if (this.layers.vrvp) {
       this.store.vrvp.compute(visible, bounds);
       this.store.vrvp.render(ctx, bounds, this.candleH, this.chartW, toY, this.symbolInfo);
     }
 
-    // 4. Candlesticks / Footprint Clusters
+    // 4. Candlesticks / Footprint
     const isFootprintZoomed = this.layers.footprint && this.visibleCandles <= 45;
 
     for (let i = 0; i < visible.length; i++) {
@@ -1646,10 +2227,8 @@ class DualCanvasChart {
       const color = isUp ? this.colors.up : this.colors.down;
 
       if (isFootprintZoomed) {
-        // Footprint Mode
         this.store.footprint.renderCandle(ctx, c, x, candleW, toY, bounds, this.colors);
       } else {
-        // Standard Candlestick Mode
         // Wick
         const wickX = Math.round(x + candleW / 2);
         ctx.strokeStyle = color;
@@ -1668,19 +2247,25 @@ class DualCanvasChart {
         ctx.fillRect(Math.round(x + gap), topY, Math.round(bodyW), bH);
       }
 
-      // Volume Bar in Volume Sub-Pane
+      // Volume Bar
       const vH = volToH(c.volume);
       const vY = this.volTop + this.volH - vH;
       ctx.fillStyle = isUp ? this.colors.upDim : this.colors.downDim;
       ctx.fillRect(Math.round(x + gap), vY, Math.round(bodyW), vH);
     }
 
-    // 5. Liquidation Markers
+    // 5. Technical Indicators (Phase 3: EMA, BB, VWAP)
+    this.indicators.renderOverlays(ctx, visible, startIdx, all, candleW, toY, this.colors);
+
+    // 6. Drawing Tools (Phase 3)
+    this.drawings.render(ctx, toX, toY, this.chartW, this.candleH);
+
+    // 7. Liquidation Markers
     if (this.layers.liq) {
       this.store.liq.render(ctx, visible, candleW, toY, this.colors);
     }
 
-    // 6. Sub-Panes
+    // 8. Sub-Panes
     // Volume Pane Separator
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
     ctx.lineWidth = 1;
@@ -1704,11 +2289,11 @@ class DualCanvasChart {
       this.store.oi.renderPane(ctx, visible, candleW, this.oiTop, this.oiH, this.chartW, this.colors);
     }
 
-    // 7. Axes
+    // 9. Axes
     this.drawAxes(ctx, bounds.min, bounds.max, toY, visible, candleW);
 
-    // 8. Current Price Tag on Axis
-    const latest = this.store.getLatest();
+    // 10. Current Price Tag
+    const latest = visible[visible.length - 1];
     if (latest) {
       const lpY = toY(latest.close);
       const isUp = latest.close >= latest.open;
@@ -1746,7 +2331,6 @@ class DualCanvasChart {
   }
 
   drawAxes(ctx, pMin, pMax, toY, visible, candleW) {
-    // Price Axis Background
     ctx.fillStyle = this.colors.axisBg;
     ctx.fillRect(this.chartW, 0, this.priceAxisW, this.h);
     ctx.strokeStyle = this.colors.grid;
@@ -1756,7 +2340,6 @@ class DualCanvasChart {
     ctx.lineTo(this.chartW, this.h);
     ctx.stroke();
 
-    // Price Labels
     const range = pMax - pMin;
     const rawStep = range / 7;
     const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
@@ -1777,7 +2360,6 @@ class DualCanvasChart {
       p += gridStep;
     }
 
-    // Time Axis Background
     ctx.fillStyle = this.colors.axisBg;
     ctx.fillRect(0, this.chartH, this.w, this.timeAxisH);
     ctx.beginPath();
@@ -1785,15 +2367,12 @@ class DualCanvasChart {
     ctx.lineTo(this.chartW, this.chartH);
     ctx.stroke();
 
-    // Time Labels
     const step = Math.max(1, Math.floor(visible.length / 6));
     for (let i = 0; i < visible.length; i += step) {
       const cx = i * candleW + candleW / 2;
       ctx.fillText(tdFmtDate(visible[i].time, this.interval), cx, this.chartH + 16);
     }
   }
-
-  // ─── Secondary Overlay Canvas Render ──────────────────────────────────────
 
   renderOverlay() {
     const { overlayCtx: ctx, w, h } = this;
@@ -1804,7 +2383,6 @@ class DualCanvasChart {
 
     if (x < 0 || x > this.chartW || y < 0 || y > this.chartH) return;
 
-    // Crosshair Lines
     ctx.strokeStyle = this.colors.crosshair;
     ctx.lineWidth = 0.6;
     ctx.setLineDash([4, 4]);
@@ -1817,7 +2395,6 @@ class DualCanvasChart {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Price Tag on Main Axis (if inside candle area)
     const { visible } = this.getVisibleRange();
     if (visible.length === 0) return;
     const bounds = this.getPriceBounds(visible);
@@ -1832,7 +2409,6 @@ class DualCanvasChart {
       ctx.fillText(tdFmtPrice(price, this.symbolInfo.decimals), this.chartW + this.priceAxisW / 2, y + 4);
     }
 
-    // Time Tag on Bottom Axis
     const candleW = this.chartW / this.visibleCandles;
     const cIdx = Math.floor(x / candleW);
     if (cIdx >= 0 && cIdx < visible.length) {
@@ -1847,7 +2423,7 @@ class DualCanvasChart {
     }
   }
 
-  checkLiquidationHover(x, y, clientX, clientY) {
+  checkLiquidationHover(x, y) {
     if (!this.layers.liq || !this.liqTooltip) return;
 
     const { visible } = this.getVisibleRange();
@@ -1883,22 +2459,10 @@ class DualCanvasChart {
         <div class="td-liq-tooltip-title ${isLong ? 'long' : 'short'}">
           ${isLong ? '🔻 LONG LIQUIDATION' : '🔺 SHORT LIQUIDATION'}
         </div>
-        <div class="td-liq-val-row">
-          <span>Notional:</span>
-          <span>${tdFmtUSD(hovered.usd)}</span>
-        </div>
-        <div class="td-liq-val-row">
-          <span>Size:</span>
-          <span>${tdFmtVol(hovered.qty)} ${hovered.symbol.replace('USDT', '')}</span>
-        </div>
-        <div class="td-liq-val-row">
-          <span>Price:</span>
-          <span>$${tdFmtPrice(hovered.price, this.symbolInfo.decimals)}</span>
-        </div>
-        <div class="td-liq-val-row">
-          <span>Time:</span>
-          <span>${new Date(hovered.time).toLocaleTimeString()}</span>
-        </div>
+        <div class="td-liq-val-row"><span>Notional:</span><span>${tdFmtUSD(hovered.usd)}</span></div>
+        <div class="td-liq-val-row"><span>Size:</span><span>${tdFmtVol(hovered.qty)} ${hovered.symbol.replace('USDT', '')}</span></div>
+        <div class="td-liq-val-row"><span>Price:</span><span>$${tdFmtPrice(hovered.price, this.symbolInfo.decimals)}</span></div>
+        <div class="td-liq-val-row"><span>Time:</span><span>${new Date(hovered.time).toLocaleTimeString()}</span></div>
       `;
       this.liqTooltip.style.display = 'block';
       this.liqTooltip.style.left = (x + 14) + 'px';
@@ -1928,7 +2492,7 @@ class DualCanvasChart {
   }
 }
 
-// ─── 6. TERMINAL UI CONTROLLER ──────────────────────────────────────────────
+// ─── 7. TERMINAL UI CONTROLLER (PHASES 1 - 4) ───────────────────────────────
 
 class TapeDeltaTerminal {
   constructor(rootId) {
@@ -1944,7 +2508,7 @@ class TapeDeltaTerminal {
     this.fpsTime = performance.now();
     this.isFullscreen = false;
 
-    // Order flow layer states
+    // Phase 2 Layers
     this.layers = {
       heatmap: true,
       footprint: true,
@@ -1953,30 +2517,38 @@ class TapeDeltaTerminal {
       cvd: true,
       oi: false
     };
+
+    // Phase 3 & 4 Tools
+    this.layout = '1x1'; // '1x1', '2v', '2h', '4g'
+    this.activeDockTab = 'watchlist'; // 'watchlist', 'dom', 'trade', 'alerts', null
+    this.tradeEngine = new QuickTradeEngine();
+    this.alertsEngine = new AlertsEngine();
+    this.fundingTimer = null;
   }
 
   init() {
-    if (!this.root) {
-      console.error('Terminal root not found');
-      return;
-    }
+    if (!this.root) return;
 
     this.renderShell();
     this.bindToolbar();
+    this.bindDrawRail();
+    this.bindRightDock();
     this.startFPSMonitor();
+    this.startFundingClock();
 
-    // Instantiate Chart
-    const stage = this.root.querySelector('.td-chart-stage');
+    // Primary Chart Stage
+    const stage = this.root.querySelector('#td-pane-0');
     this.chart = new DualCanvasChart(stage, this.store, this.symbolInfo, this.interval);
     this.chart.layers = this.layers;
     this.chart.onHoverCandle = (c) => this.renderOHLCV(c);
 
-    // Connect Market Data Provider
     this.connectFeed();
+    this.renderDOMTable();
   }
 
   renderShell() {
     this.root.innerHTML = `
+      <!-- TOP TOOLBAR -->
       <div class="td-toolbar">
         <div class="td-toolbar-section">
           <button class="td-symbol-btn" id="td-sym-select">
@@ -1988,6 +2560,7 @@ class TapeDeltaTerminal {
 
         <div class="td-divider"></div>
 
+        <!-- Timeframe Selector -->
         <div class="td-toolbar-section td-tf-group" id="td-tf-selector">
           ${TD_INTERVALS.map(i => `
             <button class="td-tf-btn ${i.value === this.interval ? 'active' : ''}" data-interval="${i.value}">${i.label}</button>
@@ -1996,44 +2569,50 @@ class TapeDeltaTerminal {
 
         <div class="td-divider"></div>
 
-        <!-- Phase 2 Order Flow Toggles -->
+        <!-- Order Flow Toggles (Phase 2) -->
         <div class="td-toolbar-section td-layers-group" id="td-layers-selector">
           <button class="td-layer-btn ${this.layers.heatmap ? 'active' : ''}" data-layer="heatmap" title="Orderbook Depth Heatmap Matrix">
-            <span class="td-layer-dot"></span>
-            <span>🔥 Heatmap</span>
+            <span class="td-layer-dot"></span><span>🔥 Heatmap</span>
           </button>
           <button class="td-layer-btn ${this.layers.footprint ? 'active' : ''}" data-layer="footprint" title="Bid/Ask Volume Clusters & POC">
-            <span class="td-layer-dot"></span>
-            <span>👣 Footprint</span>
+            <span class="td-layer-dot"></span><span>👣 Footprint</span>
           </button>
           <button class="td-layer-btn ${this.layers.vrvp ? 'active' : ''}" data-layer="vrvp" title="Visible Range Volume Profile">
-            <span class="td-layer-dot"></span>
-            <span>📊 VRVP</span>
+            <span class="td-layer-dot"></span><span>📊 VRVP</span>
           </button>
           <button class="td-layer-btn ${this.layers.liq ? 'active' : ''}" data-layer="liq" title="Real-Time Liquidation Bursts">
-            <span class="td-layer-dot"></span>
-            <span>💥 Liq</span>
+            <span class="td-layer-dot"></span><span>💥 Liq</span>
           </button>
           <button class="td-layer-btn ${this.layers.cvd ? 'active' : ''}" data-layer="cvd" title="Cumulative Volume Delta Sub-Pane">
-            <span class="td-layer-dot"></span>
-            <span>📈 CVD</span>
+            <span class="td-layer-dot"></span><span>📈 CVD</span>
           </button>
           <button class="td-layer-btn ${this.layers.oi ? 'active' : ''}" data-layer="oi" title="Open Interest Sub-Pane">
-            <span class="td-layer-dot"></span>
-            <span>⚡ OI</span>
+            <span class="td-layer-dot"></span><span>⚡ OI</span>
           </button>
         </div>
 
         <div class="td-divider"></div>
 
+        <!-- Trader Tools & Layout Controls (Phase 3 & 4) -->
         <div class="td-toolbar-section">
-          <button class="td-action-btn" id="td-reset-view" title="Reset View (Double-click chart)">
+          <button class="td-action-btn" id="td-indicators-btn" title="Technical Indicators (EMA, BB, RSI, MACD, VWAP)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 18 18"/><path d="m19 9 2 2-6 6-4-4-6 6"/></svg>
+            Indicators
+          </button>
+          <button class="td-action-btn" id="td-replay-btn" title="Bar-by-Bar Replay Mode">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>
+            Replay
+          </button>
+          <button class="td-action-btn" id="td-layout-btn" title="Multi-Pane Grid Layout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+            Layout
+          </button>
+          <button class="td-action-btn" id="td-reset-view" title="Reset View">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             Reset
           </button>
-          <button class="td-action-btn" id="td-fullscreen-btn" title="Toggle Fullscreen Terminal Mode">
+          <button class="td-action-btn" id="td-fullscreen-btn" title="Toggle Fullscreen Mode">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-            Fullscreen
           </button>
         </div>
 
@@ -2043,7 +2622,7 @@ class TapeDeltaTerminal {
         </div>
       </div>
 
-      <!-- Live OHLCV Bar -->
+      <!-- Live OHLCV Header Bar -->
       <div class="td-ohlcv-bar" id="td-ohlcv-header">
         <div class="td-ohlcv-item"><span class="td-ohlcv-label">Time:</span> <span class="td-ohlcv-val" id="td-o-time">—</span></div>
         <div class="td-ohlcv-item"><span class="td-ohlcv-label">O:</span> <span class="td-ohlcv-val" id="td-o-open">—</span></div>
@@ -2054,16 +2633,86 @@ class TapeDeltaTerminal {
         <div class="td-ohlcv-item"><span class="td-ohlcv-label">Vol:</span> <span class="td-ohlcv-val" id="td-o-vol">—</span></div>
       </div>
 
-      <!-- Main Dual-Canvas Stage -->
-      <div class="td-chart-stage"></div>
+      <!-- MAIN TERMINAL BODY (Draw Rail + Panes Grid + Right Dock) -->
+      <div class="td-terminal-body">
+        <!-- LEFT DRAWING TOOL RAIL (Phase 3) -->
+        <div class="td-draw-rail" id="td-draw-rail">
+          <button class="td-draw-btn active" data-tool="cursor" title="Cursor / Pan (Esc)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+          </button>
+          <button class="td-draw-btn" data-tool="trendline" title="Trendline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20L20 4"/><circle cx="4" cy="20" r="2"/><circle cx="20" cy="4" r="2"/></svg>
+          </button>
+          <button class="td-draw-btn" data-tool="horiz" title="Horizontal Price Line">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18"/></svg>
+          </button>
+          <button class="td-draw-btn" data-tool="ray" title="Ray Line">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18L18 6"/><path d="M12 6h6v6"/></svg>
+          </button>
+          <button class="td-draw-btn" data-tool="rect" title="Rectangle Zone (Support/Resistance)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="12" x="3" y="6" rx="2"/></svg>
+          </button>
+          <button class="td-draw-btn" data-tool="fib" title="Fibonacci Retracement">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 10h18M3 14h18M3 18h18"/></svg>
+          </button>
+          <button class="td-draw-btn" data-tool="text" title="Text Annotation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 7 8 10 8-10"/><path d="M12 17V3"/></svg>
+          </button>
 
-      <!-- Bottom Status Bar -->
+          <div class="td-draw-divider"></div>
+
+          <button class="td-draw-btn" id="td-draw-undo" title="Undo Last Drawing (Ctrl+Z)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+          </button>
+          <button class="td-draw-btn" id="td-draw-clear" title="Clear All Drawings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
+          </button>
+        </div>
+
+        <!-- MULTI-PANE GRID STAGE -->
+        <div class="td-panes-grid layout-1x1" id="td-panes-grid">
+          <div class="td-pane-cell active-pane" id="td-pane-0"></div>
+        </div>
+
+        <!-- RIGHT DOCKABLE WIDGET DRAWER (Phase 3 & 4) -->
+        <div class="td-right-dock" id="td-right-dock">
+          <!-- Dock Tabs Rail -->
+          <div class="td-dock-rail">
+            <button class="td-dock-btn active" data-tab="watchlist" title="Watchlist">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
+            <button class="td-dock-btn" data-tab="dom" title="Order Book DOM Ladder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M3 8h18"/><path d="M3 16h18"/></svg>
+            </button>
+            <button class="td-dock-btn" data-tab="trade" title="Quick Trade & Prop Firm Guard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </button>
+            <button class="td-dock-btn" data-tab="alerts" title="Price & Indicator Alerts">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+          </div>
+
+          <!-- Dock Content Panel -->
+          <div class="td-dock-panel" id="td-dock-panel">
+            <div class="td-dock-header">
+              <span id="td-dock-title">WATCHLIST</span>
+              <button class="td-modal-close" id="td-dock-close" title="Collapse Panel">✕</button>
+            </div>
+            <div class="td-dock-content" id="td-dock-content">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM TERMINAL STATUS BAR -->
       <div class="td-statusbar">
-        <div class="td-stat"><span style="color:var(--td-text-dim)">Feed:</span> <span class="td-stat-val">Binance Spot / Futures Order Flow</span></div>
+        <div class="td-stat"><span style="color:var(--td-text-dim)">Feed:</span> <span class="td-stat-val">Binance Spot / Futures WS</span></div>
         <div class="td-stat"><span style="color:var(--td-text-dim)">Pair:</span> <span class="td-stat-val">${this.symbol}</span></div>
+        <div class="td-stat hide-mobile"><span style="color:var(--td-text-dim)">Funding Rate:</span> <span class="td-stat-val good" id="td-stat-funding">+0.0100% (3h 48m)</span></div>
         <div class="td-stat hide-mobile"><span style="color:var(--td-text-dim)">Candles:</span> <span class="td-stat-val" id="td-stat-candles">0</span></div>
         <div class="td-stat hide-mobile"><span style="color:var(--td-text-dim)">FPS:</span> <span class="td-stat-val good" id="td-stat-fps">60</span></div>
-        <div class="td-stat" style="margin-left:auto"><span style="color:var(--td-text-dim)">Engine:</span> <span class="td-stat-val">TapeDelta Order Flow v2.0</span></div>
+        <div class="td-stat" style="margin-left:auto"><span style="color:var(--td-text-dim)">Engine:</span> <span class="td-stat-val">TapeDelta Pro v4.0</span></div>
       </div>
 
       <!-- Symbol Search Modal Dropdown -->
@@ -2080,11 +2729,64 @@ class TapeDeltaTerminal {
           `).join('')}
         </div>
       </div>
+
+      <!-- Indicators Modal (Phase 3) -->
+      <div class="td-modal-backdrop" id="td-ind-modal" style="display:none;">
+        <div class="td-modal-dialog">
+          <div class="td-modal-header">
+            <span>TECHNICAL INDICATORS & OVERLAYS</span>
+            <button class="td-modal-close" id="td-ind-modal-close">✕</button>
+          </div>
+          <div class="td-modal-body">
+            <div class="td-ind-item">
+              <div class="td-ind-info"><h4>EMA 20</h4><p>Fast 20-period Exponential Moving Average (Cyan)</p></div>
+              <label class="td-toggle-switch"><input type="checkbox" id="td-ind-ema20" checked><span class="td-toggle-slider"></span></label>
+            </div>
+            <div class="td-ind-item">
+              <div class="td-ind-info"><h4>EMA 50</h4><p>Medium 50-period Exponential Moving Average (Purple)</p></div>
+              <label class="td-toggle-switch"><input type="checkbox" id="td-ind-ema50" checked><span class="td-toggle-slider"></span></label>
+            </div>
+            <div class="td-ind-item">
+              <div class="td-ind-info"><h4>EMA 200</h4><p>Long-term 200-period Trendline (Gold)</p></div>
+              <label class="td-toggle-switch"><input type="checkbox" id="td-ind-ema200"><span class="td-toggle-slider"></span></label>
+            </div>
+            <div class="td-ind-item">
+              <div class="td-ind-info"><h4>Session VWAP</h4><p>Volume Weighted Average Price (Orange)</p></div>
+              <label class="td-toggle-switch"><input type="checkbox" id="td-ind-vwap" checked><span class="td-toggle-slider"></span></label>
+            </div>
+            <div class="td-ind-item">
+              <div class="td-ind-info"><h4>Bollinger Bands (20, 2)</h4><p>Volatility Envelope with ±2 Standard Deviations</p></div>
+              <label class="td-toggle-switch"><input type="checkbox" id="td-ind-bb"><span class="td-toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Replay Mode Floating Bar (Phase 3) -->
+      <div class="td-replay-bar" id="td-replay-bar" style="display:none;">
+        <span class="td-replay-badge">⏪ REPLAY MODE</span>
+        <button class="td-replay-btn" id="td-replay-step-back" title="Step Back (-1 Bar)">⏮</button>
+        <button class="td-replay-btn" id="td-replay-play" title="Play / Pause">▶</button>
+        <button class="td-replay-btn" id="td-replay-step-forward" title="Step Forward (+1 Bar)">⏭</button>
+        <select class="td-replay-speed" id="td-replay-speed">
+          <option value="1200">0.5x</option>
+          <option value="800" selected>1x</option>
+          <option value="400">2x</option>
+          <option value="150">5x</option>
+        </select>
+        <button class="td-replay-exit" id="td-replay-exit">EXIT</button>
+      </div>
+
+      <!-- Alert Notification Toast -->
+      <div class="td-alert-toast" id="td-alert-toast" style="display:none;">
+        <span>🔔</span>
+        <span id="td-alert-toast-msg">Alert triggered!</span>
+      </div>
     `;
   }
 
   bindToolbar() {
-    // Timeframe selector
+    // Timeframes
     const tfGroup = this.root.querySelector('#td-tf-selector');
     tfGroup?.addEventListener('click', (e) => {
       const btn = e.target.closest('.td-tf-btn');
@@ -2097,7 +2799,7 @@ class TapeDeltaTerminal {
       }
     });
 
-    // Layer toggles
+    // Layer Toggles
     const layerGroup = this.root.querySelector('#td-layers-selector');
     layerGroup?.addEventListener('click', (e) => {
       const btn = e.target.closest('.td-layer-btn');
@@ -2106,8 +2808,6 @@ class TapeDeltaTerminal {
       if (layer && this.layers.hasOwnProperty(layer)) {
         this.layers[layer] = !this.layers[layer];
         btn.classList.toggle('active', this.layers[layer]);
-
-        // Sync with provider & chart
         this.provider.setLayers(this.layers);
         if (this.chart) {
           this.chart.layers = this.layers;
@@ -2118,7 +2818,7 @@ class TapeDeltaTerminal {
       }
     });
 
-    // Symbol dropdown toggle
+    // Symbol Search
     const symBtn = this.root.querySelector('#td-sym-select');
     const dropdown = this.root.querySelector('#td-sym-dropdown');
     const searchInput = this.root.querySelector('#td-sym-search-input');
@@ -2130,17 +2830,13 @@ class TapeDeltaTerminal {
       if (!isVisible) searchInput?.focus();
     });
 
-    // Search filter
     searchInput?.addEventListener('input', (e) => {
       const q = e.target.value.toUpperCase();
-      const items = dropdown.querySelectorAll('.td-symbol-item');
-      items.forEach(it => {
-        const sym = it.dataset.symbol;
-        it.style.display = sym.includes(q) ? 'flex' : 'none';
+      dropdown.querySelectorAll('.td-symbol-item').forEach(it => {
+        it.style.display = it.dataset.symbol.includes(q) ? 'flex' : 'none';
       });
     });
 
-    // Select symbol
     dropdown?.addEventListener('click', (e) => {
       const item = e.target.closest('.td-symbol-item');
       if (!item) return;
@@ -2168,6 +2864,323 @@ class TapeDeltaTerminal {
     this.root.querySelector('#td-fullscreen-btn')?.addEventListener('click', () => {
       this.toggleFullscreen();
     });
+
+    // Indicator Modal Toggle
+    const indBtn = this.root.querySelector('#td-indicators-btn');
+    const indModal = this.root.querySelector('#td-ind-modal');
+    const indClose = this.root.querySelector('#td-ind-modal-close');
+
+    indBtn?.addEventListener('click', () => { indModal.style.display = 'flex'; });
+    indClose?.addEventListener('click', () => { indModal.style.display = 'none'; });
+    indModal?.addEventListener('click', (e) => { if (e.target === indModal) indModal.style.display = 'none'; });
+
+    ['ema20', 'ema50', 'ema200', 'vwap', 'bb'].forEach(k => {
+      const el = this.root.querySelector(`#td-ind-${k}`);
+      if (el) {
+        el.checked = this.chart?.indicators?.config[k] ?? false;
+        el.addEventListener('change', () => {
+          if (this.chart?.indicators) {
+            this.chart.indicators.config[k] = el.checked;
+            this.chart.indicators.save();
+            this.chart.requestRender();
+          }
+        });
+      }
+    });
+
+    // Replay Mode Toggle (Phase 3)
+    const replayBtn = this.root.querySelector('#td-replay-btn');
+    const replayBar = this.root.querySelector('#td-replay-bar');
+    const replayPlay = this.root.querySelector('#td-replay-play');
+    const replayStepBack = this.root.querySelector('#td-replay-step-back');
+    const replayStepFwd = this.root.querySelector('#td-replay-step-forward');
+    const replaySpeed = this.root.querySelector('#td-replay-speed');
+    const replayExit = this.root.querySelector('#td-replay-exit');
+
+    replayBtn?.addEventListener('click', () => {
+      if (!this.chart.replay.isActive) {
+        this.chart.replay.enter();
+        replayBar.style.display = 'flex';
+        replayPlay.textContent = '▶';
+      } else {
+        this.chart.replay.exit();
+        replayBar.style.display = 'none';
+      }
+    });
+
+    replayPlay?.addEventListener('click', () => {
+      if (this.chart.replay.isPlaying) {
+        this.chart.replay.pause();
+        replayPlay.textContent = '▶';
+      } else {
+        this.chart.replay.play();
+        replayPlay.textContent = '⏸';
+      }
+    });
+
+    replayStepBack?.addEventListener('click', () => { this.chart.replay.stepBackward(); });
+    replayStepFwd?.addEventListener('click', () => { this.chart.replay.stepForward(); });
+    replaySpeed?.addEventListener('change', (e) => {
+      this.chart.replay.speedMs = parseInt(e.target.value, 10);
+      if (this.chart.replay.isPlaying) {
+        this.chart.replay.pause();
+        this.chart.replay.play();
+      }
+    });
+
+    replayExit?.addEventListener('click', () => {
+      this.chart.replay.exit();
+      replayBar.style.display = 'none';
+    });
+
+    // Layout Switcher (Phase 3)
+    this.root.querySelector('#td-layout-btn')?.addEventListener('click', () => {
+      const layouts = ['1x1', '2v', '2h', '4g'];
+      const nextIdx = (layouts.indexOf(this.layout) + 1) % layouts.length;
+      this.switchLayout(layouts[nextIdx]);
+    });
+  }
+
+  bindDrawRail() {
+    const rail = this.root.querySelector('#td-draw-rail');
+    rail?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.td-draw-btn');
+      if (!btn) return;
+
+      const tool = btn.dataset.tool;
+      if (tool) {
+        rail.querySelectorAll('.td-draw-btn[data-tool]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (this.chart) this.chart.drawings.activeTool = tool;
+      }
+    });
+
+    this.root.querySelector('#td-draw-undo')?.addEventListener('click', () => {
+      this.chart?.drawings.undo();
+      this.chart?.requestRender();
+    });
+
+    this.root.querySelector('#td-draw-clear')?.addEventListener('click', () => {
+      if (confirm('Clear all drawings on this chart?')) {
+        this.chart?.drawings.clear();
+        this.chart?.requestRender();
+      }
+    });
+  }
+
+  bindRightDock() {
+    const dock = this.root.querySelector('#td-right-dock');
+    const panel = this.root.querySelector('#td-dock-panel');
+    const rail = dock?.querySelector('.td-dock-rail');
+    const closeBtn = this.root.querySelector('#td-dock-close');
+
+    rail?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.td-dock-btn');
+      if (!btn) return;
+      const tab = btn.dataset.tab;
+      if (this.activeDockTab === tab && panel.style.display !== 'none') {
+        panel.style.display = 'none';
+        btn.classList.remove('active');
+      } else {
+        rail.querySelectorAll('.td-dock-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        panel.style.display = 'flex';
+        this.activeDockTab = tab;
+        this.renderDockContent(tab);
+      }
+    });
+
+    closeBtn?.addEventListener('click', () => {
+      panel.style.display = 'none';
+      rail.querySelectorAll('.td-dock-btn').forEach(b => b.classList.remove('active'));
+    });
+
+    this.renderDockContent('watchlist');
+  }
+
+  renderDockContent(tab) {
+    const titleEl = this.root.querySelector('#td-dock-title');
+    const contentEl = this.root.querySelector('#td-dock-content');
+    if (!titleEl || !contentEl) return;
+
+    if (tab === 'watchlist') {
+      titleEl.textContent = 'TOP PAIRS WATCHLIST';
+      contentEl.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          ${TD_SYMBOLS.map(s => `
+            <div class="td-wl-item ${s.symbol === this.symbol ? 'active' : ''}" data-symbol="${s.symbol}">
+              <div><strong>${s.symbol}</strong> <span style="font-size:10px;color:var(--td-text-muted)">${s.name}</span></div>
+              <div style="color:var(--td-up);font-weight:600;">LIVE</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      contentEl.querySelectorAll('.td-wl-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const sym = item.dataset.symbol;
+          if (sym && sym !== this.symbol) this.switchSymbol(sym);
+        });
+      });
+    } else if (tab === 'dom') {
+      titleEl.textContent = 'ORDER BOOK DOM';
+      contentEl.innerHTML = `
+        <table class="td-dom-table" id="td-dom-table-body">
+          <thead><tr><th>Price</th><th>Size</th><th>Total</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      `;
+      this.renderDOMTable();
+    } else if (tab === 'trade') {
+      titleEl.textContent = 'QUICK TRADE & PROP GUARD';
+      const curPrice = this.store.getLatest()?.close || 95000;
+      contentEl.innerHTML = `
+        <div class="td-trade-box">
+          <div class="td-prop-guard-card">
+            <div class="td-prop-guard-title"><span>🛡️ PROP FIRM SHIELD</span><span>ACTIVE</span></div>
+            <div class="td-prop-guard-row"><span>Account Size:</span><span>$100,000</span></div>
+            <div class="td-prop-guard-row"><span>Daily Loss Limit (5%):</span><span>$5,000</span></div>
+            <div class="td-prop-guard-row"><span>Max Drawdown (10%):</span><span>$10,000</span></div>
+            <div class="td-prop-guard-row"><span>Live PnL:</span><span id="td-prop-pnl" style="color:var(--td-up)">+$0.00</span></div>
+          </div>
+
+          <div class="td-trade-btn-row">
+            <button class="td-btn-buy" id="td-trade-buy">BUY / LONG</button>
+            <button class="td-btn-sell" id="td-trade-sell">SELL / SHORT</button>
+          </div>
+
+          <div class="td-trade-field">
+            <label>Order Size (${this.symbol.replace('USDT', '')}):</label>
+            <input type="number" id="td-trade-size" value="0.5" step="0.1">
+          </div>
+
+          <div class="td-trade-field">
+            <label>Bracket Stop Loss (Price):</label>
+            <input type="number" id="td-trade-sl" value="${(curPrice * 0.985).toFixed(1)}">
+          </div>
+
+          <div class="td-trade-field">
+            <label>Bracket Take Profit (Price):</label>
+            <input type="number" id="td-trade-tp" value="${(curPrice * 1.03).toFixed(1)}">
+          </div>
+        </div>
+      `;
+
+      this.root.querySelector('#td-trade-buy')?.addEventListener('click', () => {
+        const qty = parseFloat(this.root.querySelector('#td-trade-size').value) || 0.1;
+        const sl = parseFloat(this.root.querySelector('#td-trade-sl').value);
+        const tp = parseFloat(this.root.querySelector('#td-trade-tp').value);
+        this.tradeEngine.placeOrder(this.symbol, 'BUY', qty, curPrice, sl, tp);
+        alert(`Order Executed: LONG ${qty} ${this.symbol} @ $${curPrice}`);
+      });
+
+      this.root.querySelector('#td-trade-sell')?.addEventListener('click', () => {
+        const qty = parseFloat(this.root.querySelector('#td-trade-size').value) || 0.1;
+        const sl = parseFloat(this.root.querySelector('#td-trade-sl').value);
+        const tp = parseFloat(this.root.querySelector('#td-trade-tp').value);
+        this.tradeEngine.placeOrder(this.symbol, 'SELL', qty, curPrice, sl, tp);
+        alert(`Order Executed: SHORT ${qty} ${this.symbol} @ $${curPrice}`);
+      });
+    } else if (tab === 'alerts') {
+      titleEl.textContent = 'PRICE ALERTS';
+      const curPrice = this.store.getLatest()?.close || 95000;
+      contentEl.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:6px;">
+            <input type="number" id="td-new-alert-price" value="${(curPrice * 1.01).toFixed(1)}" style="flex:1;height:28px;padding:0 8px;background:var(--td-bg);border:1px solid var(--td-border);color:var(--td-text);border-radius:4px;font-family:var(--td-font-mono);">
+            <button class="td-action-btn" id="td-add-alert-btn" style="height:28px;">+ Add Alert</button>
+          </div>
+          <div id="td-alerts-list" style="display:flex;flex-direction:column;gap:4px;margin-top:6px;">
+            ${this.alertsEngine.alerts.map(a => `
+              <div class="td-alert-item">
+                <span>${a.symbol} @ $${a.targetPrice}</span>
+                <span class="td-alert-badge ${a.triggered ? 'triggered' : 'active'}">${a.triggered ? 'TRIGGERED' : 'ACTIVE'}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      this.root.querySelector('#td-add-alert-btn')?.addEventListener('click', () => {
+        const target = parseFloat(this.root.querySelector('#td-new-alert-price').value);
+        if (target) {
+          this.alertsEngine.addAlert(this.symbol, target, curPrice);
+          this.renderDockContent('alerts');
+        }
+      });
+    }
+  }
+
+  renderDOMTable() {
+    const tbody = this.root.querySelector('#td-dom-table-body tbody');
+    if (!tbody || this.store.heatmap.currentAsks.length === 0) return;
+
+    const asks = this.store.heatmap.currentAsks.slice(0, 7).reverse();
+    const bids = this.store.heatmap.currentBids.slice(0, 7);
+
+    let html = '';
+    asks.forEach(([p, q]) => {
+      html += `<tr class="ask"><td>${tdFmtPrice(p, this.symbolInfo.decimals)}</td><td>${tdFmtVol(q)}</td><td>${tdFmtUSD(p * q)}</td></tr>`;
+    });
+
+    const spread = asks.length > 0 && bids.length > 0 ? (asks[asks.length - 1][0] - bids[0][0]) : 0;
+    html += `<tr><td colspan="3" class="td-dom-spread-row">SPREAD: $${spread.toFixed(2)}</td></tr>`;
+
+    bids.forEach(([p, q]) => {
+      html += `<tr class="bid"><td>${tdFmtPrice(p, this.symbolInfo.decimals)}</td><td>${tdFmtVol(q)}</td><td>${tdFmtUSD(p * q)}</td></tr>`;
+    });
+
+    tbody.innerHTML = html;
+  }
+
+  switchLayout(layout) {
+    this.layout = layout;
+    const grid = this.root.querySelector('#td-panes-grid');
+    if (!grid) return;
+
+    grid.className = `td-panes-grid layout-${layout}`;
+
+    // Update cells
+    let cellCount = 1;
+    if (layout === '2v' || layout === '2h') cellCount = 2;
+    else if (layout === '4g') cellCount = 4;
+
+    grid.innerHTML = '';
+    for (let i = 0; i < cellCount; i++) {
+      const cell = document.createElement('div');
+      cell.className = `td-pane-cell ${i === 0 ? 'active-pane' : ''}`;
+      cell.id = `td-pane-${i}`;
+      grid.appendChild(cell);
+    }
+
+    // Mount primary chart into pane-0
+    const p0 = grid.querySelector('#td-pane-0');
+    if (p0) {
+      p0.appendChild(this.chart.baseCanvas);
+      p0.appendChild(this.chart.overlayCanvas);
+      p0.appendChild(this.chart.liqTooltip);
+      p0.appendChild(this.chart.footprintHint);
+      this.chart.container = p0;
+      this.chart.resize();
+      this.chart.requestRender();
+    }
+  }
+
+  startFundingClock() {
+    const updateFunding = () => {
+      const now = new Date();
+      const nextHour = (Math.floor(now.getUTCHours() / 8) + 1) * 8;
+      const nextFunding = new Date(now);
+      nextFunding.setUTCHours(nextHour, 0, 0, 0);
+
+      const diffMs = nextFunding - now;
+      const hrs = Math.floor(diffMs / 3600000);
+      const mins = Math.floor((diffMs % 3600000) / 60000);
+
+      const el = this.root.querySelector('#td-stat-funding');
+      if (el) el.textContent = `+0.0100% (${hrs}h ${mins}m)`;
+    };
+    updateFunding();
+    this.fundingTimer = setInterval(updateFunding, 30000);
   }
 
   toggleFullscreen() {
@@ -2187,6 +3200,7 @@ class TapeDeltaTerminal {
         this.chart.requestRender();
         this.updatePriceBadge(liveCandle);
         this.updateCandleCount();
+        this.alertsEngine.checkPrice(this.symbol, liveCandle.close, (a) => this.showToastAlert(a));
       },
       onHistoryLoaded: (history) => {
         this.store.setHistory(history, this.symbolInfo);
@@ -2200,27 +3214,20 @@ class TapeDeltaTerminal {
       },
       onDepthUpdate: (bids, asks) => {
         this.store.onDepthUpdate(bids, asks);
-        if (this.layers.heatmap) {
-          this.chart.requestRender();
-        }
+        if (this.layers.heatmap) this.chart.requestRender();
+        if (this.activeDockTab === 'dom') this.renderDOMTable();
       },
       onAggTrade: (trade) => {
         this.store.onAggTrade(trade, this.symbolInfo);
-        if (this.layers.cvd || this.layers.footprint) {
-          this.chart.requestRender();
-        }
+        if (this.layers.cvd || this.layers.footprint) this.chart.requestRender();
       },
       onLiquidation: (liq) => {
         this.store.onLiquidation(liq);
-        if (this.layers.liq) {
-          this.chart.requestRender();
-        }
+        if (this.layers.liq) this.chart.requestRender();
       },
       onOpenInterest: (data, isHist) => {
         this.store.onOpenInterest(data, isHist);
-        if (this.layers.oi) {
-          this.chart.requestRender();
-        }
+        if (this.layers.oi) this.chart.requestRender();
       },
       onStatusChange: (status) => {
         this.updateStatusBadge(status);
@@ -2228,15 +3235,28 @@ class TapeDeltaTerminal {
     });
   }
 
+  showToastAlert(alert) {
+    const toast = this.root.querySelector('#td-alert-toast');
+    const msg = this.root.querySelector('#td-alert-toast-msg');
+    if (toast && msg) {
+      msg.textContent = `ALERT: ${alert.symbol} crossed $${alert.targetPrice}!`;
+      toast.style.display = 'flex';
+      setTimeout(() => { toast.style.display = 'none'; }, 6000);
+    }
+  }
+
   switchSymbol(newSym) {
     this.symbol = newSym;
     this.symbolInfo = TD_SYMBOLS.find(s => s.symbol === newSym) || { symbol: newSym, decimals: 2, tickSize: 0.01 };
     this.root.querySelector('#td-sym-name').textContent = this.symbol;
     this.chart.symbolInfo = this.symbolInfo;
+    this.chart.drawings.symbol = newSym;
+    this.chart.drawings.load();
     this.chart.resetView();
 
     this.provider.disconnect();
     this.connectFeed();
+    this.renderDockContent(this.activeDockTab);
   }
 
   switchInterval(newInterval) {
@@ -2314,12 +3334,13 @@ class TapeDeltaTerminal {
   }
 
   destroy() {
+    clearInterval(this.fundingTimer);
     this.provider.disconnect();
     this.chart.destroy();
   }
 }
 
-// ─── 7. AUTO-BOOTLOADER ─────────────────────────────────────────────────────
+// ─── 8. AUTO-BOOTLOADER ─────────────────────────────────────────────────────
 
 function bootTapeDelta() {
   const root = document.getElementById('tapedelta-terminal-root');
