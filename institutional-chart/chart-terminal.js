@@ -161,8 +161,9 @@ class BinanceMarketDataProvider {
     // 2. Open live WebSocket streams
     this.syncStreams();
 
-    if (this.layers.oi) {
+    if (this.layers.oi || this.layers.liq) {
       this.fetchOpenInterestHistory();
+      this.fetchCurrentOpenInterest();
     }
   }
 
@@ -199,8 +200,8 @@ class BinanceMarketDataProvider {
       this.closeSocket('liq');
     }
 
-    // Open Interest
-    if (this.layers.oi) {
+    // Open Interest (tracked for OI sub-pane and Liquidation Cluster Squeeze Radar)
+    if (this.layers.oi || this.layers.liq) {
       if (!this.oiInterval) {
         this.fetchOpenInterestHistory();
         this.fetchCurrentOpenInterest();
@@ -430,7 +431,8 @@ class BinanceMarketDataProvider {
 
   async fetchOpenInterestHistory() {
     try {
-      const url = `https://fapi.binance.com/futures/data/openInterestHist?symbol=${this.activeSymbol}&period=5m&limit=60`;
+      const sym = (this.streamSymbol || this.activeSymbol || 'BTCUSDT').replace('/', '').toUpperCase();
+      const url = `https://fapi.binance.com/futures/data/openInterestHist?symbol=${sym}&period=5m&limit=60`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -448,7 +450,8 @@ class BinanceMarketDataProvider {
 
   async fetchCurrentOpenInterest() {
     try {
-      const url = `https://fapi.binance.com/fapi/v1/openInterest?symbol=${this.activeSymbol}`;
+      const sym = (this.streamSymbol || this.activeSymbol || 'BTCUSDT').replace('/', '').toUpperCase();
+      const url = `https://fapi.binance.com/fapi/v1/openInterest?symbol=${sym}`;
       const res = await fetch(url);
       if (res.ok) {
         const d = await res.json();
@@ -852,6 +855,7 @@ class CandleStore {
     this.liq = new LiquidationTracker();
     this.oi = new OpenInterestTracker();
     this.tradeBubbles = new TradeBubbleOverlay();
+    this.clusters = new LiquidationClusterEngine();
   }
 
   setHistory(rawCandles, symbolInfo) {
@@ -878,9 +882,11 @@ class CandleStore {
   updateLive(candle) {
     if (this.candles.length === 0) {
       this.candles.push(candle);
+      this.clusters.lastPrice = candle.close;
       return;
     }
 
+    this.clusters.lastPrice = candle.close;
     const last = this.candles[this.candles.length - 1];
     if (candle.time === last.time) {
       this.candles[this.candles.length - 1] = candle;
@@ -913,8 +919,16 @@ class CandleStore {
   onOpenInterest(data, isHistorical) {
     if (isHistorical) {
       this.oi.setHistory(data);
+      if (Array.isArray(data) && data.length > 0) {
+        data.forEach(d => {
+          this.clusters.updateOI(d, this.getLatest()?.close || 0);
+        });
+      }
     } else {
       this.oi.updateLive(data[0]);
+      if (data && data[0]) {
+        this.clusters.updateOI(data[0], this.getLatest()?.close || 0);
+      }
     }
   }
 
@@ -1922,6 +1936,372 @@ class OpenInterestTracker {
   }
 }
 
+// ─── 4F-2. LIQUIDATION CLUSTER & SQUEEZE SIGNAL ENGINE ─────────────────────
+// Implements open-source cluster scraper pipeline (leionion/liquidation-cluster-signal-scraper):
+// 1. Tracks Binance Futures Open Interest & computes interval Delta OI
+// 2. Synthesizes liquidation clusters at leverage horizons (100x, 50x, 25x, 10x) and swing wicks
+// 3. Composite density scoring 1-10 with visual density bars (████████░░)
+// 4. Squeeze classifier (SHORT_SQUEEZE vs LONG_SQUEEZE) & confidence engine
+
+class LiquidationClusterEngine {
+  constructor() {
+    this.clusters = [];
+    this.snapshots = []; // { time, oi, usdVal, price }
+    this.oiDelta = null; // latest computed delta
+    this.activeSignal = null;
+    this.recentSignals = [];
+    this.lastAlertTime = 0;
+    this.cooldownSec = 90;
+    this.accelerationThresholdUsd = 30000000; // $30M default for BTC, adjusted dynamically
+    this.proximityThresholdPct = 1.5; // Trigger proximity threshold
+    this.minConfidence = 6.0;
+    this.lastPrice = 0;
+  }
+
+  densityLabelFromScore(score) {
+    if (score >= 9.0) return 'EXTREME';
+    if (score >= 7.0) return 'HIGH';
+    if (score >= 4.0) return 'MED';
+    return 'LOW';
+  }
+
+  barForDensity(score) {
+    const filled = Math.min(10, Math.max(0, Math.round(score)));
+    return '█'.repeat(filled) + '░'.repeat(10 - filled);
+  }
+
+  updateOI(oiPoint, currentPrice) {
+    if (!oiPoint) return;
+    const price = currentPrice || oiPoint.price || this.lastPrice || 1;
+    this.lastPrice = price;
+    const oiContracts = parseFloat(oiPoint.oi || 0);
+    const usdVal = oiPoint.usdVal && oiPoint.usdVal > 0 ? parseFloat(oiPoint.usdVal) : (oiContracts * price);
+    const timestamp = oiPoint.time || Date.now();
+
+    const snap = {
+      time: timestamp,
+      oi: oiContracts,
+      usdVal: usdVal,
+      price: price
+    };
+
+    if (this.snapshots.length > 0) {
+      const last = this.snapshots[this.snapshots.length - 1];
+      if (Math.abs(timestamp - last.time) < 5000) {
+        this.snapshots[this.snapshots.length - 1] = snap;
+      } else {
+        this.snapshots.push(snap);
+      }
+    } else {
+      this.snapshots.push(snap);
+    }
+
+    if (this.snapshots.length > 200) {
+      this.snapshots.shift();
+    }
+
+    this.computeOIDelta(30);
+  }
+
+  computeOIDelta(intervalSeconds = 30) {
+    if (this.snapshots.length < 2) return null;
+    const recent = this.snapshots[this.snapshots.length - 1];
+    const cutoff = recent.time - (intervalSeconds * 1000);
+
+    let prev = null;
+    for (let i = this.snapshots.length - 2; i >= 0; i--) {
+      if (this.snapshots[i].time <= cutoff) {
+        prev = this.snapshots[i];
+        break;
+      }
+    }
+    if (!prev) {
+      prev = this.snapshots[0];
+    }
+
+    const deltaUsd = recent.usdVal - prev.usdVal;
+    const deltaPct = prev.usdVal ? ((deltaUsd / prev.usdVal) * 100) : 0;
+    const actualIntervalSec = Math.max(1, (recent.time - prev.time) / 1000);
+
+    // Dynamic acceleration threshold: $30M for BTC or 0.25% of total OI
+    const dynamicThresh = Math.max(5000000, recent.usdVal * 0.0025);
+    const acceleration = Math.abs(deltaUsd) >= dynamicThresh;
+
+    this.oiDelta = {
+      deltaUsd,
+      deltaPct,
+      intervalSec: actualIntervalSec,
+      oiBefore: prev.usdVal,
+      oiAfter: recent.usdVal,
+      acceleration,
+      direction: deltaUsd >= 0 ? 'up' : 'down'
+    };
+
+    return this.oiDelta;
+  }
+
+  compute1hOIDelta() {
+    if (this.snapshots.length < 2) return { deltaUsd: 0, deltaPct: 0 };
+    const recent = this.snapshots[this.snapshots.length - 1];
+    const cutoff = recent.time - 3600000;
+    let prev = null;
+    for (let i = this.snapshots.length - 2; i >= 0; i--) {
+      if (this.snapshots[i].time <= cutoff) {
+        prev = this.snapshots[i];
+        break;
+      }
+    }
+    if (!prev) prev = this.snapshots[0];
+    const deltaUsd = recent.usdVal - prev.usdVal;
+    const deltaPct = prev.usdVal ? ((deltaUsd / prev.usdVal) * 100) : 0;
+    return { deltaUsd, deltaPct, oiBefore: prev.usdVal, oiAfter: recent.usdVal };
+  }
+
+  computeClusters(currentPrice, visibleCandles = [], estOIUSD = 350000000) {
+    if (!currentPrice || currentPrice <= 0) return [];
+    this.lastPrice = currentPrice;
+
+    // Use latest snapshot USD value if available
+    let oiUsd = estOIUSD;
+    if (this.snapshots.length > 0) {
+      const latest = this.snapshots[this.snapshots.length - 1];
+      if (latest.usdVal && latest.usdVal > 0) oiUsd = latest.usdVal;
+    }
+
+    // 1. Identify swing pivot wicks for stop-loss confluence
+    const swingLows = [];
+    const swingHighs = [];
+    if (visibleCandles && visibleCandles.length >= 5) {
+      for (let i = 2; i < visibleCandles.length - 2; i++) {
+        const c = visibleCandles[i];
+        const age = visibleCandles.length - 1 - i;
+        const recency = Math.max(0.7, 1.0 - (age / visibleCandles.length) * 0.3);
+        if (c.low <= visibleCandles[i - 1].low && c.low <= visibleCandles[i - 2].low &&
+            c.low <= visibleCandles[i + 1].low && c.low <= visibleCandles[i + 2].low) {
+          swingLows.push({ price: c.low, recency, vol: c.volume });
+        }
+        if (c.high >= visibleCandles[i - 1].high && c.high >= visibleCandles[i - 2].high &&
+            c.high >= visibleCandles[i + 1].high && c.high >= visibleCandles[i + 2].high) {
+          swingHighs.push({ price: c.high, recency, vol: c.volume });
+        }
+      }
+    }
+
+    // 2. Retail futures leverage horizons (Binance/Bybit leverage tiers)
+    const rawTiers = [
+      { side: 'long',  mult: 0.991, share: 0.22, label: '100x Longs' },
+      { side: 'long',  mult: 0.982, share: 0.28, label: '50x Longs' },
+      { side: 'long',  mult: 0.962, share: 0.25, label: '25x Longs' },
+      { side: 'long',  mult: 0.905, share: 0.15, label: '10x Longs' },
+      { side: 'long',  mult: 0.810, share: 0.10, label: '5x Longs' },
+      { side: 'short', mult: 1.009, share: 0.22, label: '100x Shorts' },
+      { side: 'short', mult: 1.018, share: 0.28, label: '50x Shorts' },
+      { side: 'short', mult: 1.038, share: 0.25, label: '25x Shorts' },
+      { side: 'short', mult: 1.095, share: 0.15, label: '10x Shorts' },
+      { side: 'short', mult: 1.190, share: 0.10, label: '5x Shorts' }
+    ];
+
+    const rawClusters = [];
+
+    // Synthesize leverage horizons with swing confluence
+    rawTiers.forEach(tier => {
+      let tierPrice = currentPrice * tier.mult;
+      let confluenceFactor = 1.0;
+      let recencyFactor = 1.0;
+
+      if (tier.side === 'long') {
+        const nearLow = swingLows.find(l => Math.abs(l.price - tierPrice) / tierPrice < 0.009);
+        if (nearLow) {
+          tierPrice = (tierPrice * 0.4) + (nearLow.price * 0.6);
+          confluenceFactor = 1.85;
+          recencyFactor = nearLow.recency;
+        }
+      } else {
+        const nearHigh = swingHighs.find(h => Math.abs(h.price - tierPrice) / tierPrice < 0.009);
+        if (nearHigh) {
+          tierPrice = (tierPrice * 0.4) + (nearHigh.price * 0.6);
+          confluenceFactor = 1.85;
+          recencyFactor = nearHigh.recency;
+        }
+      }
+
+      const estMagnitude = (oiUsd * tier.share) * confluenceFactor;
+      rawClusters.push({
+        price: tierPrice,
+        side: tier.side,
+        tierLabel: tier.label,
+        rawMagnitude: estMagnitude,
+        confluence: confluenceFactor > 1.0,
+        recencyFactor: recencyFactor,
+        widthFactor: 1.05
+      });
+    });
+
+    // Add pure swing wick liquidity pools if not already covered
+    swingHighs.slice(-4).forEach(sh => {
+      if (sh.price > currentPrice) {
+        const exists = rawClusters.some(c => Math.abs(c.price - sh.price) / sh.price < 0.005);
+        if (!exists) {
+          rawClusters.push({
+            price: sh.price,
+            side: 'short',
+            tierLabel: 'Swing High Liquidity Pool',
+            rawMagnitude: oiUsd * 0.20 * 1.6,
+            confluence: true,
+            recencyFactor: sh.recency,
+            widthFactor: 1.1
+          });
+        }
+      }
+    });
+
+    swingLows.slice(-4).forEach(sl => {
+      if (sl.price < currentPrice) {
+        const exists = rawClusters.some(c => Math.abs(c.price - sl.price) / sl.price < 0.005);
+        if (!exists) {
+          rawClusters.push({
+            price: sl.price,
+            side: 'long',
+            tierLabel: 'Swing Low Liquidity Pool',
+            rawMagnitude: oiUsd * 0.20 * 1.6,
+            confluence: true,
+            recencyFactor: sl.recency,
+            widthFactor: 1.1
+          });
+        }
+      }
+    });
+
+    // 3. Deduplicate / merge clusters within 0.35% of each other
+    rawClusters.sort((a, b) => a.price - b.price);
+    const merged = [];
+    rawClusters.forEach(item => {
+      if (merged.length === 0) {
+        merged.push({ ...item });
+        return;
+      }
+      const prev = merged[merged.length - 1];
+      if (Math.abs(item.price - prev.price) / prev.price < 0.0035 && item.side === prev.side) {
+        prev.rawMagnitude += item.rawMagnitude * 0.7;
+        prev.price = (prev.price + item.price) / 2;
+        prev.confluence = true;
+        prev.widthFactor = Math.max(prev.widthFactor, item.widthFactor);
+        prev.recencyFactor = Math.max(prev.recencyFactor, item.recencyFactor);
+      } else {
+        merged.push({ ...item });
+      }
+    });
+
+    // 4. Calculate composite density score 1-10 per cluster_parser.py
+    const maxMag = Math.max(...merged.map(m => m.rawMagnitude), 1);
+    const scoredClusters = merged.map(item => {
+      const base = (item.rawMagnitude / maxMag) * 9.0 + 1.0;
+      const composite = Math.min(10.0, base * (item.widthFactor || 1.0) * (item.recencyFactor || 1.0));
+      const score = Math.round(composite * 10) / 10;
+      const label = this.densityLabelFromScore(score);
+      const densityBar = this.barForDensity(score);
+      const proximityPct = ((item.price - currentPrice) / currentPrice) * 100;
+      const absProximity = Math.abs(proximityPct);
+
+      return {
+        price: item.price,
+        side: item.side,
+        tierLabel: item.tierLabel,
+        rawMagnitude: item.rawMagnitude,
+        score: score,
+        label: label,
+        densityBar: densityBar,
+        proximityPct: proximityPct,
+        absProximity: absProximity,
+        confluence: item.confluence,
+        estUsd: item.rawMagnitude
+      };
+    });
+
+    // Sort by proximity to current price
+    scoredClusters.sort((a, b) => a.absProximity - b.absProximity);
+    this.clusters = scoredClusters;
+
+    // 5. Evaluate Squeeze Signal
+    this.evaluateSqueezeSignal(currentPrice);
+
+    return this.clusters;
+  }
+
+  classifySqueeze(cluster, currentPrice, deltaUsd, oiDirection, accel) {
+    const clusterAbove = cluster.price > currentPrice;
+    if (clusterAbove) {
+      if (deltaUsd > 0 && oiDirection === 'up') return 'SHORT_SQUEEZE';
+      if (deltaUsd < 0 && oiDirection === 'down') return 'LONG_SQUEEZE';
+      return 'SHORT_SQUEEZE';
+    } else {
+      if (deltaUsd < 0 && oiDirection === 'down') return 'LONG_SQUEEZE';
+      if (deltaUsd > 0 && oiDirection === 'up') return 'SHORT_SQUEEZE';
+      return 'LONG_SQUEEZE';
+    }
+  }
+
+  computeConfidence(proximityPct, clusterScore, accel) {
+    const proxScore = Math.max(0, 10 - proximityPct * 2);
+    const clusterComp = clusterScore;
+    const accelComp = accel ? 2.0 : 0.5;
+    let composite = (proxScore * 0.3 + clusterComp * 0.5 + accelComp) / 1.3;
+    composite = Math.min(10.0, Math.round(composite * 10) / 10);
+
+    let label = 'LOW';
+    if (composite >= 8.0) label = 'HIGH';
+    else if (composite >= 6.0) label = 'MEDIUM';
+
+    return { label, composite };
+  }
+
+  evaluateSqueezeSignal(currentPrice) {
+    if (!this.clusters || this.clusters.length === 0) {
+      this.activeSignal = null;
+      return null;
+    }
+
+    const nearest = this.clusters[0];
+    if (!nearest) return null;
+
+    const delta = this.oiDelta || { deltaUsd: 0, deltaPct: 0, direction: 'up', acceleration: false };
+    const signalType = this.classifySqueeze(nearest, currentPrice, delta.deltaUsd, delta.direction, delta.acceleration);
+    const conf = this.computeConfidence(nearest.absProximity, nearest.score, delta.acceleration);
+
+    const shouldAlert = nearest.absProximity <= this.proximityThresholdPct && conf.composite >= this.minConfidence;
+
+    const signalObj = {
+      signalType: signalType,
+      targetPrice: nearest.price,
+      pctDist: nearest.proximityPct,
+      absDist: nearest.absProximity,
+      clusterScore: nearest.score,
+      densityLabel: nearest.label,
+      densityBar: nearest.densityBar,
+      confidence: conf.label,
+      compositeScore: conf.composite,
+      oiDeltaUsd: delta.deltaUsd,
+      oiAcceleration: delta.acceleration,
+      recommendation: signalType === 'SHORT_SQUEEZE'
+        ? 'Monitor for long breakout entry on short liquidation cascade sweep'
+        : 'Monitor for short breakdown entry on long liquidation cascade sweep',
+      timestamp: Date.now(),
+      isAlert: shouldAlert
+    };
+
+    this.activeSignal = signalObj;
+
+    const now = Date.now();
+    if (shouldAlert && (now - this.lastAlertTime) >= (this.cooldownSec * 1000)) {
+      this.lastAlertTime = now;
+      this.recentSignals.unshift({ ...signalObj });
+      if (this.recentSignals.length > 30) this.recentSignals.pop();
+    }
+
+    return signalObj;
+  }
+}
+
 // ─── 4G. BUY/SELL LARGE TRADE-SIZE BUBBLE OVERLAY (WHALE TRACKER) ───────────
 
 class TradeBubbleOverlay {
@@ -2339,10 +2719,10 @@ const TD_INDICATOR_REGISTRY = [
   },
   {
     id: 'liquidation_heatmap',
-    name: 'Estimated Liquidation Heatmap',
-    subtitle: 'OI & Leverage distribution model – estimated liquidation price density zones (Estimated Heuristic)',
+    name: 'Liquidation Cluster Radar (Scraper Engine)',
+    subtitle: 'Cluster density scoring (1-10 composite) & Open Interest delta acceleration squeeze detector',
     categories: ['all', 'proplan', 'orderflow'],
-    badges: ['ESTIMATED'],
+    badges: ['SQUEEZE RADAR', 'NO-API-KEY'],
     default: true,
     favorite: true
   },
@@ -2417,8 +2797,8 @@ class IndicatorEngine {
     ctx.restore();
   }
 
-  // 2. Estimated Liquidation Cluster Heatmap (OI & Leverage Bracket Heuristic Model)
-  renderEstimatedLiquidationHeatmap(ctx, bounds, toY, chartW, symbolInfo, candleH, visible, oiTracker) {
+  // 2. Liquidation Cluster Heatmap & Squeeze Radar (Scraper Pipeline Engine)
+  renderEstimatedLiquidationHeatmap(ctx, bounds, toY, chartW, symbolInfo, candleH, visible, oiTracker, clusterEngine) {
     if (!bounds || bounds.range <= 0 || !chartW) return;
     const curPrice = bounds.last || (bounds.min + bounds.range * 0.5);
     const decimals = symbolInfo.decimals || 1;
@@ -2433,97 +2813,104 @@ class IndicatorEngine {
       else if (latestOI.oi && latestOI.oi > 0) estOIUSD = latestOI.oi * curPrice;
     }
 
-    // Find local swing highs and lows in visible candles for stop confluence
-    const swingLows = [];
-    const swingHighs = [];
-    if (visible && visible.length >= 5) {
-      for (let i = 2; i < visible.length - 2; i++) {
-        const c = visible[i];
-        if (c.low <= visible[i - 1].low && c.low <= visible[i - 2].low &&
-            c.low <= visible[i + 1].low && c.low <= visible[i + 2].low) {
-          swingLows.push(c.low);
-        }
-        if (c.high >= visible[i - 1].high && c.high >= visible[i - 2].high &&
-            c.high >= visible[i + 1].high && c.high >= visible[i + 2].high) {
-          swingHighs.push(c.high);
-        }
-      }
+    // Compute or retrieve clusters from LiquidationClusterEngine
+    let clusters = [];
+    let activeSignal = null;
+
+    if (clusterEngine) {
+      clusters = clusterEngine.computeClusters(curPrice, visible, estOIUSD);
+      activeSignal = clusterEngine.activeSignal;
     }
 
-    // Standard retail futures leverage brackets
-    const tiers = [
-      { label: '100x Longs', mult: 0.990, side: 'long', oiShare: 0.18 },
-      { label: '50x Longs',  mult: 0.980, side: 'long', oiShare: 0.28 },
-      { label: '25x Longs',  mult: 0.960, side: 'long', oiShare: 0.22 },
-      { label: '10x Longs',  mult: 0.900, side: 'long', oiShare: 0.14 },
-      { label: '100x Shorts', mult: 1.010, side: 'short', oiShare: 0.18 },
-      { label: '50x Shorts',  mult: 1.020, side: 'short', oiShare: 0.28 },
-      { label: '25x Shorts',  mult: 1.040, side: 'short', oiShare: 0.22 },
-      { label: '10x Shorts',  mult: 1.100, side: 'short', oiShare: 0.14 }
-    ];
+    // Fallback if no engine provided
+    if (!clusters || clusters.length === 0) {
+      const tiers = [
+        { label: '100x Longs', mult: 0.991, side: 'long', rawMagnitude: estOIUSD * 0.22, score: 8.5, label: 'HIGH', densityBar: '████████░░', proximityPct: -0.9 },
+        { label: '50x Longs',  mult: 0.982, side: 'long', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: -1.8 },
+        { label: '25x Longs',  mult: 0.962, side: 'long', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: -3.8 },
+        { label: '10x Longs',  mult: 0.905, side: 'long', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: -9.5 },
+        { label: '100x Shorts', mult: 1.009, side: 'short', rawMagnitude: estOIUSD * 0.22, score: 8.5, label: 'HIGH', densityBar: '████████░░', proximityPct: 0.9 },
+        { label: '50x Shorts',  mult: 1.018, side: 'short', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: 1.8 },
+        { label: '25x Shorts',  mult: 1.038, side: 'short', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: 3.8 },
+        { label: '10x Shorts',  mult: 1.095, side: 'short', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: 9.5 }
+      ];
+      clusters = tiers.map(t => ({
+        price: curPrice * t.mult,
+        side: t.side,
+        tierLabel: t.label,
+        score: t.score,
+        label: t.label,
+        densityBar: t.densityBar,
+        proximityPct: t.proximityPct,
+        absProximity: Math.abs(t.proximityPct),
+        estUsd: t.rawMagnitude
+      }));
+    }
 
-    const bandStart = Math.max(chartW * 0.45, chartW - 320);
+    const bandStart = Math.max(chartW * 0.40, chartW - 390);
     const bandWidth = chartW - bandStart;
 
-    tiers.forEach(tier => {
-      let tierPrice = curPrice * tier.mult;
+    clusters.forEach(c => {
+      const y = toY(c.price);
+      if (y < 20 || y > candleH - 35) return;
 
-      // Confluence with nearest swing low or high
-      if (tier.side === 'long') {
-        const nearLow = swingLows.find(l => Math.abs(l - tierPrice) / tierPrice < 0.008);
-        if (nearLow) tierPrice = (tierPrice + nearLow) / 2;
-      } else {
-        const nearHigh = swingHighs.find(h => Math.abs(h - tierPrice) / tierPrice < 0.008);
-        if (nearHigh) tierPrice = (tierPrice + nearHigh) / 2;
-      }
+      const isLong = c.side === 'long';
+      const isExtreme = c.score >= 9.0;
+      const isTarget = activeSignal && Math.abs(activeSignal.targetPrice - c.price) / c.price < 0.004;
 
-      const y = toY(tierPrice);
-      if (y < 15 || y > candleH - 35) return;
-
-      const estVol = estOIUSD * tier.oiShare;
-      const isLong = tier.side === 'long';
-
-      // Horizontal thermal density gradient band
+      // Density-weighted thermal corridor gradient
       const grad = ctx.createLinearGradient(bandStart, y, chartW, y);
+      const intensity = Math.min(0.55, 0.12 + (c.score / 10) * 0.40);
+
       if (isLong) {
         grad.addColorStop(0, 'rgba(255, 122, 0, 0.0)');
-        grad.addColorStop(0.35, 'rgba(255, 122, 0, 0.08)');
-        grad.addColorStop(0.75, 'rgba(255, 122, 0, 0.22)');
-        grad.addColorStop(1, 'rgba(255, 122, 0, 0.38)');
+        grad.addColorStop(0.35, `rgba(255, 122, 0, ${intensity * 0.3})`);
+        grad.addColorStop(0.75, `rgba(255, 122, 0, ${intensity * 0.7})`);
+        grad.addColorStop(1, `rgba(255, 122, 0, ${intensity})`);
       } else {
         grad.addColorStop(0, 'rgba(0, 229, 255, 0.0)');
-        grad.addColorStop(0.35, 'rgba(0, 229, 255, 0.08)');
-        grad.addColorStop(0.75, 'rgba(0, 229, 255, 0.22)');
-        grad.addColorStop(1, 'rgba(0, 229, 255, 0.38)');
+        grad.addColorStop(0.35, `rgba(0, 229, 255, ${intensity * 0.3})`);
+        grad.addColorStop(0.75, `rgba(0, 229, 255, ${intensity * 0.7})`);
+        grad.addColorStop(1, `rgba(0, 229, 255, ${intensity})`);
       }
 
-      const bandHeight = Math.max(14, Math.min(32, (estVol / 100000000) * 12));
+      const bandHeight = Math.max(16, Math.min(36, 12 + (c.score / 10) * 20));
       ctx.fillStyle = grad;
       ctx.fillRect(bandStart, y - bandHeight / 2, bandWidth, bandHeight);
 
-      // Center dashed tier line
-      ctx.strokeStyle = isLong ? 'rgba(255, 122, 0, 0.75)' : 'rgba(0, 229, 255, 0.75)';
-      ctx.lineWidth = 1.2;
-      ctx.setLineDash([4, 4]);
+      // Trajectory dashed center line
+      ctx.strokeStyle = isLong ? 'rgba(255, 122, 0, 0.8)' : 'rgba(0, 229, 255, 0.8)';
+      ctx.lineWidth = isTarget ? 2.0 : (isExtreme ? 1.6 : 1.1);
+      ctx.setLineDash(isTarget ? [6, 3] : [4, 4]);
       ctx.beginPath();
-      ctx.moveTo(bandStart + 40, Math.round(y));
+      ctx.moveTo(bandStart + 30, Math.round(y));
       ctx.lineTo(chartW, Math.round(y));
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Right-aligned cluster pill badge
-      const tagText = `${tier.label}: $${tdFmtPrice(tierPrice, decimals)} (~${tdFmtUSD(estVol)})`;
-      ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+      // Magnet Pulsing Ring if active target
+      if (isTarget) {
+        const pulse = (Math.sin(Date.now() / 220) + 1) / 2;
+        ctx.strokeStyle = isLong ? `rgba(255, 122, 0, ${0.4 + pulse * 0.6})` : `rgba(0, 229, 255, ${0.4 + pulse * 0.6})`;
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(bandStart, y - bandHeight / 2 - 1, bandWidth, bandHeight + 2);
+      }
+
+      // Right-aligned cluster pill badge with score, density bar, and distance %
+      const distStr = `${c.proximityPct >= 0 ? '+' : ''}${c.proximityPct.toFixed(2)}%`;
+      const tagText = `${c.tierLabel ? c.tierLabel.split(' ')[0] + ' ' : ''}$${tdFmtPrice(c.price, decimals)} | ${c.score.toFixed(1)} ${c.label} ${c.densityBar} | ${distStr}`;
+
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
       const m = ctx.measureText(tagText);
-      const tagW = m.width + 12;
-      const tagH = 17;
+      const tagW = m.width + 14;
+      const tagH = 18;
       const tagX = chartW - tagW - 4;
       const tagY = y - tagH / 2;
 
-      ctx.fillStyle = isLong ? 'rgba(35, 18, 5, 0.92)' : 'rgba(5, 25, 35, 0.92)';
+      ctx.fillStyle = isLong ? 'rgba(32, 16, 6, 0.94)' : 'rgba(5, 26, 36, 0.94)';
       ctx.fillRect(tagX, tagY, tagW, tagH);
-      ctx.strokeStyle = isLong ? '#ff7a00' : '#00e5ff';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = isTarget ? '#f59e0b' : (isLong ? '#ff7a00' : '#00e5ff');
+      ctx.lineWidth = isTarget ? 1.8 : 1;
       ctx.strokeRect(tagX, tagY, tagW, tagH);
 
       ctx.fillStyle = isLong ? '#ff9d3b' : '#38bdf8';
@@ -2532,25 +2919,47 @@ class IndicatorEngine {
       ctx.fillText(tagText, tagX + tagW / 2, y + 0.5);
     });
 
-    // Top-Right Prominent Estimated Model Notice
-    const noticeText = '⚠️ ESTIMATED LIQUIDATION HEATMAP (OI & Leverage Model • Multi-Exchange Book Requires Vendor API)';
-    ctx.font = 'bold 9px "JetBrains Mono", monospace';
-    const nm = ctx.measureText(noticeText);
-    const nW = nm.width + 18;
-    const nH = 20;
-    const nX = chartW - nW - 12;
-    const nY = 16;
+    // Top-Right Squeeze Alert Banner or Scraper Model Status
+    if (activeSignal && activeSignal.isAlert) {
+      const isShort = activeSignal.signalType === 'SHORT_SQUEEZE';
+      const alertText = `⚡ SQUEEZE RADAR: ${isShort ? 'SHORT SQUEEZE FORMING' : 'LONG SQUEEZE FORMING'} • Target $${tdFmtPrice(activeSignal.targetPrice, decimals)} (${activeSignal.pctDist >= 0 ? '+' : ''}${activeSignal.pctDist.toFixed(2)}%) • Score ${activeSignal.clusterScore.toFixed(1)}/10 (${activeSignal.confidence}) • Rec: ${isShort ? 'Long on sweep' : 'Short on sweep'}`;
+      ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+      const am = ctx.measureText(alertText);
+      const aW = am.width + 20;
+      const aH = 22;
+      const aX = chartW - aW - 12;
+      const aY = 14;
 
-    ctx.fillStyle = 'rgba(20, 20, 24, 0.88)';
-    ctx.fillRect(nX, nY, nW, nH);
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(nX, nY, nW, nH);
+      ctx.fillStyle = isShort ? 'rgba(5, 30, 45, 0.95)' : 'rgba(40, 18, 5, 0.95)';
+      ctx.fillRect(aX, aY, aW, aH);
+      ctx.strokeStyle = isShort ? '#00e5ff' : '#ff7a00';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(aX, aY, aW, aH);
 
-    ctx.fillStyle = '#f59e0b';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(noticeText, nX + 9, nY + nH / 2);
+      ctx.fillStyle = isShort ? '#38bdf8' : '#fb923c';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(alertText, aX + 10, aY + aH / 2);
+    } else {
+      const noticeText = '⚡ LIQUIDATION CLUSTER RADAR (Scraper Engine • OI Delta Acceleration & Squeeze Magnet Model)';
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
+      const nm = ctx.measureText(noticeText);
+      const nW = nm.width + 18;
+      const nH = 20;
+      const nX = chartW - nW - 12;
+      const nY = 14;
+
+      ctx.fillStyle = 'rgba(15, 17, 23, 0.90)';
+      ctx.fillRect(nX, nY, nW, nH);
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(nX, nY, nW, nH);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(noticeText, nX + 9, nY + nH / 2);
+    }
 
     ctx.restore();
   }
@@ -3400,7 +3809,7 @@ class DualCanvasChart {
     // 7A. Estimated Liquidation Cluster Heatmap (OI & Leverage Distribution Model)
     // Renders automatically whenever [Liq] layer is active OR indicator is enabled
     if (this.layers.liq || this.indicators.overlays.liquidation_heatmap || this.indicators.overlays.hyperliquid_liq) {
-      this.indicators.renderEstimatedLiquidationHeatmap(ctx, bounds, toY, this.chartW, this.symbolInfo, this.candleH, visible, this.store.oi);
+      this.indicators.renderEstimatedLiquidationHeatmap(ctx, bounds, toY, this.chartW, this.symbolInfo, this.candleH, visible, this.store.oi, this.store.clusters);
     }
 
     // 7B. Buy/Sell Large Trade-Size "Bubble" Overlay (Whale Tracker - Photo 2 Spec)
@@ -5218,7 +5627,7 @@ class TapeDeltaTerminal {
         </div>
       `;
     } else if (tab === 'liq') {
-      titleEl.textContent = 'LIVE LIQUIDATIONS STREAM';
+      titleEl.textContent = 'LIQUIDATION CLUSTERS & SQUEEZE RADAR';
       this.renderLiquidationDock();
     }
   }
@@ -5227,18 +5636,140 @@ class TapeDeltaTerminal {
     const contentEl = this.root.querySelector('#td-dock-content');
     if (!contentEl) return;
 
+    if (!this.liqDockView) this.liqDockView = 'radar';
     if (!this.liqFeedScope) this.liqFeedScope = 'active';
 
     const tracker = this.store.liq;
+    const clusterEngine = this.store.clusters;
     const stats = tracker.stats;
     const totalLiq = stats.totalLongUsd + stats.totalShortUsd;
     const longPct = totalLiq > 0 ? Math.round((stats.totalLongUsd / totalLiq) * 100) : 50;
     const shortPct = 100 - longPct;
 
     const events = this.liqFeedScope === 'active' ? tracker.events : tracker.marketEvents;
+    const curPrice = this.store.getLatest()?.close || (this.chart?.priceRange?.last) || 1;
+    const decimals = this.symbolInfo?.decimals || 2;
+    const clusters = clusterEngine ? clusterEngine.computeClusters(curPrice, this.store.candles) : [];
+    const activeSignal = clusterEngine ? clusterEngine.activeSignal : null;
+    const oiDelta = clusterEngine ? clusterEngine.oiDelta : null;
+    const delta1h = clusterEngine ? clusterEngine.compute1hOIDelta() : { deltaUsd: 0, deltaPct: 0 };
+    const curOIUsd = clusterEngine?.snapshots?.length > 0 ? clusterEngine.snapshots[clusterEngine.snapshots.length - 1].usdVal : 350000000;
 
-    contentEl.innerHTML = `
-      <div class="td-liq-feed-container">
+    let viewHtml = '';
+
+    if (this.liqDockView === 'radar') {
+      viewHtml = `
+        <!-- Live Scraper Connection Banner -->
+        <div class="td-liq-feed-header">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="td-live-dot ${this.layers.liq ? '' : 'reconnecting'}"></span>
+            <span style="font-size:11px;font-weight:700;color:var(--td-text);letter-spacing:0.5px;">
+              LIQUIDATION CLUSTER RADAR
+            </span>
+          </div>
+          <span style="font-size:9.5px;font-family:var(--td-font-mono);color:#00e5ff;">
+            SCRAPER PIPELINE
+          </span>
+        </div>
+
+        <!-- Squeeze Setup Alert Card -->
+        ${activeSignal && activeSignal.isAlert ? `
+          <div class="td-squeeze-card ${activeSignal.signalType === 'SHORT_SQUEEZE' ? 'short' : 'long'}">
+            <div class="td-squeeze-card-head">
+              <span class="td-squeeze-badge ${activeSignal.signalType === 'SHORT_SQUEEZE' ? 'short' : 'long'}">
+                ⚡ ${activeSignal.signalType === 'SHORT_SQUEEZE' ? 'SHORT SQUEEZE FORMING' : 'LONG SQUEEZE FORMING'}
+              </span>
+              <span class="td-squeeze-conf-tag ${activeSignal.confidence.toLowerCase()}">
+                CONF: ${activeSignal.confidence} (${activeSignal.compositeScore.toFixed(1)}/10)
+              </span>
+            </div>
+            <div class="td-squeeze-metric-row">
+              <div class="td-squeeze-metric-col">
+                <span class="lbl">TARGET CLUSTER</span>
+                <span class="val">$${tdFmtPrice(activeSignal.targetPrice, decimals)}</span>
+              </div>
+              <div class="td-squeeze-metric-col">
+                <span class="lbl">PROXIMITY</span>
+                <span class="val ${activeSignal.pctDist > 0 ? 'above' : 'below'}">
+                  ${activeSignal.pctDist > 0 ? '+' : ''}${activeSignal.pctDist.toFixed(2)}%
+                </span>
+              </div>
+              <div class="td-squeeze-metric-col">
+                <span class="lbl">DENSITY</span>
+                <span class="val" style="color:#f59e0b;">${activeSignal.clusterScore.toFixed(1)}/10</span>
+              </div>
+            </div>
+            <div class="td-squeeze-rec">
+              ${activeSignal.recommendation}
+            </div>
+          </div>
+        ` : `
+          <div class="td-squeeze-radar-idle">
+            <span class="td-radar-pulse"></span>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--td-text);">SQUEEZE RADAR ACTIVE</div>
+              <div style="font-size:9.5px;color:var(--td-text-dim);">Monitoring Binance Futures OI delta & cluster proximity</div>
+            </div>
+          </div>
+        `}
+
+        <!-- Open Interest Snapshot Grid -->
+        <div class="td-oi-snapshot-grid">
+          <div class="td-oi-box">
+            <div class="lbl">CURRENT OI (USD)</div>
+            <div class="val">${tdFmtUSD(curOIUsd)}</div>
+          </div>
+          <div class="td-oi-box">
+            <div class="lbl">1H Δ OI</div>
+            <div class="val ${delta1h.deltaUsd >= 0 ? 'pos' : 'neg'}">
+              ${delta1h.deltaUsd >= 0 ? '+' : ''}${tdFmtUSD(delta1h.deltaUsd)} (${delta1h.deltaPct >= 0 ? '+' : ''}${delta1h.deltaPct.toFixed(2)}%)
+            </div>
+          </div>
+          <div class="td-oi-box">
+            <div class="lbl">30S Δ OI</div>
+            <div class="val ${oiDelta && oiDelta.deltaUsd >= 0 ? 'pos' : 'neg'}">
+              ${oiDelta ? `${oiDelta.deltaUsd >= 0 ? '+' : ''}${tdFmtUSD(oiDelta.deltaUsd)}` : '$0.00'}
+            </div>
+          </div>
+          <div class="td-oi-box">
+            <div class="lbl">OI ACCELERATION</div>
+            <div class="val ${oiDelta && oiDelta.acceleration ? 'accel' : 'normal'}">
+              ${oiDelta && oiDelta.acceleration ? '⚡ DETECTED' : 'NORMAL PACE'}
+            </div>
+          </div>
+        </div>
+
+        <!-- Clusters Header -->
+        <div class="td-cluster-list-header">
+          <span>DETECTED CLUSTERS (RANKED BY PROXIMITY)</span>
+          <span style="color:var(--td-text-dim);">DENSITY (1–10)</span>
+        </div>
+
+        <!-- Scrollable Cluster List -->
+        <div class="td-cluster-scroll-list" id="td-cluster-scroll-list">
+          ${clusters.map(c => `
+            <div class="td-cluster-item ${c.side}">
+              <div class="td-cluster-row-top">
+                <span class="td-cluster-price">$${tdFmtPrice(c.price, decimals)}</span>
+                <span class="td-cluster-dist ${c.proximityPct > 0 ? 'above' : 'below'}">
+                  ${c.proximityPct > 0 ? '+' : ''}${c.proximityPct.toFixed(2)}% (${c.proximityPct > 0 ? 'above' : 'below'})
+                </span>
+              </div>
+              <div class="td-cluster-row-mid">
+                <span class="td-cluster-bar">${c.densityBar}</span>
+                <span class="td-cluster-score-badge ${c.label.toLowerCase()}">${c.score.toFixed(1)} ${c.label}</span>
+              </div>
+              <div class="td-cluster-row-bottom">
+                <span>Est. Volume: ${tdFmtUSD(c.estUsd)}</span>
+                <span class="td-cluster-type ${c.side}">${c.side === 'short' ? 'Short Liq (Magnet)' : 'Long Liq (Magnet)'}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } else {
+      // Feed view
+      viewHtml = `
         <!-- Live Stream Connection Banner -->
         <div class="td-liq-feed-header">
           <div style="display:flex;align-items:center;gap:6px;">
@@ -5292,10 +5823,37 @@ class TapeDeltaTerminal {
         <div class="td-liq-event-list" id="td-liq-event-list">
           ${this.generateLiqEventCards(events)}
         </div>
+      `;
+    }
+
+    contentEl.innerHTML = `
+      <div class="td-liq-feed-container">
+        <!-- View Subtabs -->
+        <div class="td-liq-subtabs">
+          <button class="td-liq-subtab ${this.liqDockView === 'radar' ? 'active' : ''}" id="td-subtab-radar" title="Scraper pipeline squeeze radar & cluster parser">
+            ⚡ SQUEEZE RADAR & CLUSTERS
+          </button>
+          <button class="td-liq-subtab ${this.liqDockView === 'feed' ? 'active' : ''}" id="td-subtab-feed" title="Real-time Binance !forceOrder@arr orders">
+            🔴 LIVE ORDERS FEED (${events.length})
+          </button>
+        </div>
+
+        ${viewHtml}
       </div>
     `;
 
-    // Bind scope buttons
+    // Bind subtab buttons
+    contentEl.querySelector('#td-subtab-radar')?.addEventListener('click', () => {
+      this.liqDockView = 'radar';
+      this.renderLiquidationDock();
+    });
+
+    contentEl.querySelector('#td-subtab-feed')?.addEventListener('click', () => {
+      this.liqDockView = 'feed';
+      this.renderLiquidationDock();
+    });
+
+    // Bind scope buttons (for feed view)
     contentEl.querySelector('#td-liq-scope-active')?.addEventListener('click', () => {
       this.liqFeedScope = 'active';
       this.renderLiquidationDock();
@@ -5355,6 +5913,12 @@ class TapeDeltaTerminal {
 
   updateLiquidationFeed() {
     if (this.activeDockTab !== 'liq') return;
+
+    if (this.liqDockView === 'radar') {
+      this.renderLiquidationDock();
+      return;
+    }
+
     const tracker = this.store.liq;
     const events = this.liqFeedScope === 'active' ? tracker.events : tracker.marketEvents;
 
