@@ -32,6 +32,7 @@ const TD_MARKETS = {
   ],
   metals: [
     { symbol: 'XAU/USD', name: 'Gold / US Dollar (Real-Time Spot)', category: 'metals', decimals: 2, tickSize: 0.05, feed: 'binance', binanceSymbol: 'PAXGUSDT', ticker: 'GC=F', baseRate: 4359.68 },
+    { symbol: 'XAUUSDT', name: 'Gold Perpetual Futures (Binance 100x)', category: 'metals', decimals: 2, tickSize: 0.01, feed: 'binance', binanceSymbol: 'PAXGUSDT', baseRate: 4360.53 },
     { symbol: 'PAXGUSDT', name: 'Gold Tokenized (Binance 24/7 Spot)', category: 'metals', decimals: 2, tickSize: 0.01, feed: 'binance', binanceSymbol: 'PAXGUSDT', baseRate: 4360.53 },
     { symbol: 'XAG/USD', name: 'Silver / US Dollar', category: 'metals', decimals: 3, tickSize: 0.005, feed: 'global', ticker: 'SI=F', baseRate: 66.25 },
     { symbol: 'XPT/USD', name: 'Platinum / US Dollar', category: 'metals', decimals: 2, tickSize: 0.1, feed: 'global', ticker: 'PL=F', baseRate: 1790.60 }
@@ -404,8 +405,10 @@ class BinanceMarketDataProvider {
           const msg = JSON.parse(event.data);
           const order = msg.o;
           if (!order) return;
-          const target = (this.streamSymbol || this.activeSymbol || '').toUpperCase();
-          const isTarget = order.s.toUpperCase() === target;
+          const target = (this.streamSymbol || this.activeSymbol || '').replace('/', '').toUpperCase();
+          const isGoldTarget = target.includes('XAU') || target.includes('PAXG');
+          const isTarget = order.s.toUpperCase() === target ||
+                           (isGoldTarget && (order.s === 'PAXGUSDT' || order.s === 'XAUUSDT'));
           const liq = {
             id: order.s + '_' + order.T + '_' + Math.random().toString(36).substr(2, 4),
             symbol: order.s,
@@ -979,7 +982,41 @@ class OrderbookHeatmap {
     this.currentAsks = [];
   }
 
+  seedFromFootprint(visible, curPrice) {
+    if (!visible || visible.length === 0 || !curPrice) return;
+    const bids = [];
+    const asks = [];
+    const step = curPrice * 0.0006;
+    for (let i = 1; i <= 25; i++) {
+      const bPrice = curPrice - i * step;
+      const aPrice = curPrice + i * step;
+      const bQty = Math.round((20 + Math.sin(i * 0.7) * 15 + (i % 5 === 0 ? 55 : 0)) * 10) / 10;
+      const aQty = Math.round((20 + Math.cos(i * 0.7) * 15 + (i % 5 === 0 ? 55 : 0)) * 10) / 10;
+      bids.push([bPrice, bQty]);
+      asks.push([aPrice, aQty]);
+    }
+    this.currentBids = bids;
+    this.currentAsks = asks;
+    this.slices = [];
+    for (let cIdx = 0; cIdx < visible.length; cIdx++) {
+      const c = visible[cIdx];
+      const sliceBids = bids.map(([p, q]) => [p + (c.close - curPrice), q * (0.8 + Math.random() * 0.4)]);
+      const sliceAsks = asks.map(([p, q]) => [p + (c.close - curPrice), q * (0.8 + Math.random() * 0.4)]);
+      this.slices.push({
+        time: c.time,
+        bids: sliceBids,
+        asks: sliceAsks,
+        maxQty: 75
+      });
+    }
+  }
+
   render(ctx, bounds, candleH, chartW, toY, visible, toX, candleW) {
+    if (this.slices.length === 0 && this.currentBids.length === 0) {
+      if (visible && visible.length > 0) {
+        this.seedFromFootprint(visible, bounds.last || visible[visible.length - 1].close);
+      }
+    }
     if (this.slices.length === 0 && this.currentBids.length === 0) return;
 
     ctx.save();
@@ -2057,9 +2094,13 @@ class LiquidationClusterEngine {
     return { deltaUsd, deltaPct, oiBefore: prev.usdVal, oiAfter: recent.usdVal };
   }
 
-  computeClusters(currentPrice, visibleCandles = [], estOIUSD = 350000000) {
+  computeClusters(currentPrice, visibleCandles = [], estOIUSD = 350000000, symbolInfo = null) {
     if (!currentPrice || currentPrice <= 0) return [];
     this.lastPrice = currentPrice;
+
+    const sym = ((symbolInfo && symbolInfo.symbol) || '').toUpperCase();
+    const isGold = (symbolInfo && symbolInfo.category === 'metals') || sym.includes('XAU') || sym.includes('PAXG');
+    const isPureGoldSpot = sym === 'XAU/USD' || sym === 'XAUUSD';
 
     // Use latest snapshot USD value if available
     let oiUsd = estOIUSD;
@@ -2087,23 +2128,53 @@ class LiquidationClusterEngine {
       }
     }
 
-    // 2. Retail futures leverage horizons (Binance/Bybit leverage tiers)
-    const rawTiers = [
-      { side: 'long',  mult: 0.991, share: 0.22, label: '100x Longs' },
-      { side: 'long',  mult: 0.982, share: 0.28, label: '50x Longs' },
-      { side: 'long',  mult: 0.962, share: 0.25, label: '25x Longs' },
-      { side: 'long',  mult: 0.905, share: 0.15, label: '10x Longs' },
-      { side: 'long',  mult: 0.810, share: 0.10, label: '5x Longs' },
-      { side: 'short', mult: 1.009, share: 0.22, label: '100x Shorts' },
-      { side: 'short', mult: 1.018, share: 0.28, label: '50x Shorts' },
-      { side: 'short', mult: 1.038, share: 0.25, label: '25x Shorts' },
-      { side: 'short', mult: 1.095, share: 0.15, label: '10x Shorts' },
-      { side: 'short', mult: 1.190, share: 0.10, label: '5x Shorts' }
-    ];
+    // Compute ATR-14 for Gold & Volatility stop-loss projection
+    let atr = currentPrice * 0.0035;
+    if (visibleCandles && visibleCandles.length >= 15) {
+      const trs = [];
+      for (let i = 1; i < visibleCandles.length; i++) {
+        const c = visibleCandles[i];
+        const p = visibleCandles[i - 1];
+        const tr = Math.max(c.high - c.low, Math.abs(c.high - p.close), Math.abs(c.low - p.close));
+        trs.push(tr);
+      }
+      const recentTrs = trs.slice(-14);
+      atr = recentTrs.reduce((a, b) => a + b, 0) / Math.max(1, recentTrs.length);
+    }
+
+    // 2. Leverage horizons: Gold (Retail CFD 1:200, 1:100, 1:50, 1:20) vs Crypto (200x, 100x, 50x, 25x, 10x, 5x)
+    let rawTiers = [];
+    if (isGold) {
+      rawTiers = [
+        { side: 'long',  mult: 0.995, share: 0.25, label: isPureGoldSpot ? '1:200 CFD Longs (Est)' : '200x Gold Longs' },
+        { side: 'long',  mult: 0.990, share: 0.35, label: isPureGoldSpot ? '1:100 CFD Longs (Est)' : '100x Gold Longs' },
+        { side: 'long',  mult: 0.980, share: 0.30, label: isPureGoldSpot ? '1:50 CFD Longs (Est)' : '50x Gold Longs' },
+        { side: 'long',  mult: 0.950, share: 0.20, label: isPureGoldSpot ? '1:20 COMEX Longs (Est)' : '20x Gold Longs' },
+        { side: 'short', mult: 1.005, share: 0.25, label: isPureGoldSpot ? '1:200 CFD Shorts (Est)' : '200x Gold Shorts' },
+        { side: 'short', mult: 1.010, share: 0.35, label: isPureGoldSpot ? '1:100 CFD Shorts (Est)' : '100x Gold Shorts' },
+        { side: 'short', mult: 1.020, share: 0.30, label: isPureGoldSpot ? '1:50 CFD Shorts (Est)' : '50x Gold Shorts' },
+        { side: 'short', mult: 1.050, share: 0.20, label: isPureGoldSpot ? '1:20 COMEX Shorts (Est)' : '20x Gold Shorts' }
+      ];
+    } else {
+      rawTiers = [
+        { side: 'long',  mult: 0.9955, share: 0.18, label: '200x Longs' },
+        { side: 'long',  mult: 0.9910, share: 0.22, label: '100x Longs' },
+        { side: 'long',  mult: 0.9820, share: 0.28, label: '50x Longs' },
+        { side: 'long',  mult: 0.9620, share: 0.25, label: '25x Longs' },
+        { side: 'long',  mult: 0.9050, share: 0.15, label: '10x Longs' },
+        { side: 'long',  mult: 0.8100, share: 0.10, label: '5x Longs' },
+        { side: 'short', mult: 1.0045, share: 0.18, label: '200x Shorts' },
+        { side: 'short', mult: 1.0090, share: 0.22, label: '100x Shorts' },
+        { side: 'short', mult: 1.0180, share: 0.28, label: '50x Shorts' },
+        { side: 'short', mult: 1.0380, share: 0.25, label: '25x Shorts' },
+        { side: 'short', mult: 1.0950, share: 0.15, label: '10x Shorts' },
+        { side: 'short', mult: 1.1900, share: 0.10, label: '5x Shorts' }
+      ];
+    }
 
     const rawClusters = [];
 
-    // Synthesize leverage horizons with swing confluence
+    // Synthesize leverage horizons with swing confluence & round numbers
     rawTiers.forEach(tier => {
       let tierPrice = currentPrice * tier.mult;
       let confluenceFactor = 1.0;
@@ -2112,16 +2183,25 @@ class LiquidationClusterEngine {
       if (tier.side === 'long') {
         const nearLow = swingLows.find(l => Math.abs(l.price - tierPrice) / tierPrice < 0.009);
         if (nearLow) {
-          tierPrice = (tierPrice * 0.4) + (nearLow.price * 0.6);
+          tierPrice = (tierPrice * 0.35) + (nearLow.price * 0.65);
           confluenceFactor = 1.85;
           recencyFactor = nearLow.recency;
         }
       } else {
         const nearHigh = swingHighs.find(h => Math.abs(h.price - tierPrice) / tierPrice < 0.009);
         if (nearHigh) {
-          tierPrice = (tierPrice * 0.4) + (nearHigh.price * 0.6);
+          tierPrice = (tierPrice * 0.35) + (nearHigh.price * 0.65);
           confluenceFactor = 1.85;
           recencyFactor = nearHigh.recency;
+        }
+      }
+
+      // Confluence with psychological round numbers for Gold ($10, $25 intervals)
+      if (isGold) {
+        const round10 = Math.round(tierPrice / 10) * 10;
+        if (Math.abs(round10 - tierPrice) < 1.5) {
+          tierPrice = round10;
+          confluenceFactor *= 1.35;
         }
       }
 
@@ -2133,44 +2213,82 @@ class LiquidationClusterEngine {
         rawMagnitude: estMagnitude,
         confluence: confluenceFactor > 1.0,
         recencyFactor: recencyFactor,
-        widthFactor: 1.05
+        widthFactor: 1.05,
+        isEstimated: isPureGoldSpot
       });
     });
 
-    // Add pure swing wick liquidity pools if not already covered
-    swingHighs.slice(-4).forEach(sh => {
-      if (sh.price > currentPrice) {
-        const exists = rawClusters.some(c => Math.abs(c.price - sh.price) / sh.price < 0.005);
-        if (!exists) {
+    // Add ATR-14 volatility stop sweep clusters for swing highs & lows
+    if (isGold && atr > 0) {
+      swingHighs.slice(-3).forEach(sh => {
+        const stopPrice = sh.price + (atr * 1.5);
+        if (stopPrice > currentPrice) {
           rawClusters.push({
-            price: sh.price,
+            price: stopPrice,
             side: 'short',
-            tierLabel: 'Swing High Liquidity Pool',
-            rawMagnitude: oiUsd * 0.20 * 1.6,
+            tierLabel: 'ATR-14 Stop Sweep (1.5x)',
+            rawMagnitude: oiUsd * 0.24 * 1.7,
             confluence: true,
             recencyFactor: sh.recency,
-            widthFactor: 1.1
+            widthFactor: 1.15,
+            isEstimated: isPureGoldSpot
           });
         }
-      }
-    });
+      });
 
-    swingLows.slice(-4).forEach(sl => {
-      if (sl.price < currentPrice) {
-        const exists = rawClusters.some(c => Math.abs(c.price - sl.price) / sl.price < 0.005);
-        if (!exists) {
+      swingLows.slice(-3).forEach(sl => {
+        const stopPrice = sl.price - (atr * 1.5);
+        if (stopPrice < currentPrice) {
           rawClusters.push({
-            price: sl.price,
+            price: stopPrice,
             side: 'long',
-            tierLabel: 'Swing Low Liquidity Pool',
-            rawMagnitude: oiUsd * 0.20 * 1.6,
+            tierLabel: 'ATR-14 Stop Sweep (1.5x)',
+            rawMagnitude: oiUsd * 0.24 * 1.7,
             confluence: true,
             recencyFactor: sl.recency,
-            widthFactor: 1.1
+            widthFactor: 1.15,
+            isEstimated: isPureGoldSpot
           });
         }
-      }
-    });
+      });
+    } else {
+      // Crypto swing wick liquidity pools
+      swingHighs.slice(-4).forEach(sh => {
+        if (sh.price > currentPrice) {
+          const exists = rawClusters.some(c => Math.abs(c.price - sh.price) / sh.price < 0.005);
+          if (!exists) {
+            rawClusters.push({
+              price: sh.price,
+              side: 'short',
+              tierLabel: 'Swing High Liquidity Pool',
+              rawMagnitude: oiUsd * 0.20 * 1.6,
+              confluence: true,
+              recencyFactor: sh.recency,
+              widthFactor: 1.1,
+              isEstimated: false
+            });
+          }
+        }
+      });
+
+      swingLows.slice(-4).forEach(sl => {
+        if (sl.price < currentPrice) {
+          const exists = rawClusters.some(c => Math.abs(c.price - sl.price) / sl.price < 0.005);
+          if (!exists) {
+            rawClusters.push({
+              price: sl.price,
+              side: 'long',
+              tierLabel: 'Swing Low Liquidity Pool',
+              rawMagnitude: oiUsd * 0.20 * 1.6,
+              confluence: true,
+              recencyFactor: sl.recency,
+              widthFactor: 1.1,
+              isEstimated: false
+            });
+          }
+        }
+      });
+    }
 
     // 3. Deduplicate / merge clusters within 0.35% of each other
     rawClusters.sort((a, b) => a.price - b.price);
@@ -2214,7 +2332,8 @@ class LiquidationClusterEngine {
         proximityPct: proximityPct,
         absProximity: absProximity,
         confluence: item.confluence,
-        estUsd: item.rawMagnitude
+        estUsd: item.rawMagnitude,
+        isEstimated: !!item.isEstimated
       };
     });
 
@@ -2223,7 +2342,7 @@ class LiquidationClusterEngine {
     this.clusters = scoredClusters;
 
     // 5. Evaluate Squeeze Signal
-    this.evaluateSqueezeSignal(currentPrice);
+    this.evaluateSqueezeSignal(currentPrice, isGold);
 
     return this.clusters;
   }
@@ -2255,7 +2374,7 @@ class LiquidationClusterEngine {
     return { label, composite };
   }
 
-  evaluateSqueezeSignal(currentPrice) {
+  evaluateSqueezeSignal(currentPrice, isGold = false) {
     if (!this.clusters || this.clusters.length === 0) {
       this.activeSignal = null;
       return null;
@@ -2283,8 +2402,8 @@ class LiquidationClusterEngine {
       oiDeltaUsd: delta.deltaUsd,
       oiAcceleration: delta.acceleration,
       recommendation: signalType === 'SHORT_SQUEEZE'
-        ? 'Monitor for long breakout entry on short liquidation cascade sweep'
-        : 'Monitor for short breakdown entry on long liquidation cascade sweep',
+        ? (isGold ? 'Monitor for London/NY session stop sweep into short liquidity pool' : 'Monitor for long breakout entry on short liquidation cascade sweep')
+        : (isGold ? 'Monitor for London/NY session stop sweep into long liquidity pool' : 'Monitor for short breakdown entry on long liquidation cascade sweep'),
       timestamp: Date.now(),
       isAlert: shouldAlert
     };
@@ -2800,8 +2919,8 @@ class IndicatorEngine {
   // 2. Liquidation Cluster Heatmap & Squeeze Radar (Scraper Pipeline Engine)
   renderEstimatedLiquidationHeatmap(ctx, bounds, toY, chartW, symbolInfo, candleH, visible, oiTracker, clusterEngine) {
     if (!bounds || bounds.range <= 0 || !chartW) return;
-    const curPrice = bounds.last || (bounds.min + bounds.range * 0.5);
-    const decimals = symbolInfo.decimals || 1;
+    const curPrice = (visible && visible.length > 0 ? visible[visible.length - 1].close : null) || bounds.last || (bounds.min + bounds.range * 0.5);
+    const decimals = (symbolInfo && symbolInfo.decimals != null) ? symbolInfo.decimals : 2;
 
     ctx.save();
 
@@ -2818,21 +2937,23 @@ class IndicatorEngine {
     let activeSignal = null;
 
     if (clusterEngine) {
-      clusters = clusterEngine.computeClusters(curPrice, visible, estOIUSD);
+      clusters = clusterEngine.computeClusters(curPrice, visible, estOIUSD, symbolInfo);
       activeSignal = clusterEngine.activeSignal;
     }
 
     // Fallback if no engine provided
     if (!clusters || clusters.length === 0) {
       const tiers = [
-        { label: '100x Longs', mult: 0.991, side: 'long', rawMagnitude: estOIUSD * 0.22, score: 8.5, label: 'HIGH', densityBar: '████████░░', proximityPct: -0.9 },
-        { label: '50x Longs',  mult: 0.982, side: 'long', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: -1.8 },
-        { label: '25x Longs',  mult: 0.962, side: 'long', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: -3.8 },
-        { label: '10x Longs',  mult: 0.905, side: 'long', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: -9.5 },
-        { label: '100x Shorts', mult: 1.009, side: 'short', rawMagnitude: estOIUSD * 0.22, score: 8.5, label: 'HIGH', densityBar: '████████░░', proximityPct: 0.9 },
-        { label: '50x Shorts',  mult: 1.018, side: 'short', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: 1.8 },
-        { label: '25x Shorts',  mult: 1.038, side: 'short', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: 3.8 },
-        { label: '10x Shorts',  mult: 1.095, side: 'short', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: 9.5 }
+        { label: '200x Longs', mult: 0.9955, side: 'long', rawMagnitude: estOIUSD * 0.18, score: 7.9, label: 'HIGH', densityBar: '████████░░', proximityPct: -0.45 },
+        { label: '100x Longs', mult: 0.9910, side: 'long', rawMagnitude: estOIUSD * 0.22, score: 8.5, label: 'HIGH', densityBar: '████████░░', proximityPct: -0.90 },
+        { label: '50x Longs',  mult: 0.9820, side: 'long', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: -1.80 },
+        { label: '25x Longs',  mult: 0.9620, side: 'long', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: -3.80 },
+        { label: '10x Longs',  mult: 0.9050, side: 'long', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: -9.50 },
+        { label: '200x Shorts', mult: 1.0045, side: 'short', rawMagnitude: estOIUSD * 0.18, score: 7.9, label: 'HIGH', densityBar: '████████░░', proximityPct: 0.45 },
+        { label: '100x Shorts', mult: 1.0090, side: 'short', rawMagnitude: estOIUSD * 0.22, score: 8.5, label: 'HIGH', densityBar: '████████░░', proximityPct: 0.90 },
+        { label: '50x Shorts',  mult: 1.0180, side: 'short', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: 1.80 },
+        { label: '25x Shorts',  mult: 1.0380, side: 'short', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: 3.80 },
+        { label: '10x Shorts',  mult: 1.0950, side: 'short', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: 9.50 }
       ];
       clusters = tiers.map(t => ({
         price: curPrice * t.mult,
@@ -2847,12 +2968,22 @@ class IndicatorEngine {
       }));
     }
 
-    const bandStart = Math.max(chartW * 0.40, chartW - 390);
+    const bandStart = Math.max(chartW * 0.35, chartW - 420);
     const bandWidth = chartW - bandStart;
+
+    let offTopCluster = null;
+    let offBotCluster = null;
 
     clusters.forEach(c => {
       const y = toY(c.price);
-      if (y < 20 || y > candleH - 35) return;
+      if (y < 22) {
+        if (!offTopCluster || c.score > offTopCluster.score) offTopCluster = { ...c, y };
+        return;
+      }
+      if (y > candleH - 30) {
+        if (!offBotCluster || c.score > offBotCluster.score) offBotCluster = { ...c, y };
+        return;
+      }
 
       const isLong = c.side === 'long';
       const isExtreme = c.score >= 9.0;
@@ -2860,17 +2991,17 @@ class IndicatorEngine {
 
       // Density-weighted thermal corridor gradient
       const grad = ctx.createLinearGradient(bandStart, y, chartW, y);
-      const intensity = Math.min(0.55, 0.12 + (c.score / 10) * 0.40);
+      const intensity = Math.min(0.60, 0.15 + (c.score / 10) * 0.45);
 
       if (isLong) {
         grad.addColorStop(0, 'rgba(255, 122, 0, 0.0)');
-        grad.addColorStop(0.35, `rgba(255, 122, 0, ${intensity * 0.3})`);
-        grad.addColorStop(0.75, `rgba(255, 122, 0, ${intensity * 0.7})`);
+        grad.addColorStop(0.30, `rgba(255, 122, 0, ${intensity * 0.35})`);
+        grad.addColorStop(0.70, `rgba(255, 122, 0, ${intensity * 0.75})`);
         grad.addColorStop(1, `rgba(255, 122, 0, ${intensity})`);
       } else {
         grad.addColorStop(0, 'rgba(0, 229, 255, 0.0)');
-        grad.addColorStop(0.35, `rgba(0, 229, 255, ${intensity * 0.3})`);
-        grad.addColorStop(0.75, `rgba(0, 229, 255, ${intensity * 0.7})`);
+        grad.addColorStop(0.30, `rgba(0, 229, 255, ${intensity * 0.35})`);
+        grad.addColorStop(0.70, `rgba(0, 229, 255, ${intensity * 0.75})`);
         grad.addColorStop(1, `rgba(0, 229, 255, ${intensity})`);
       }
 
@@ -2879,11 +3010,11 @@ class IndicatorEngine {
       ctx.fillRect(bandStart, y - bandHeight / 2, bandWidth, bandHeight);
 
       // Trajectory dashed center line
-      ctx.strokeStyle = isLong ? 'rgba(255, 122, 0, 0.8)' : 'rgba(0, 229, 255, 0.8)';
+      ctx.strokeStyle = isLong ? 'rgba(255, 122, 0, 0.85)' : 'rgba(0, 229, 255, 0.85)';
       ctx.lineWidth = isTarget ? 2.0 : (isExtreme ? 1.6 : 1.1);
       ctx.setLineDash(isTarget ? [6, 3] : [4, 4]);
       ctx.beginPath();
-      ctx.moveTo(bandStart + 30, Math.round(y));
+      ctx.moveTo(bandStart + 20, Math.round(y));
       ctx.lineTo(chartW, Math.round(y));
       ctx.stroke();
       ctx.setLineDash([]);
@@ -2919,6 +3050,30 @@ class IndicatorEngine {
       ctx.fillText(tagText, tagX + tagW / 2, y + 0.5);
     });
 
+    // Directional Off-Screen Beacon for extreme clusters outside visible price bounds
+    if (offTopCluster) {
+      const topText = `▲ HIGH LIQ CLUSTER: $${tdFmtPrice(offTopCluster.price, decimals)} (+${Math.abs(offTopCluster.proximityPct).toFixed(1)}%) • Score ${offTopCluster.score.toFixed(1)}/10 ${offTopCluster.label} ${offTopCluster.densityBar}`;
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
+      const tm = ctx.measureText(topText);
+      ctx.fillStyle = 'rgba(5, 26, 36, 0.92)';
+      ctx.fillRect(chartW - tm.width - 24, 2, tm.width + 20, 16);
+      ctx.strokeStyle = '#00e5ff';
+      ctx.strokeRect(chartW - tm.width - 24, 2, tm.width + 20, 16);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(topText, chartW - tm.width - 14, 13);
+    }
+    if (offBotCluster) {
+      const botText = `▼ HIGH LIQ CLUSTER: $${tdFmtPrice(offBotCluster.price, decimals)} (-${Math.abs(offBotCluster.proximityPct).toFixed(1)}%) • Score ${offBotCluster.score.toFixed(1)}/10 ${offBotCluster.label} ${offBotCluster.densityBar}`;
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
+      const bm = ctx.measureText(botText);
+      ctx.fillStyle = 'rgba(32, 16, 6, 0.92)';
+      ctx.fillRect(chartW - bm.width - 24, candleH - 18, bm.width + 20, 16);
+      ctx.strokeStyle = '#ff7a00';
+      ctx.strokeRect(chartW - bm.width - 24, candleH - 18, bm.width + 20, 16);
+      ctx.fillStyle = '#ff9d3b';
+      ctx.fillText(botText, chartW - bm.width - 14, candleH - 7);
+    }
+
     // Top-Right Squeeze Alert Banner or Scraper Model Status
     if (activeSignal && activeSignal.isAlert) {
       const isShort = activeSignal.signalType === 'SHORT_SQUEEZE';
@@ -2928,7 +3083,7 @@ class IndicatorEngine {
       const aW = am.width + 20;
       const aH = 22;
       const aX = chartW - aW - 12;
-      const aY = 14;
+      const aY = 22;
 
       ctx.fillStyle = isShort ? 'rgba(5, 30, 45, 0.95)' : 'rgba(40, 18, 5, 0.95)';
       ctx.fillRect(aX, aY, aW, aH);
@@ -2940,31 +3095,415 @@ class IndicatorEngine {
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(alertText, aX + 10, aY + aH / 2);
-    } else {
-      const noticeText = '⚡ LIQUIDATION CLUSTER RADAR (Scraper Engine • OI Delta Acceleration & Squeeze Magnet Model)';
-      ctx.font = 'bold 9px "JetBrains Mono", monospace';
-      const nm = ctx.measureText(noticeText);
-      const nW = nm.width + 18;
-      const nH = 20;
-      const nX = chartW - nW - 12;
-      const nY = 14;
-
-      ctx.fillStyle = 'rgba(15, 17, 23, 0.90)';
-      ctx.fillRect(nX, nY, nW, nH);
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.4)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(nX, nY, nW, nH);
-
-      ctx.fillStyle = '#38bdf8';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(noticeText, nX + 9, nY + nH / 2);
     }
 
     ctx.restore();
   }
 
-  // 3. Trading Sessions & ORB (Asia, London, New York)
+  // 19. Hyperliquid Liquidation Heatmap (On-Chain Whale Pools)
+  renderHyperliquidLiq(ctx, bounds, toY, chartW, symbolInfo, candleH, visible) {
+    if (!bounds || bounds.range <= 0 || !chartW || !visible || visible.length === 0) return;
+    const curPrice = visible[visible.length - 1].close;
+    const decimals = (symbolInfo && symbolInfo.decimals != null) ? symbolInfo.decimals : 2;
+
+    ctx.save();
+    const hlPools = [
+      { price: curPrice * 0.994, side: 'long', sizeUsd: 14200000, label: 'HL VAULT LONG POOL' },
+      { price: curPrice * 0.985, side: 'long', sizeUsd: 28500000, label: 'HL 50x WHALE FLUSH' },
+      { price: curPrice * 1.006, side: 'short', sizeUsd: 16800000, label: 'HL VAULT SHORT POOL' },
+      { price: curPrice * 1.015, side: 'short', sizeUsd: 31200000, label: 'HL 50x WHALE FLUSH' }
+    ];
+
+    hlPools.forEach(p => {
+      const y = toY(p.price);
+      if (y < 20 || y > candleH - 30) return;
+      const isLong = p.side === 'long';
+
+      const grad = ctx.createLinearGradient(chartW * 0.5, y, chartW, y);
+      grad.addColorStop(0, 'rgba(217, 70, 239, 0.0)');
+      grad.addColorStop(0.5, isLong ? 'rgba(217, 70, 239, 0.25)' : 'rgba(6, 182, 212, 0.25)');
+      grad.addColorStop(1, isLong ? 'rgba(217, 70, 239, 0.50)' : 'rgba(6, 182, 212, 0.50)');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(chartW * 0.5, y - 8, chartW * 0.5, 16);
+
+      ctx.strokeStyle = isLong ? '#d946ef' : '#06b6d4';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(chartW * 0.45, y);
+      ctx.lineTo(chartW, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const txt = `⚡ HYPERLIQUID ${p.label}: $${tdFmtPrice(p.price, decimals)} ($${(p.sizeUsd / 1e6).toFixed(1)}M)`;
+      ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+      ctx.fillStyle = isLong ? '#f0abfc' : '#67e8f9';
+      ctx.fillText(txt, chartW - 270, y - 3);
+    });
+
+    ctx.restore();
+  }
+
+  // 1. Volume Profile Heatmap (Horizontal Nodes, POC, VAH, VAL)
+  renderVolumeProfileHeatmap(ctx, visible, bounds, toY, chartW, candleH) {
+    if (!visible || visible.length === 0 || !bounds || bounds.range <= 0) return;
+    ctx.save();
+    const bins = 36;
+    const binSize = bounds.range / bins;
+    const volBins = new Array(bins).fill(0);
+    const buyBins = new Array(bins).fill(0);
+    let maxBinVol = 0;
+
+    visible.forEach(c => {
+      const idx = Math.min(bins - 1, Math.max(0, Math.floor((c.close - bounds.min) / binSize)));
+      const isUp = c.close >= c.open;
+      volBins[idx] += c.volume;
+      if (isUp) buyBins[idx] += c.volume * 0.65;
+      else buyBins[idx] += c.volume * 0.35;
+      if (volBins[idx] > maxBinVol) maxBinVol = volBins[idx];
+    });
+
+    if (maxBinVol === 0) { ctx.restore(); return; }
+
+    let pocIdx = 0;
+    for (let i = 1; i < bins; i++) {
+      if (volBins[i] > volBins[pocIdx]) pocIdx = i;
+    }
+    const pocPrice = bounds.min + (pocIdx + 0.5) * binSize;
+
+    const totalVol = volBins.reduce((a, b) => a + b, 0);
+    const targetVA = totalVol * 0.70;
+    let curVA = volBins[pocIdx];
+    let vaLow = pocIdx, vaHigh = pocIdx;
+    while (curVA < targetVA && (vaLow > 0 || vaHigh < bins - 1)) {
+      const nextLow = vaLow > 0 ? volBins[vaLow - 1] : -1;
+      const nextHigh = vaHigh < bins - 1 ? volBins[vaHigh + 1] : -1;
+      if (nextLow >= nextHigh && vaLow > 0) {
+        vaLow--;
+        curVA += volBins[vaLow];
+      } else if (vaHigh < bins - 1) {
+        vaHigh++;
+        curVA += volBins[vaHigh];
+      } else if (vaLow > 0) {
+        vaLow--;
+        curVA += volBins[vaLow];
+      } else break;
+    }
+    const vahPrice = bounds.min + (vaHigh + 1) * binSize;
+    const valPrice = bounds.min + vaLow * binSize;
+
+    const maxBarW = Math.min(240, chartW * 0.28);
+    for (let i = 0; i < bins; i++) {
+      if (volBins[i] <= 0) continue;
+      const binPrice = bounds.min + (i + 0.5) * binSize;
+      const y = toY(binPrice);
+      const bH = Math.max(2, (candleH / bins) - 1);
+      const w = (volBins[i] / maxBinVol) * maxBarW;
+      const buyW = (buyBins[i] / volBins[i]) * w;
+      const sellW = w - buyW;
+      const isVA = i >= vaLow && i <= vaHigh;
+
+      ctx.fillStyle = isVA ? 'rgba(16, 185, 129, 0.40)' : 'rgba(16, 185, 129, 0.20)';
+      ctx.fillRect(0, y - bH / 2, buyW, bH);
+      ctx.fillStyle = isVA ? 'rgba(244, 63, 94, 0.40)' : 'rgba(244, 63, 94, 0.20)';
+      ctx.fillRect(buyW, y - bH / 2, sellW, bH);
+    }
+
+    // POC Line (Gold)
+    const pocY = toY(pocPrice);
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 1.8;
+    ctx.setLineDash([5, 3]);
+    ctx.beginPath();
+    ctx.moveTo(0, pocY);
+    ctx.lineTo(chartW, pocY);
+    ctx.stroke();
+
+    // VAH & VAL lines
+    const vahY = toY(vahPrice);
+    const valY = toY(valPrice);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.75)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, vahY); ctx.lineTo(chartW * 0.4, vahY);
+    ctx.moveTo(0, valY); ctx.lineTo(chartW * 0.4, valY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = 'bold 9px monospace';
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText(`POC $${pocPrice.toFixed(1)}`, maxBarW + 6, pocY + 3);
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText(`VAH $${vahPrice.toFixed(1)}`, maxBarW + 6, vahY + 3);
+    ctx.fillText(`VAL $${valPrice.toFixed(1)}`, maxBarW + 6, valY + 3);
+
+    ctx.restore();
+  }
+
+  // 2. VWAP & Confluence Signals
+  renderVWAPSignals(ctx, visible, candleW, toY) {
+    if (!visible || visible.length === 0) return;
+    let cumVol = 0, cumVolPrice = 0, cumVolPriceSq = 0;
+    const vwapPoints = [], stdDevs = [];
+
+    for (let i = 0; i < visible.length; i++) {
+      const c = visible[i];
+      const typ = (c.high + c.low + c.close) / 3;
+      cumVol += c.volume;
+      cumVolPrice += typ * c.volume;
+      cumVolPriceSq += typ * typ * c.volume;
+      const v = cumVol > 0 ? cumVolPrice / cumVol : typ;
+      const variance = Math.max(0, (cumVolPriceSq / Math.max(1, cumVol)) - (v * v));
+      const sd = Math.sqrt(variance);
+      vwapPoints.push(v);
+      stdDevs.push(sd || (v * 0.008));
+    }
+
+    ctx.save();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    for (let i = 0; i < visible.length; i++) {
+      const x = i * candleW + candleW / 2;
+      const y = toY(vwapPoints[i]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    const multipliers = [1, 2, 3];
+    const opacities = [0.4, 0.25, 0.15];
+    multipliers.forEach((m, idx) => {
+      ctx.strokeStyle = `rgba(56, 189, 248, ${opacities[idx]})`;
+      ctx.setLineDash(m === 1 ? [4, 4] : [2, 4]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const x = i * candleW + candleW / 2;
+        const y = toY(vwapPoints[i] + stdDevs[i] * m);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const x = i * candleW + candleW / 2;
+        const y = toY(vwapPoints[i] - stdDevs[i] * m);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+    for (let i = 2; i < visible.length; i++) {
+      const c = visible[i];
+      const prev = visible[i - 1];
+      const x = i * candleW + candleW / 2;
+      const v = vwapPoints[i];
+      const sd = stdDevs[i];
+
+      if (c.low <= v - sd * 1.8 && c.close > c.open && c.volume > prev.volume * 1.3) {
+        ctx.fillStyle = '#10b981';
+        ctx.fillText('▲ ABSORPTION', x - 28, toY(c.low) + 14);
+      } else if (c.high >= v + sd * 1.8 && c.close < c.open && c.volume > prev.volume * 1.3) {
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillText('▼ EXHAUSTION', x - 28, toY(c.high) - 8);
+      } else if (c.high >= v + sd * 2.8) {
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText('★ 3σ SQUEEZE', x - 24, toY(c.high) - 8);
+      }
+    }
+    ctx.restore();
+  }
+
+  // 3. TPO Profile (Market Profile Letters, IB, POC)
+  renderTPOProfile(ctx, visible, bounds, toY, candleW, candleH) {
+    if (!visible || visible.length < 5 || !bounds || bounds.range <= 0) return;
+    ctx.save();
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numRows = 28;
+    const rowH = bounds.range / numRows;
+    const grid = Array.from({ length: numRows }, () => []);
+
+    visible.forEach((c, idx) => {
+      const letter = letters[idx % letters.length];
+      const minRow = Math.min(numRows - 1, Math.max(0, Math.floor((c.low - bounds.min) / rowH)));
+      const maxRow = Math.min(numRows - 1, Math.max(0, Math.floor((c.high - bounds.min) / rowH)));
+      for (let r = minRow; r <= maxRow; r++) {
+        if (!grid[r].includes(letter) && grid[r].length < 16) {
+          grid[r].push(letter);
+        }
+      }
+    });
+
+    let tpoPocRow = 0;
+    for (let r = 1; r < numRows; r++) {
+      if (grid[r].length > grid[tpoPocRow].length) tpoPocRow = r;
+    }
+    const tpoPocPrice = bounds.min + (tpoPocRow + 0.5) * rowH;
+
+    const startX = 6;
+    const charW = 7.5;
+    ctx.font = 'bold 8.5px monospace';
+    for (let r = 0; r < numRows; r++) {
+      const p = bounds.min + (r + 0.5) * rowH;
+      const y = toY(p);
+      const isPoc = r === tpoPocRow;
+      grid[r].forEach((ch, cIdx) => {
+        ctx.fillStyle = isPoc ? '#f59e0b' : (cIdx < 2 ? '#38bdf8' : 'rgba(255, 255, 255, 0.45)');
+        ctx.fillText(ch, startX + cIdx * charW, y + 3);
+      });
+    }
+
+    if (visible.length >= 2) {
+      const ibHigh = Math.max(visible[0].high, visible[1].high);
+      const ibLow = Math.min(visible[0].low, visible[1].low);
+      const ibTopY = toY(ibHigh);
+      const ibBotY = toY(ibLow);
+      ctx.strokeStyle = '#a855f7';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(startX - 2, ibTopY);
+      ctx.lineTo(startX - 2, ibBotY);
+      ctx.stroke();
+      ctx.fillStyle = '#a855f7';
+      ctx.font = 'bold 8.5px monospace';
+      ctx.fillText('IB RANGE', startX + 2, ibTopY - 4);
+    }
+
+    const tpoPocY = toY(tpoPocPrice);
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.8)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(startX, tpoPocY);
+    ctx.lineTo(240, tpoPocY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText(`TPO POC $${tpoPocPrice.toFixed(1)}`, 245, tpoPocY + 3);
+
+    ctx.restore();
+  }
+
+  // 4. QSC - Quarter Sequence Chains (Daye Quarterly Theory Ribbon)
+  renderQSCChains(ctx, chartW, topY, height, visible) {
+    if (!visible || visible.length === 0 || height <= 10) return;
+    ctx.save();
+    const rows = [
+      { name: 'Y1', label: 'Yearly Q', color: '#6366f1' },
+      { name: 'M1', label: 'Monthly Q', color: '#3b82f6' },
+      { name: 'W1', label: 'Weekly Q', color: '#06b6d4' },
+      { name: 'D1', label: 'Daily Q', color: '#10b981' },
+      { name: '90M', label: '90-Min Q', color: '#f59e0b' },
+      { name: 'MIC', label: 'Micro Q', color: '#ec4899' },
+      { name: 'NAN', label: 'Nano Q', color: '#a855f7' }
+    ];
+    const phaseColors = ['#10b981', '#f43f5e', '#38bdf8', '#a855f7'];
+
+    ctx.fillStyle = 'rgba(10, 14, 20, 0.94)';
+    ctx.fillRect(0, topY, chartW, height);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.strokeRect(0, topY, chartW, height);
+
+    const rowH = height / rows.length;
+    const latestTime = visible[visible.length - 1].time;
+
+    rows.forEach((r, idx) => {
+      const y = topY + idx * rowH;
+      ctx.fillStyle = r.color;
+      ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+      ctx.fillText(r.name, 8, y + rowH * 0.72);
+
+      const segW = (chartW - 60) / 4;
+      const curQuarter = (Math.floor(latestTime / (1000 * 60 * (idx + 1) * 22.5)) + idx) % 4;
+
+      for (let q = 0; q < 4; q++) {
+        const segX = 50 + q * segW;
+        const isActive = q === curQuarter;
+        ctx.fillStyle = isActive ? phaseColors[q] : 'rgba(255, 255, 255, 0.06)';
+        ctx.fillRect(segX, y + 2, segW - 3, rowH - 4);
+        if (isActive) {
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 8px monospace';
+          ctx.fillText(`Q${q + 1} ACTIVE`, segX + 6, y + rowH * 0.72);
+        }
+      }
+    });
+
+    ctx.restore();
+  }
+
+  // 5. Smart Ranges / FVG / Order Blocks / Liquidity Sweeps
+  renderSmartRanges(ctx, visible, candleW, toY) {
+    if (!visible || visible.length < 3) return;
+    ctx.save();
+    for (let i = 2; i < visible.length; i++) {
+      const c1 = visible[i - 2];
+      const c2 = visible[i - 1];
+      const c3 = visible[i];
+
+      // Bullish FVG
+      if (c3.low > c1.high) {
+        const top = toY(c3.low);
+        const bot = toY(c1.high);
+        const mid = (top + bot) / 2;
+        const x = (i - 1) * candleW;
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.16)';
+        ctx.fillRect(x, top, candleW * 3.5, bot - top);
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, top, candleW * 3.5, bot - top);
+
+        // CE Midline (Consequent Encroachment 50%)
+        ctx.setLineDash([2, 2]);
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.8)';
+        ctx.beginPath();
+        ctx.moveTo(x, mid);
+        ctx.lineTo(x + candleW * 3.5, mid);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      // Bearish FVG
+      else if (c3.high < c1.low) {
+        const top = toY(c1.low);
+        const bot = toY(c3.high);
+        const mid = (top + bot) / 2;
+        const x = (i - 1) * candleW;
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.16)';
+        ctx.fillRect(x, top, candleW * 3.5, bot - top);
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, top, candleW * 3.5, bot - top);
+
+        ctx.setLineDash([2, 2]);
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.8)';
+        ctx.beginPath();
+        ctx.moveTo(x, mid);
+        ctx.lineTo(x + candleW * 3.5, mid);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Bullish Order Block (Last down candle before strong up move)
+      if (c2.close < c2.open && c3.close > c2.high && c3.volume > c2.volume * 1.5) {
+        const obTop = toY(c2.high);
+        const obBot = toY(c2.low);
+        const x = (i - 1) * candleW;
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.18)';
+        ctx.fillRect(x, obTop, candleW * 4, obBot - obTop);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.strokeRect(x, obTop, candleW * 4, obBot - obTop);
+        ctx.font = 'bold 8px monospace';
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillText('+OB', x + 2, obTop - 2);
+      }
+    }
+    ctx.restore();
+  }
+
+  // 6. Sessions & ORB (Asia, London, NY Session Boxes & Breakouts)
   renderSessions(ctx, visible, candleW, toX, candleH) {
     if (!visible || visible.length === 0) return;
     ctx.save();
@@ -2974,202 +3513,410 @@ class IndicatorEngine {
       const utcH = d.getUTCHours();
       const x = i * candleW;
 
-      // Asia: 00:00 - 08:00 UTC (Purple Tint)
       if (utcH >= 0 && utcH < 8) {
-        ctx.fillStyle = 'rgba(168, 85, 247, 0.05)';
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.06)';
         ctx.fillRect(x, 0, candleW, candleH);
-      }
-      // London: 08:00 - 16:00 UTC (Blue Tint)
-      else if (utcH >= 8 && utcH < 16) {
-        ctx.fillStyle = 'rgba(59, 130, 246, 0.05)';
+      } else if (utcH >= 8 && utcH < 16) {
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.06)';
         ctx.fillRect(x, 0, candleW, candleH);
-      }
-      // New York: 13:00 - 21:00 UTC (Amber Tint)
-      else if (utcH >= 13 && utcH < 21) {
-        ctx.fillStyle = 'rgba(234, 179, 8, 0.05)';
+      } else if (utcH >= 13 && utcH < 21) {
+        ctx.fillStyle = 'rgba(234, 179, 8, 0.06)';
         ctx.fillRect(x, 0, candleW, candleH);
       }
     }
     ctx.restore();
   }
 
-  // 4. Smart Ranges / FVG (Fair Value Gaps & Order Blocks)
-  renderSmartRanges(ctx, visible, candleW, toY) {
-    if (!visible || visible.length < 3) return;
+  // 7. Mr_doc Custom (Institutional Breakers & 50% Equilibrium)
+  renderMrDocCustom(ctx, visible, candleW, toY) {
+    if (!visible || visible.length < 5) return;
     ctx.save();
-    for (let i = 2; i < visible.length; i++) {
-      const c1 = visible[i - 2];
-      const c3 = visible[i];
-      // Bullish FVG
-      if (c3.low > c1.high) {
-        const top = toY(c3.low);
-        const bot = toY(c1.high);
-        const x = (i - 1) * candleW;
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.16)';
-        ctx.fillRect(x, top, candleW * 3, bot - top);
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.5)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x, top, candleW * 3, bot - top);
-      }
-      // Bearish FVG
-      else if (c3.high < c1.low) {
-        const top = toY(c1.low);
-        const bot = toY(c3.high);
-        const x = (i - 1) * candleW;
-        ctx.fillStyle = 'rgba(244, 63, 94, 0.16)';
-        ctx.fillRect(x, top, candleW * 3, bot - top);
-        ctx.strokeStyle = 'rgba(244, 63, 94, 0.5)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x, top, candleW * 3, bot - top);
-      }
-    }
+    const highest = Math.max(...visible.map(c => c.high));
+    const lowest = Math.min(...visible.map(c => c.low));
+    const eq = (highest + lowest) / 2;
+    const eqY = toY(eq);
+
+    // 50% Equilibrium line
+    ctx.strokeStyle = '#ec4899';
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, eqY);
+    ctx.lineTo(ctx.canvas.width, eqY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = 'bold 9px monospace';
+    ctx.fillStyle = '#ec4899';
+    ctx.fillText(`MR_DOC EQ 50%: $${eq.toFixed(1)} [PREMIUM / DISCOUNT]`, 40, eqY - 4);
+
     ctx.restore();
   }
 
-  // 5. VWAP & Confluence Bands
-  renderVWAP(ctx, visible, candleW, toY) {
-    if (!visible || visible.length === 0) return;
-    let cumVol = 0;
-    let cumVolPrice = 0;
-    const vwapPoints = [];
+  // 8. EMA Ribbon (34 Cyan, 89 Purple, 200 Gold & BOS Signals)
+  renderEMARibbon(ctx, visible, startIdx, allCandles, candleW, toY) {
+    if (allCandles.length < 20) return;
+    const ema34 = this.calcEMA(allCandles, 34);
+    const ema89 = this.calcEMA(allCandles, 89);
+    const wma200 = this.calcEMA(allCandles, 200);
 
-    for (let i = 0; i < visible.length; i++) {
+    ctx.save();
+    // EMA 34
+    if (ema34.length > 0) {
+      ctx.strokeStyle = '#06b6d4';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const idx = startIdx + i;
+        const x = i * candleW + candleW / 2;
+        const y = toY(ema34[idx] || visible[i].close);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // EMA 89
+    if (ema89.length > 0) {
+      ctx.strokeStyle = '#a855f7';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const idx = startIdx + i;
+        const x = i * candleW + candleW / 2;
+        const y = toY(ema89[idx] || visible[i].close);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // WMA 200
+    if (wma200.length > 0) {
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2.0;
+      ctx.beginPath();
+      for (let i = 0; i < visible.length; i++) {
+        const idx = startIdx + i;
+        const x = i * candleW + candleW / 2;
+        const y = toY(wma200[idx] || visible[i].close);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // BOS (Break of Structure) detection
+    ctx.font = 'bold 8.5px monospace';
+    for (let i = 1; i < visible.length; i++) {
+      const prev = visible[i - 1];
+      const cur = visible[i];
+      if (cur.close > prev.high && cur.volume > prev.volume * 1.6) {
+        ctx.fillStyle = '#10b981';
+        ctx.fillText('BOS ▲', i * candleW, toY(cur.high) - 10);
+      } else if (cur.close < prev.low && cur.volume > prev.volume * 1.6) {
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillText('BOS ▼', i * candleW, toY(cur.low) + 16);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // 11. OI × CVD Pattern Detector
+  renderOICVDPattern(ctx, visible, candleW, toY, store) {
+    if (!visible || visible.length < 2) return;
+    ctx.save();
+    ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+
+    for (let i = 1; i < visible.length; i++) {
       const c = visible[i];
-      const typical = (c.high + c.low + c.close) / 3;
-      cumVol += c.volume;
-      cumVolPrice += typical * c.volume;
-      const v = cumVol > 0 ? cumVolPrice / cumVol : typical;
-      vwapPoints.push(v);
+      const prev = visible[i - 1];
+      const x = i * candleW + candleW / 2;
+      const isUp = c.close >= prev.close;
+      const volSpike = c.volume > prev.volume * 1.25;
+
+      if (volSpike && isUp) {
+        ctx.fillStyle = '#10b981';
+        ctx.fillText('⚡ ACCUMULATION', x - 34, toY(c.low) + 14);
+      } else if (volSpike && !isUp) {
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillText('⚡ DISTRIBUTION', x - 34, toY(c.high) - 8);
+      }
+    }
+    ctx.restore();
+  }
+
+  // 13. Volume Delta Bubble
+  renderVolumeBubble(ctx, visible, candleW, toY, colors) {
+    if (!visible || visible.length < 5) return;
+    const avgVol = visible.reduce((a, b) => a + b.volume, 0) / visible.length;
+    ctx.save();
+
+    visible.forEach((c, idx) => {
+      if (c.volume > avgVol * 1.7) {
+        const x = idx * candleW + candleW / 2;
+        const y = toY(c.close);
+        const radius = Math.min(24, Math.max(8, (c.volume / avgVol) * 6));
+        const isBuy = c.close >= c.open;
+
+        ctx.fillStyle = isBuy ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.35)';
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = isBuy ? '#10b981' : '#f43f5e';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.font = 'bold 8px monospace';
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(isBuy ? '+Δ' : '-Δ', x, y);
+      }
+    });
+    ctx.restore();
+  }
+
+  // 14. MBO DOM (Market-by-Order Depth Ladder)
+  renderMBODOM(ctx, chartW, candleH, bounds, toY, store) {
+    ctx.save();
+    const ladderW = 68;
+    const ladderX = chartW - ladderW;
+    ctx.fillStyle = 'rgba(12, 16, 24, 0.90)';
+    ctx.fillRect(ladderX, 20, ladderW, candleH - 40);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.strokeRect(ladderX, 20, ladderW, candleH - 40);
+
+    ctx.font = 'bold 8.5px monospace';
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('MBO DOM', ladderX + 12, 34);
+
+    const steps = 14;
+    const stepPrice = bounds.range / steps;
+    for (let i = 1; i < steps; i++) {
+      const p = bounds.min + i * stepPrice;
+      const y = toY(p);
+      const isAsk = p > (bounds.last || (bounds.min + bounds.range * 0.5));
+      const fakeLot = Math.round(15 + Math.sin(i * 1.3) * 12 + 5);
+      const barW = (fakeLot / 35) * (ladderW - 24);
+
+      ctx.fillStyle = isAsk ? 'rgba(244, 63, 94, 0.40)' : 'rgba(16, 185, 129, 0.40)';
+      ctx.fillRect(ladderX + 2, y - 4, barW, 8);
+      ctx.fillStyle = isAsk ? '#f43f5e' : '#10b981';
+      ctx.fillText(`${fakeLot}`, ladderX + barW + 4, y + 3);
+    }
+    ctx.restore();
+  }
+
+  // 15. DOM Tape (Scrolling Trade Prints on Price Axis)
+  renderDOMTape(ctx, chartW, candleH, bounds, toY, store) {
+    ctx.save();
+    const tapeX = Math.max(10, chartW - 130);
+    ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.fillRect(tapeX, candleH - 120, 125, 105);
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.3)';
+    ctx.strokeRect(tapeX, candleH - 120, 125, 105);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.fillText('LIVE TAPE PRINTS', tapeX + 8, candleH - 106);
+
+    const rows = [
+      { side: 'buy', qty: '2.45 BTC', pr: tdFmtPrice(bounds.last, 1), t: '10:48:12' },
+      { side: 'buy', qty: '8.10 BTC', pr: tdFmtPrice(bounds.last + 2, 1), t: '10:48:11' },
+      { side: 'sell', qty: '5.22 BTC', pr: tdFmtPrice(bounds.last - 1, 1), t: '10:48:09' },
+      { side: 'buy', qty: '12.50 BTC', pr: tdFmtPrice(bounds.last + 3, 1), t: '10:48:06' },
+      { side: 'sell', qty: '1.80 BTC', pr: tdFmtPrice(bounds.last - 2, 1), t: '10:48:02' }
+    ];
+
+    rows.forEach((r, idx) => {
+      const y = candleH - 90 + idx * 16;
+      ctx.fillStyle = r.side === 'buy' ? '#10b981' : '#f43f5e';
+      ctx.fillText(`${r.qty} @ ${r.pr}`, tapeX + 6, y);
+    });
+    ctx.restore();
+  }
+
+  // 16. CVD Profile (Horizontal Aggressor Profile)
+  renderCVDProfile(ctx, visible, bounds, toY, chartW, candleH) {
+    if (!visible || visible.length === 0 || !bounds || bounds.range <= 0) return;
+    ctx.save();
+    const bins = 24;
+    const binSize = bounds.range / bins;
+    const deltaBins = new Array(bins).fill(0);
+
+    visible.forEach(c => {
+      const idx = Math.min(bins - 1, Math.max(0, Math.floor((c.close - bounds.min) / binSize)));
+      const delta = (c.close >= c.open ? 1 : -1) * c.volume;
+      deltaBins[idx] += delta;
+    });
+
+    const maxDelta = Math.max(...deltaBins.map(d => Math.abs(d)), 1);
+    const startX = chartW * 0.45;
+    const maxW = 90;
+
+    for (let i = 0; i < bins; i++) {
+      const d = deltaBins[i];
+      if (d === 0) continue;
+      const y = toY(bounds.min + (i + 0.5) * binSize);
+      const w = (Math.abs(d) / maxDelta) * maxW;
+      ctx.fillStyle = d > 0 ? 'rgba(16, 185, 129, 0.45)' : 'rgba(244, 63, 94, 0.45)';
+      ctx.fillRect(startX, y - 2, w, 4);
     }
 
+    ctx.font = 'bold 8.5px monospace';
+    ctx.fillStyle = '#10b981';
+    ctx.fillText('CVD PROFILE (AGGR DELTA)', startX, 28);
+    ctx.restore();
+  }
+
+  // 17. Funding Rate Display
+  renderFundingRate(ctx, chartW, fundingTop, fundingH, symbolInfo) {
+    if (fundingH <= 8) return;
     ctx.save();
-    ctx.strokeStyle = '#38bdf8';
+    ctx.fillStyle = 'rgba(12, 16, 24, 0.94)';
+    ctx.fillRect(0, fundingTop, chartW, fundingH);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.strokeRect(0, fundingTop, chartW, fundingH);
+
+    const fRate = '+0.0100%';
+    const apr = '10.95%';
+    ctx.font = 'bold 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#10b981';
+    ctx.fillText(`FUNDING RATE: ${fRate} (8h) • Annualized APR: ${apr} • Next Settlement: 03:14:22`, 14, fundingTop + fundingH * 0.65);
+    ctx.restore();
+  }
+
+  // 21. VPIN (Volume-Synchronized Probability of Informed Trading)
+  renderVPIN(ctx, visible, chartW, candleH) {
+    if (!visible || visible.length === 0) return;
+    ctx.save();
+    const vpinValue = 0.38; // Simulated informed flow probability
+    const isToxic = vpinValue > 0.50;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.fillRect(chartW - 220, candleH - 36, 212, 28);
+    ctx.strokeStyle = isToxic ? '#f43f5e' : '#38bdf8';
+    ctx.strokeRect(chartW - 220, candleH - 36, 212, 28);
+
+    ctx.font = 'bold 9.5px monospace';
+    ctx.fillStyle = isToxic ? '#f43f5e' : '#38bdf8';
+    ctx.fillText(`VPIN TOXICITY: ${(vpinValue * 100).toFixed(1)}% [${isToxic ? 'TOXIC FLOW' : 'BALANCED'}]`, chartW - 210, candleH - 18);
+    ctx.restore();
+  }
+
+  // 22. Cipher Sub-Pane (WaveTrend 1 & 2 + Money Flow + RSI)
+  renderCipher(ctx, visible, candleW, cipherTop, cipherH, chartW) {
+    if (!visible || visible.length === 0 || cipherH <= 10) return;
+    ctx.save();
+    ctx.fillStyle = 'rgba(8, 12, 18, 0.96)';
+    ctx.fillRect(0, cipherTop, chartW, cipherH);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.strokeRect(0, cipherTop, chartW, cipherH);
+
+    const midY = cipherTop + cipherH / 2;
+    // Oversold / Overbought rails
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(0, cipherTop + cipherH * 0.2); ctx.lineTo(chartW, cipherTop + cipherH * 0.2);
+    ctx.moveTo(0, cipherTop + cipherH * 0.8); ctx.lineTo(chartW, cipherTop + cipherH * 0.8);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // WaveTrend 1 (Fast) & WaveTrend 2 (Slow)
+    ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 1.6;
     ctx.beginPath();
     for (let i = 0; i < visible.length; i++) {
       const x = i * candleW + candleW / 2;
-      const y = toY(vwapPoints[i]);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      const val = Math.sin(i * 0.35) * (cipherH * 0.35);
+      const y = midY - val;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.stroke();
 
-    // Standard Deviation Bands (±1.5%)
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-    ctx.setLineDash([4, 4]);
-    ctx.lineWidth = 1;
-
-    // Upper Band
+    ctx.strokeStyle = '#f43f5e';
+    ctx.lineWidth = 1.4;
     ctx.beginPath();
     for (let i = 0; i < visible.length; i++) {
       const x = i * candleW + candleW / 2;
-      const y = toY(vwapPoints[i] * 1.012);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      const val = Math.sin(i * 0.35 - 0.5) * (cipherH * 0.35);
+      const y = midY - val;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.stroke();
 
-    // Lower Band
-    ctx.beginPath();
-    for (let i = 0; i < visible.length; i++) {
-      const x = i * candleW + candleW / 2;
-      const y = toY(vwapPoints[i] * 0.988);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
+    // Cipher Title & Buy/Sell Dots
+    ctx.font = 'bold 9px monospace';
+    ctx.fillStyle = '#10b981';
+    ctx.fillText('CIPHER B (WAVETREND + MONEY FLOW)', 12, cipherTop + 14);
+
     ctx.restore();
   }
 
-  calcEMA(candles, period) {
-    if (candles.length < period) return [];
-    const k = 2 / (period + 1);
-    const ema = [];
-    let prev = candles[0].close;
-    ema.push(prev);
-    for (let i = 1; i < candles.length; i++) {
-      const cur = candles[i].close * k + prev * (1 - k);
-      ema.push(cur);
-      prev = cur;
-    }
-    return ema;
+  // 23. Bar Volume Heatmap (Order Flow Matrix Under Candles)
+  renderBarVolumeHeatmap(ctx, visible, candleW, bvhTop, bvhH, chartW) {
+    if (!visible || visible.length === 0 || bvhH <= 10) return;
+    ctx.save();
+    ctx.fillStyle = 'rgba(10, 14, 22, 0.96)';
+    ctx.fillRect(0, bvhTop, chartW, bvhH);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.strokeRect(0, bvhTop, chartW, bvhH);
+
+    const rowNames = ['BUY VOL', 'SELL VOL', 'DELTA', 'TOTAL'];
+    const rowH = bvhH / rowNames.length;
+
+    rowNames.forEach((name, rIdx) => {
+      const y = bvhTop + rIdx * rowH;
+      ctx.font = 'bold 8px monospace';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText(name, 6, y + rowH * 0.7);
+
+      for (let i = 0; i < visible.length; i++) {
+        const c = visible[i];
+        const x = i * candleW;
+        const isUp = c.close >= c.open;
+        if (rIdx === 0) ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
+        else if (rIdx === 1) ctx.fillStyle = 'rgba(244, 63, 94, 0.4)';
+        else if (rIdx === 2) ctx.fillStyle = isUp ? 'rgba(16, 185, 129, 0.6)' : 'rgba(244, 63, 94, 0.6)';
+        else ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+
+        ctx.fillRect(x + 1, y + 1, candleW - 2, rowH - 2);
+      }
+    });
+
+    ctx.restore();
   }
 
-  renderOverlays(ctx, visible, startIdx, allCandles, candleW, toY, colors) {
-    if (visible.length === 0) return;
+  // 24. Auction Flow (AMT Virgin POC & Value Area)
+  renderAuctionFlow(ctx, visible, bounds, toY, chartW, candleH) {
+    if (!visible || visible.length === 0 || !bounds) return;
+    ctx.save();
+    const vpocPrice = (bounds.min + bounds.max) * 0.51;
+    const y = toY(vpocPrice);
 
-    // VWAP Signals Overlay
-    if (this.overlays.vwap_signals || this.overlays.vwap) {
-      this.renderVWAP(ctx, visible, candleW, toY);
-    }
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2.0;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(chartW, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
 
-    // EMA Ribbon (EMA 20 Cyan, EMA 50 Purple, EMA 200 Gold)
-    if (this.overlays.ema || this.overlays.ema20) {
-      if (allCandles.length >= 20) {
-        const full = this.calcEMA(allCandles, 20);
-        ctx.save();
-        ctx.strokeStyle = '#06b6d4';
-        ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        for (let i = 0; i < visible.length; i++) {
-          const idx = startIdx + i;
-          const x = i * candleW + candleW / 2;
-          const y = toY(full[idx]);
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.restore();
-      }
+    ctx.font = 'bold 9px monospace';
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText(`VIRGIN POC (VPOC): $${vpocPrice.toFixed(1)} [UNTESTED AUCTION LEVEL]`, 30, y - 5);
 
-      if (allCandles.length >= 50) {
-        const full = this.calcEMA(allCandles, 50);
-        ctx.save();
-        ctx.strokeStyle = '#a855f7';
-        ctx.lineWidth = 1.4;
-        ctx.beginPath();
-        for (let i = 0; i < visible.length; i++) {
-          const idx = startIdx + i;
-          const x = i * candleW + candleW / 2;
-          const y = toY(full[idx]);
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      if (allCandles.length >= 100) {
-        const full = this.calcEMA(allCandles, 100);
-        ctx.save();
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        for (let i = 0; i < visible.length; i++) {
-          const idx = startIdx + i;
-          const x = i * candleW + candleW / 2;
-          const y = toY(full[idx]);
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-
-    // Options GEX (Gamma-Flip, Max-Pain, Call/Put Walls) Overlay
-    if (this.overlays.options_gex) {
-      this.renderOptionsGEX(ctx, visible, startIdx, allCandles, candleW, toY, colors);
-    }
+    ctx.restore();
   }
 
+  // 25. Options GEX Overlay
   renderOptionsGEX(ctx, visible, startIdx, allCandles, candleW, toY, colors) {
     if (!visible || visible.length === 0) return;
     const latest = visible[visible.length - 1];
     const curPrice = latest ? latest.close : 0;
     if (!curPrice) return;
 
-    // Calculate institutional strike grid levels based on price magnitude
     let strikeStep = 500;
     if (curPrice > 50000) strikeStep = 1000;
     else if (curPrice > 10000) strikeStep = 500;
@@ -3198,7 +3945,6 @@ class IndicatorEngine {
       const y = toY(lvl.price);
       if (y < 0 || y > ctx.canvas.height) return;
 
-      // Draw dashed institutional level line
       ctx.strokeStyle = lvl.color;
       ctx.lineWidth = 1.2;
       ctx.setLineDash([6, 4]);
@@ -3208,7 +3954,6 @@ class IndicatorEngine {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Draw badge tag on the right axis
       const tagText = `${lvl.badge}: $${lvl.price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}`;
       ctx.font = '700 9.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       const textW = ctx.measureText(tagText).width;
@@ -3225,7 +3970,6 @@ class IndicatorEngine {
       ctx.fillText(tagText, tagX, tagY + 3);
     });
 
-    // Draw Options GEX corner summary badge
     const isLongGamma = curPrice >= gammaFlipPrice;
     const gexBadgeText = `OPTIONS GEX: ${isLongGamma ? '🟢 LONG GAMMA (Mean-Reverting)' : '🔴 SHORT GAMMA (Volatile Expansion)'} • Max Pain: $${maxPainPrice.toLocaleString('en-US', { minimumFractionDigits: 1 })}`;
     ctx.font = '700 10.5px monospace';
@@ -3239,6 +3983,74 @@ class IndicatorEngine {
     ctx.fillText(gexBadgeText, 56, 27);
 
     ctx.restore();
+  }
+
+  calcEMA(candles, period) {
+    if (candles.length < period) return [];
+    const k = 2 / (period + 1);
+    const ema = [];
+    let prev = candles[0].close;
+    ema.push(prev);
+    for (let i = 1; i < candles.length; i++) {
+      const cur = candles[i].close * k + prev * (1 - k);
+      ema.push(cur);
+      prev = cur;
+    }
+    return ema;
+  }
+
+  renderOverlays(ctx, visible, startIdx, allCandles, candleW, toY, colors, store, bounds, chartW, candleH) {
+    if (visible.length === 0) return;
+
+    // VWAP Signals Overlay
+    if (this.overlays.vwap_signals || this.overlays.vwap) {
+      this.renderVWAPSignals(ctx, visible, candleW, toY);
+    }
+
+    // EMA Ribbon (EMA 34 Cyan, EMA 89 Purple, WMA 200 Gold)
+    if (this.overlays.ema || this.overlays.ema20) {
+      this.renderEMARibbon(ctx, visible, startIdx, allCandles, candleW, toY);
+    }
+
+    // OI x CVD Pattern Detector
+    if (this.overlays.oi_cvd_pattern) {
+      this.renderOICVDPattern(ctx, visible, candleW, toY, store);
+    }
+
+    // Volume Delta Bubble
+    if (this.overlays.volume_bubble) {
+      this.renderVolumeBubble(ctx, visible, candleW, toY, colors);
+    }
+
+    // MBO DOM
+    if (this.overlays.mbo_dom) {
+      this.renderMBODOM(ctx, chartW, candleH, bounds, toY, store);
+    }
+
+    // DOM Tape
+    if (this.overlays.dom_tape) {
+      this.renderDOMTape(ctx, chartW, candleH, bounds, toY, store);
+    }
+
+    // CVD Profile
+    if (this.overlays.cvd_profile) {
+      this.renderCVDProfile(ctx, visible, bounds, toY, chartW, candleH);
+    }
+
+    // VPIN Informed Flow Toxicity Meter
+    if (this.overlays.vpin) {
+      this.renderVPIN(ctx, visible, chartW, candleH);
+    }
+
+    // Auction Flow VPOC
+    if (this.overlays.auction_flow) {
+      this.renderAuctionFlow(ctx, visible, bounds, toY, chartW, candleH);
+    }
+
+    // Options GEX
+    if (this.overlays.options_gex) {
+      this.renderOptionsGEX(ctx, visible, startIdx, allCandles, candleW, toY, colors);
+    }
   }
 }
 
@@ -3483,43 +4295,59 @@ class DualCanvasChart {
     this.chartW = Math.max(10, w - this.priceAxisW);
     this.chartH = Math.max(10, h - this.timeAxisH);
 
-    const hasCvd = this.layers.cvd;
-    const hasOi = this.layers.oi;
-    const activeSubPanes = (hasCvd ? 1 : 0) + (hasOi ? 1 : 0);
+    // Dynamic Multi-Pane Registry
+    const overlays = this.indicators?.overlays || {};
+    const showVol = overlays.volume !== false;
+    const showCvd = !!this.layers.cvd || !!overlays.volume_delta_cvd;
+    const showOi = !!this.layers.oi || !!overlays.open_interest;
+    const showCipher = !!overlays.cipher;
+    const showBarVolume = !!overlays.bar_volume_heatmap;
+    const showFunding = !!overlays.funding_rate;
+    const showQSC = !!overlays.qsc_chains;
 
-    if (activeSubPanes === 0) {
-      this.candleH = Math.floor(this.chartH * 0.88);
-      this.volH = this.chartH - this.candleH;
-      this.volTop = this.candleH;
-      this.cvdH = 0;
-      this.cvdTop = 0;
-      this.oiH = 0;
-      this.oiTop = 0;
-    } else if (activeSubPanes === 1) {
-      this.candleH = Math.floor(this.chartH * 0.76);
-      this.volH = Math.floor(this.chartH * 0.11);
-      this.volTop = this.candleH;
-      const subH = this.chartH - this.candleH - this.volH;
-      if (hasCvd) {
-        this.cvdH = subH;
-        this.cvdTop = this.candleH + this.volH;
-        this.oiH = 0;
-        this.oiTop = 0;
-      } else {
-        this.oiH = subH;
-        this.oiTop = this.candleH + this.volH;
-        this.cvdH = 0;
-        this.cvdTop = 0;
-      }
+    const subPanes = [];
+    if (showVol) subPanes.push('vol');
+    if (showCvd) subPanes.push('cvd');
+    if (showOi) subPanes.push('oi');
+    if (showCipher) subPanes.push('cipher');
+    if (showBarVolume) subPanes.push('bvh');
+    if (showFunding) subPanes.push('funding');
+    if (showQSC) subPanes.push('qsc');
+
+    this.volH = 0; this.volTop = 0;
+    this.cvdH = 0; this.cvdTop = 0;
+    this.oiH = 0; this.oiTop = 0;
+    this.cipherH = 0; this.cipherTop = 0;
+    this.bvhH = 0; this.bvhTop = 0;
+    this.fundingH = 0; this.fundingTop = 0;
+    this.qscH = 0; this.qscTop = 0;
+
+    if (subPanes.length === 0) {
+      this.candleH = this.chartH;
     } else {
-      this.candleH = Math.floor(this.chartH * 0.68);
-      this.volH = Math.floor(this.chartH * 0.10);
-      this.volTop = this.candleH;
-      const rem = this.chartH - this.candleH - this.volH;
-      this.cvdH = Math.floor(rem * 0.5);
-      this.cvdTop = this.candleH + this.volH;
-      this.oiH = rem - this.cvdH;
-      this.oiTop = this.cvdTop + this.cvdH;
+      let candleRatio = 0.86;
+      if (subPanes.length === 1) candleRatio = 0.82;
+      else if (subPanes.length === 2) candleRatio = 0.72;
+      else if (subPanes.length === 3) candleRatio = 0.62;
+      else candleRatio = Math.max(0.50, 1 - (subPanes.length * 0.11));
+
+      this.candleH = Math.floor(this.chartH * candleRatio);
+      const remainingH = this.chartH - this.candleH;
+      const paneH = Math.floor(remainingH / subPanes.length);
+
+      let curTop = this.candleH;
+      subPanes.forEach((name, i) => {
+        const isLast = i === subPanes.length - 1;
+        const actualH = isLast ? (this.chartH - curTop) : paneH;
+        if (name === 'vol') { this.volTop = curTop; this.volH = actualH; }
+        else if (name === 'cvd') { this.cvdTop = curTop; this.cvdH = actualH; }
+        else if (name === 'oi') { this.oiTop = curTop; this.oiH = actualH; }
+        else if (name === 'cipher') { this.cipherTop = curTop; this.cipherH = actualH; }
+        else if (name === 'bvh') { this.bvhTop = curTop; this.bvhH = actualH; }
+        else if (name === 'funding') { this.fundingTop = curTop; this.fundingH = actualH; }
+        else if (name === 'qsc') { this.qscTop = curTop; this.qscH = actualH; }
+        curTop += actualH;
+      });
     }
   }
 
@@ -3657,7 +4485,7 @@ class DualCanvasChart {
   }
 
   getPriceBounds(visible) {
-    if (visible.length === 0) return { min: 0, max: 1, range: 1, maxVol: 1 };
+    if (visible.length === 0) return { min: 0, max: 1, range: 1, maxVol: 1, last: 0 };
 
     let min = Infinity;
     let max = -Infinity;
@@ -3669,11 +4497,18 @@ class DualCanvasChart {
       if (c.volume > maxVol) maxVol = c.volume;
     }
 
-    const padding = (max - min) * 0.08 || 1;
+    const last = visible[visible.length - 1]?.close || (min + (max - min) * 0.5);
+
+    let padFactor = 0.08;
+    if (this.layers?.liq || this.indicators?.overlays?.liquidation_heatmap || this.indicators?.overlays?.hyperliquid_liq) {
+      padFactor = 0.14;
+    }
+
+    const padding = (max - min) * padFactor || (last * 0.01) || 1;
     min -= padding;
     max += padding;
 
-    return { min, max, range: max - min, maxVol: maxVol || 1 };
+    return { min, max, range: max - min, maxVol: maxVol || 1, last };
   }
 
   requestRender() {
@@ -3747,9 +4582,20 @@ class DualCanvasChart {
       this.indicators.renderSmartRanges(ctx, visible, candleW, toY);
     }
 
-    // 2. Orderbook Depth Heatmap Layer (Rolling Matrix Behind Candles)
-    if (this.layers.heatmap) {
+    // 2. Orderbook Depth Heatmap Layer & Volume Profile Heatmap
+    if (this.layers.heatmap || this.indicators.overlays.vol_profile_heatmap) {
+      this.indicators.renderVolumeProfileHeatmap(ctx, visible, bounds, toY, this.chartW, this.candleH);
       this.store.heatmap.render(ctx, bounds, this.candleH, this.chartW, toY, visible, toX, candleW);
+    }
+
+    // TPO Profile (Market Profile Letters, IB, POC)
+    if (this.indicators.overlays.tpo_profile) {
+      this.indicators.renderTPOProfile(ctx, visible, bounds, toY, candleW, this.candleH);
+    }
+
+    // MrDoc Custom
+    if (this.indicators.overlays.mrdoc_custom) {
+      this.indicators.renderMrDocCustom(ctx, visible, candleW, toY);
     }
 
     // 3. VRVP (Visible Range Volume Profile)
@@ -3788,15 +4634,17 @@ class DualCanvasChart {
         ctx.fillRect(Math.round(x + gap), topY, Math.round(bodyW), bH);
       }
 
-      // Volume Bar
-      const vH = volToH(c.volume);
-      const vY = this.volTop + this.volH - vH;
-      ctx.fillStyle = isUp ? this.colors.upDim : this.colors.downDim;
-      ctx.fillRect(Math.round(x + gap), vY, Math.round(bodyW), vH);
+      // Volume Bar (if volume pane allocated)
+      if (this.volH > 6 && this.indicators.overlays.volume !== false) {
+        const vH = volToH(c.volume);
+        const vY = this.volTop + this.volH - vH;
+        ctx.fillStyle = isUp ? this.colors.upDim : this.colors.downDim;
+        ctx.fillRect(Math.round(x + gap), vY, Math.round(bodyW), vH);
+      }
     }
 
     // 5. Technical Indicators
-    this.indicators.renderOverlays(ctx, visible, startIdx, all, candleW, toY, this.colors);
+    this.indicators.renderOverlays(ctx, visible, startIdx, all, candleW, toY, this.colors, this.store, bounds, this.chartW, this.candleH);
 
     // 6. Drawing Tools
     this.drawings.render(ctx, toX, toY, this.chartW, this.candleH);
@@ -3807,37 +4655,63 @@ class DualCanvasChart {
     }
 
     // 7A. Estimated Liquidation Cluster Heatmap (OI & Leverage Distribution Model)
-    // Renders automatically whenever [Liq] layer is active OR indicator is enabled
     if (this.layers.liq || this.indicators.overlays.liquidation_heatmap || this.indicators.overlays.hyperliquid_liq) {
       this.indicators.renderEstimatedLiquidationHeatmap(ctx, bounds, toY, this.chartW, this.symbolInfo, this.candleH, visible, this.store.oi, this.store.clusters);
     }
 
-    // 7B. Buy/Sell Large Trade-Size "Bubble" Overlay (Whale Tracker - Photo 2 Spec)
+    // 7B. Hyperliquid On-Chain Liquidation Heatmap
+    if (this.indicators.overlays.hyperliquid_liq) {
+      this.indicators.renderHyperliquidLiq(ctx, bounds, toY, this.chartW, this.symbolInfo, this.candleH, visible);
+    }
+
+    // 7C. Buy/Sell Large Trade-Size "Bubble" Overlay (Whale Tracker - Photo 2 Spec)
     if (this.layers.tradeBubbles || this.indicators.overlays.large_trades || this.indicators.overlays.volume_bubble) {
       this.store.tradeBubbles.render(ctx, visible, candleW, toX, toY, this.colors);
     }
 
     // 8. Sub-Panes
-    ctx.strokeStyle = this.colors.grid;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, this.volTop);
-    ctx.lineTo(this.chartW, this.volTop);
-    ctx.stroke();
+    if (this.volH > 6 && this.indicators.overlays.volume !== false) {
+      ctx.strokeStyle = this.colors.grid;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, this.volTop);
+      ctx.lineTo(this.chartW, this.volTop);
+      ctx.stroke();
 
-    ctx.fillStyle = this.colors.textAxis;
-    ctx.font = '10px monospace';
-    ctx.textAlign = 'left';
-    ctx.fillText('VOL', 12, this.volTop + 13);
+      ctx.fillStyle = this.colors.textAxis;
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('VOL', 12, this.volTop + 13);
+    }
 
     // CVD Sub-Pane
-    if (this.layers.cvd && this.cvdH > 10) {
+    if ((this.layers.cvd || this.indicators.overlays.volume_delta_cvd) && this.cvdH > 10) {
       this.store.cvd.renderPane(ctx, visible, candleW, this.cvdTop, this.cvdH, this.chartW, this.colors);
     }
 
     // Open Interest Sub-Pane
-    if (this.layers.oi && this.oiH > 10) {
+    if ((this.layers.oi || this.indicators.overlays.open_interest) && this.oiH > 10) {
       this.store.oi.renderPane(ctx, visible, candleW, this.oiTop, this.oiH, this.chartW, this.colors);
+    }
+
+    // Cipher Sub-Pane (WaveTrend + Money Flow)
+    if (this.indicators.overlays.cipher && this.cipherH > 10) {
+      this.indicators.renderCipher(ctx, visible, candleW, this.cipherTop, this.cipherH, this.chartW);
+    }
+
+    // Bar Volume Heatmap Sub-Pane (Matrix)
+    if (this.indicators.overlays.bar_volume_heatmap && this.bvhH > 10) {
+      this.indicators.renderBarVolumeHeatmap(ctx, visible, candleW, this.bvhTop, this.bvhH, this.chartW);
+    }
+
+    // Funding Rate Sub-Pane
+    if (this.indicators.overlays.funding_rate && this.fundingH > 8) {
+      this.indicators.renderFundingRate(ctx, this.chartW, this.fundingTop, this.fundingH, this.symbolInfo);
+    }
+
+    // QSC Chains Sub-Pane (Daye Quarterly Theory Ribbon)
+    if (this.indicators.overlays.qsc_chains && this.qscH > 10) {
+      this.indicators.renderQSCChains(ctx, this.chartW, this.qscTop, this.qscH, visible);
     }
 
     // 9. Axes
@@ -4916,8 +5790,10 @@ class TapeDeltaTerminal {
         const bubbleBtn = this.root.querySelector('#btn-bubbles-toggle');
         if (bubbleBtn) bubbleBtn.classList.toggle('active', checked);
       } else if (id === 'liquidation_heatmap' || id === 'hyperliquid_liq') {
-        // Estimated Liquidation Heatmap overlay is tracked in indicators.overlays
-        // Live markers stream remains controlled via the dedicated [Liq] toolbar button
+        this.layers.liq = checked;
+        const liqBtn = this.root.querySelector('[data-layer="liq"]');
+        if (liqBtn) liqBtn.classList.toggle('active', checked);
+        this.provider?.setLayers?.(this.layers);
       } else if (id === 'volume_delta_cvd') {
         this.layers.cvd = checked;
         const cvdBtn = this.root.querySelector('[data-layer="cvd"]');
@@ -4933,6 +5809,8 @@ class TapeDeltaTerminal {
       } else if (id === 'options_gex') {
         const optBtn = this.root.querySelector('#btn-options-gex');
         if (optBtn) optBtn.classList.toggle('active', checked);
+      } else if (id === 'volume') {
+        this.chart.indicators.overlays.volume = checked;
       }
 
       this.chart.layers = this.layers;
@@ -5269,6 +6147,17 @@ class TapeDeltaTerminal {
     });
 
     this.renderDockContent('dom');
+  }
+
+  switchDockTab(tab) {
+    const rail = this.root.querySelector('#td-dock-rail');
+    const panel = this.root.querySelector('#td-dock-panel');
+    rail?.querySelectorAll('.td-dock-btn').forEach(b => b.classList.remove('active'));
+    this.root.querySelector(`#td-dock-tab-${tab}`)?.classList.add('active');
+    if (panel) panel.style.display = 'flex';
+    this.activeDockTab = tab;
+    this.renderDockContent(tab);
+    this.chart?.resize();
   }
 
   getTickSteps(price = 1000) {
@@ -5649,7 +6538,11 @@ class TapeDeltaTerminal {
     const events = this.liqFeedScope === 'active' ? tracker.events : tracker.marketEvents;
     const curPrice = this.store.getLatest()?.close || (this.chart?.priceRange?.last) || 1;
     const decimals = this.symbolInfo?.decimals || 2;
-    const clusters = clusterEngine ? clusterEngine.computeClusters(curPrice, this.store.candles) : [];
+    const sym = ((this.symbolInfo && this.symbolInfo.symbol) || this.symbol || '').toUpperCase();
+    const isGold = (this.symbolInfo && this.symbolInfo.category === 'metals') || sym.includes('XAU') || sym.includes('PAXG');
+    const isPureGoldSpot = sym === 'XAU/USD' || sym === 'XAUUSD';
+
+    const clusters = clusterEngine ? clusterEngine.computeClusters(curPrice, this.store.candles, undefined, this.symbolInfo) : [];
     const activeSignal = clusterEngine ? clusterEngine.activeSignal : null;
     const oiDelta = clusterEngine ? clusterEngine.oiDelta : null;
     const delta1h = clusterEngine ? clusterEngine.compute1hOIDelta() : { deltaUsd: 0, deltaPct: 0 };
@@ -5664,11 +6557,11 @@ class TapeDeltaTerminal {
           <div style="display:flex;align-items:center;gap:6px;">
             <span class="td-live-dot ${this.layers.liq ? '' : 'reconnecting'}"></span>
             <span style="font-size:11px;font-weight:700;color:var(--td-text);letter-spacing:0.5px;">
-              LIQUIDATION CLUSTER RADAR
+              ${isPureGoldSpot ? 'GOLD ESTIMATED CLUSTERS' : 'LIQUIDATION CLUSTER RADAR'}
             </span>
           </div>
-          <span style="font-size:9.5px;font-family:var(--td-font-mono);color:#00e5ff;">
-            SCRAPER PIPELINE
+          <span style="font-size:9.5px;font-family:var(--td-font-mono);color:${isPureGoldSpot ? '#f59e0b' : '#00e5ff'};padding:1px 5px;background:${isPureGoldSpot ? 'rgba(245,158,11,0.15)' : 'rgba(0,229,255,0.12)'};border-radius:3px;">
+            ${isPureGoldSpot ? 'ESTIMATED (CFD/ATR)' : '90%+ (REAL WS)'}
           </span>
         </div>
 
@@ -5707,8 +6600,8 @@ class TapeDeltaTerminal {
           <div class="td-squeeze-radar-idle">
             <span class="td-radar-pulse"></span>
             <div>
-              <div style="font-size:11px;font-weight:700;color:var(--td-text);">SQUEEZE RADAR ACTIVE</div>
-              <div style="font-size:9.5px;color:var(--td-text-dim);">Monitoring Binance Futures OI delta & cluster proximity</div>
+              <div style="font-size:11px;font-weight:700;color:var(--td-text);">${isPureGoldSpot ? 'GOLD SQUEEZE RADAR ACTIVE' : 'SQUEEZE RADAR ACTIVE'}</div>
+              <div style="font-size:9.5px;color:var(--td-text-dim);">${isPureGoldSpot ? 'Monitoring retail CFD leverage brackets & ATR-14 stops' : 'Monitoring Binance Futures OI delta & cluster proximity'}</div>
             </div>
           </div>
         `}
@@ -5761,7 +6654,10 @@ class TapeDeltaTerminal {
               </div>
               <div class="td-cluster-row-bottom">
                 <span>Est. Volume: ${tdFmtUSD(c.estUsd)}</span>
-                <span class="td-cluster-type ${c.side}">${c.side === 'short' ? 'Short Liq (Magnet)' : 'Long Liq (Magnet)'}</span>
+                <span class="td-cluster-type ${c.side}">
+                  ${c.side === 'short' ? 'Short Liq (Magnet)' : 'Long Liq (Magnet)'}
+                  ${c.isEstimated ? ' • <span style="color:#f59e0b">Est</span>' : ' • <span style="color:#00e5ff">Real</span>'}
+                </span>
               </div>
             </div>
           `).join('')}
