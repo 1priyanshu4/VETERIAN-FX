@@ -21,6 +21,63 @@
   /* --------------------------------------------------------------------------
      1. FULL SIDEBAR COLLAPSE / EXPAND TOGGLE
      -------------------------------------------------------------------------- */
+  function togglePlatformSidebar(forceState) {
+    const sidebar = document.querySelector('[data-slot="sidebar"]');
+    const triggers = document.querySelectorAll('[data-sidebar="trigger"], [data-slot="sidebar-trigger"], .sidebar-close-btn');
+
+    if (window.innerWidth < 768) {
+      // Mobile drawer toggle
+      const isMobileOpen = typeof forceState === 'boolean'
+        ? document.body.classList.toggle('sidebar-mobile-open', forceState)
+        : document.body.classList.toggle('sidebar-mobile-open');
+      triggers.forEach(t => t.setAttribute('aria-expanded', isMobileOpen ? 'true' : 'false'));
+    } else {
+      // Desktop toggle
+      const isCollapsed = typeof forceState === 'boolean'
+        ? document.body.classList.toggle('sidebar-collapsed', forceState)
+        : document.body.classList.toggle('sidebar-collapsed');
+
+      if (sidebar) {
+        sidebar.setAttribute('data-state', isCollapsed ? 'collapsed' : 'expanded');
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY_SIDEBAR, isCollapsed ? 'true' : 'false');
+      } catch (e) {}
+
+      // Update aria attributes and titles on triggers
+      triggers.forEach(t => {
+        t.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        t.title = isCollapsed ? 'Expand Navigation Sidebar' : 'Collapse Navigation Sidebar (Ctrl+B)';
+      });
+
+      // Sync terminal toolbar button if present
+      const tdBtn = document.querySelector('#td-sidebar-toggle-btn');
+      if (tdBtn) {
+        tdBtn.classList.toggle('active', isCollapsed);
+      }
+
+      // Inform charts and fluid layouts of dimension changes
+      window.dispatchEvent(new Event('resize'));
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+        if (window.chartTerminal?.chart?.resize) {
+          window.chartTerminal.chart.resize();
+          window.chartTerminal.chart.requestRender?.();
+        }
+      }, 100);
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+        if (window.chartTerminal?.chart?.resize) {
+          window.chartTerminal.chart.resize();
+          window.chartTerminal.chart.requestRender?.();
+        }
+      }, 280);
+    }
+  }
+
+  // Expose globally so chart-terminal.js and other scripts can invoke reliably
+  window.togglePlatformSidebar = togglePlatformSidebar;
+
   function initSidebarTrigger() {
     const sidebar = document.querySelector('[data-slot="sidebar"]');
     const isDesktop = window.innerWidth >= 768;
@@ -34,8 +91,26 @@
       }
     } catch (e) {}
 
+    // Inject an inline collapse button inside the sidebar header for easy 1-click collapse
+    const headerLi = document.querySelector('[data-slot="sidebar-header"] li[data-slot="sidebar-menu-item"]');
+    if (headerLi && !headerLi.querySelector('.sidebar-header-collapse-trigger')) {
+      const collapseBtn = document.createElement('button');
+      collapseBtn.type = 'button';
+      collapseBtn.className = 'sidebar-header-collapse-trigger';
+      collapseBtn.setAttribute('data-sidebar', 'trigger');
+      collapseBtn.title = 'Collapse Sidebar (Ctrl+B)';
+      collapseBtn.setAttribute('aria-label', 'Collapse Sidebar');
+      collapseBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2"/>
+          <path d="M9 3v18"/>
+        </svg>
+      `;
+      headerLi.appendChild(collapseBtn);
+    }
+
     // Attach listeners to all sidebar trigger buttons
-    const triggers = document.querySelectorAll('[data-sidebar="trigger"], [data-slot="sidebar-trigger"]');
+    const triggers = document.querySelectorAll('[data-sidebar="trigger"], [data-slot="sidebar-trigger"], .sidebar-close-btn');
     triggers.forEach((trigger) => {
       if (trigger._sidebarBound) return;
       trigger._sidebarBound = true;
@@ -43,32 +118,21 @@
       trigger.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-
-        if (window.innerWidth < 768) {
-          // Mobile drawer toggle
-          document.body.classList.toggle('sidebar-mobile-open');
-        } else {
-          // Desktop toggle
-          const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
-          if (sidebar) {
-            sidebar.setAttribute('data-state', isCollapsed ? 'collapsed' : 'expanded');
-          }
-          try {
-            localStorage.setItem(STORAGE_KEY_SIDEBAR, isCollapsed ? 'true' : 'false');
-          } catch (e) {}
-
-          // Inform charts and fluid layouts of dimension changes
-          window.dispatchEvent(new Event('resize'));
-          setTimeout(() => {
-            window.dispatchEvent(new Event('resize'));
-            if (window.chartTerminal?.chart?.resize) {
-              window.chartTerminal.chart.resize();
-              window.chartTerminal.chart.requestRender?.();
-            }
-          }, 120);
-        }
+        togglePlatformSidebar();
       });
     });
+
+    // Global keyboard shortcut: '[' or 'Ctrl+B'
+    if (!window._sidebarKeyBound) {
+      window._sidebarKeyBound = true;
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === '[' || (e.ctrlKey && e.key.toLowerCase() === 'b')) {
+          e.preventDefault();
+          togglePlatformSidebar();
+        }
+      });
+    }
   }
 
   /* --------------------------------------------------------------------------

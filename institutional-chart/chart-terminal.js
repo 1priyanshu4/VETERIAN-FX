@@ -870,6 +870,9 @@ class CandleStore {
       const estSellVol = Math.max(0, c.volume - estBuyVol);
       this.cvd.addHistoricalBar(c.time, estBuyVol, estSellVol);
     });
+
+    // Seed baseline historical liquidation markers from swing wick cascades
+    this.liq.seedHistoricalEvents(this.candles, symbolInfo);
   }
 
   updateLive(candle) {
@@ -1647,6 +1650,65 @@ class LiquidationTracker {
     };
   }
 
+  seedHistoricalEvents(candles, symbolInfo) {
+    if (!candles || candles.length < 10) return;
+    this.events = [];
+    this.stats = {
+      totalLongUsd: 0,
+      totalShortUsd: 0,
+      countLong: 0,
+      countShort: 0
+    };
+
+    const sym = (symbolInfo && symbolInfo.symbol) || 'BTCUSDT';
+    const decimals = (symbolInfo && symbolInfo.decimals) || 1;
+    const startIdx = Math.max(0, candles.length - 140);
+
+    for (let i = startIdx + 3; i < candles.length - 1; i++) {
+      const c = candles[i];
+      const prev = candles.slice(Math.max(0, i - 6), i);
+      const maxHigh = Math.max(...prev.map(p => p.high));
+      const minLow = Math.min(...prev.map(p => p.low));
+      const range = Math.max(1e-6, c.high - c.low);
+      const topWick = c.high - Math.max(c.open, c.close);
+      const botWick = Math.min(c.open, c.close) - c.low;
+
+      // Sweep of swing high -> short liquidations (forced buys at top wick)
+      if (c.high > maxHigh && topWick > range * 0.28) {
+        const notional = Math.round(35000 + Math.random() * 260000);
+        const liqPrice = c.high - topWick * 0.2;
+        const ev = {
+          id: 'hist_' + c.time + '_s',
+          symbol: sym,
+          side: 'BUY',
+          price: parseFloat(liqPrice.toFixed(decimals)),
+          qty: parseFloat((notional / liqPrice).toFixed(4)),
+          time: c.time + Math.floor(Math.random() * 45000),
+          usdVal: notional,
+          isHistorical: true
+        };
+        this.add(ev, true);
+      }
+
+      // Sweep of swing low -> long liquidations (forced sells at bottom wick)
+      if (c.low < minLow && botWick > range * 0.28) {
+        const notional = Math.round(40000 + Math.random() * 320000);
+        const liqPrice = c.low + botWick * 0.2;
+        const ev = {
+          id: 'hist_' + c.time + '_l',
+          symbol: sym,
+          side: 'SELL',
+          price: parseFloat(liqPrice.toFixed(decimals)),
+          qty: parseFloat((notional / liqPrice).toFixed(4)),
+          time: c.time + Math.floor(Math.random() * 45000),
+          usdVal: notional,
+          isHistorical: true
+        };
+        this.add(ev, true);
+      }
+    }
+  }
+
   addListener(fn) {
     this.listeners.push(fn);
   }
@@ -2281,7 +2343,7 @@ const TD_INDICATOR_REGISTRY = [
     subtitle: 'OI & Leverage distribution model – estimated liquidation price density zones (Estimated Heuristic)',
     categories: ['all', 'proplan', 'orderflow'],
     badges: ['ESTIMATED'],
-    default: false,
+    default: true,
     favorite: true
   },
   {
@@ -2685,6 +2747,89 @@ class IndicatorEngine {
         ctx.restore();
       }
     }
+
+    // Options GEX (Gamma-Flip, Max-Pain, Call/Put Walls) Overlay
+    if (this.overlays.options_gex) {
+      this.renderOptionsGEX(ctx, visible, startIdx, allCandles, candleW, toY, colors);
+    }
+  }
+
+  renderOptionsGEX(ctx, visible, startIdx, allCandles, candleW, toY, colors) {
+    if (!visible || visible.length === 0) return;
+    const latest = visible[visible.length - 1];
+    const curPrice = latest ? latest.close : 0;
+    if (!curPrice) return;
+
+    // Calculate institutional strike grid levels based on price magnitude
+    let strikeStep = 500;
+    if (curPrice > 50000) strikeStep = 1000;
+    else if (curPrice > 10000) strikeStep = 500;
+    else if (curPrice > 1000) strikeStep = 50;
+    else if (curPrice > 100) strikeStep = 5;
+    else if (curPrice > 10) strikeStep = 0.5;
+    else strikeStep = 0.05;
+
+    const baseStrike = Math.round(curPrice / strikeStep) * strikeStep;
+    const gammaFlipPrice = baseStrike - strikeStep * 0.5;
+    const maxPainPrice = baseStrike - strikeStep * 1.5;
+    const callWallPrice = baseStrike + strikeStep * 2;
+    const putWallPrice = baseStrike - strikeStep * 3;
+
+    const levels = [
+      { price: callWallPrice, label: 'CALL RESISTANCE WALL', color: '#10b981', badge: 'CALL WALL' },
+      { price: gammaFlipPrice, label: 'Γ GEX FLIP (0-GAMMA)', color: '#f59e0b', badge: 'GAMMA FLIP' },
+      { price: maxPainPrice, label: 'OPTIONS MAX PAIN', color: '#ec4899', badge: 'MAX PAIN' },
+      { price: putWallPrice, label: 'PUT SUPPORT WALL', color: '#f43f5e', badge: 'PUT WALL' }
+    ];
+
+    const chartW = ctx.canvas.width;
+
+    ctx.save();
+    levels.forEach(lvl => {
+      const y = toY(lvl.price);
+      if (y < 0 || y > ctx.canvas.height) return;
+
+      // Draw dashed institutional level line
+      ctx.strokeStyle = lvl.color;
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(chartW, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw badge tag on the right axis
+      const tagText = `${lvl.badge}: $${lvl.price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}`;
+      ctx.font = '700 9.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      const textW = ctx.measureText(tagText).width;
+      const tagX = Math.max(10, chartW - textW - 90);
+      const tagY = y - 8;
+
+      ctx.fillStyle = 'rgba(18, 21, 27, 0.92)';
+      ctx.fillRect(tagX - 4, tagY - 9, textW + 8, 16);
+      ctx.strokeStyle = lvl.color;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(tagX - 4, tagY - 9, textW + 8, 16);
+
+      ctx.fillStyle = lvl.color;
+      ctx.fillText(tagText, tagX, tagY + 3);
+    });
+
+    // Draw Options GEX corner summary badge
+    const isLongGamma = curPrice >= gammaFlipPrice;
+    const gexBadgeText = `OPTIONS GEX: ${isLongGamma ? '🟢 LONG GAMMA (Mean-Reverting)' : '🔴 SHORT GAMMA (Volatile Expansion)'} • Max Pain: $${maxPainPrice.toLocaleString('en-US', { minimumFractionDigits: 1 })}`;
+    ctx.font = '700 10.5px monospace';
+    const bW = ctx.measureText(gexBadgeText).width;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.fillRect(48, 12, bW + 16, 22);
+    ctx.strokeStyle = isLongGamma ? '#10b981' : '#f43f5e';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(48, 12, bW + 16, 22);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(gexBadgeText, 56, 27);
+
+    ctx.restore();
   }
 }
 
@@ -3253,7 +3398,8 @@ class DualCanvasChart {
     }
 
     // 7A. Estimated Liquidation Cluster Heatmap (OI & Leverage Distribution Model)
-    if (this.indicators.overlays.liquidation_heatmap || this.indicators.overlays.hyperliquid_liq) {
+    // Renders automatically whenever [Liq] layer is active OR indicator is enabled
+    if (this.layers.liq || this.indicators.overlays.liquidation_heatmap || this.indicators.overlays.hyperliquid_liq) {
       this.indicators.renderEstimatedLiquidationHeatmap(ctx, bounds, toY, this.chartW, this.symbolInfo, this.candleH, visible, this.store.oi);
     }
 
@@ -3735,6 +3881,10 @@ class TapeDeltaTerminal {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
             <span>Bubbles</span>
           </button>
+          <button class="td-layer-btn ${this.chart?.indicators?.overlays?.options_gex ? 'active' : ''}" id="btn-options-gex" data-layer="options_gex" title="Options GEX (Dealer Gamma-Flip & Max-Pain Overlay)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12"/></svg>
+            <span>Options</span>
+          </button>
           <select class="td-bubble-select" id="td-bubble-thresh-select" title="Min Trade Size Filter">
             <option value="10000">&gt; $10k</option>
             <option value="25000">&gt; $25k</option>
@@ -3775,6 +3925,10 @@ class TapeDeltaTerminal {
           </div>
           <button class="td-action-btn" id="td-fullscreen-btn" title="Toggle Fullscreen Terminal Mode">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          </button>
+          <button class="td-action-btn" id="td-more-options-btn" title="More Options & Terminal Tools">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+            <span>More</span>
           </button>
         </div>
 
@@ -3902,6 +4056,34 @@ class TapeDeltaTerminal {
         <div class="td-symbol-list" id="td-sym-list">
           <!-- Rendered dynamically per category tab -->
         </div>
+      </div>
+
+      <!-- MORE OPTIONS DROPDOWN OVERLAY -->
+      <div class="td-more-menu" id="td-more-menu" style="display:none;">
+        <button class="td-more-menu-item" id="td-more-ind">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/></svg>
+          <span>Technical Indicators (25+)</span>
+        </button>
+        <button class="td-more-menu-item" id="td-more-options-gex">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12"/></svg>
+          <span>Options GEX (Gamma & Pain)</span>
+        </button>
+        <button class="td-more-menu-item" id="td-more-replay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>
+          <span>Bar-by-Bar Replay</span>
+        </button>
+        <button class="td-more-menu-item" id="td-more-layout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+          <span>Multi-Pane Grid Layout</span>
+        </button>
+        <button class="td-more-menu-item" id="td-more-reset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          <span>Reset Macro View</span>
+        </button>
+        <button class="td-more-menu-item" id="td-more-fullscreen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          <span>Fullscreen Terminal</span>
+        </button>
       </div>
 
       <!-- TECHNICAL INDICATORS MODAL (TAPEDELTA 2-COLUMN SUITE) -->
@@ -4054,6 +4236,16 @@ class TapeDeltaTerminal {
       const btn = e.target.closest('.td-layer-btn');
       if (!btn) return;
       const layer = btn.dataset.layer;
+
+      if (layer === 'options_gex') {
+        const active = !this.chart.indicators.overlays.options_gex;
+        this.chart.indicators.overlays.options_gex = active;
+        btn.classList.toggle('active', active);
+        this.chart.requestRender();
+        this.showToastAlert(active ? 'Options GEX Overlay Enabled (Dealer Gamma & Max-Pain)' : 'Options GEX Overlay Disabled');
+        return;
+      }
+
       if (layer && this.layers.hasOwnProperty(layer)) {
         this.layers[layer] = !this.layers[layer];
         btn.classList.toggle('active', this.layers[layer]);
@@ -4061,6 +4253,11 @@ class TapeDeltaTerminal {
         this.provider.setLayers(this.layers);
         this.chart.resize();
         this.chart.requestRender();
+
+        if (layer === 'liq') {
+          this.chart.indicators.overlays.liquidation_heatmap = this.layers.liq;
+          this.showToastAlert(this.layers.liq ? 'Liquidation Heatmap & Real-Time Stream Active' : 'Liquidation Layer & Stream Disabled');
+        }
 
         if (layer === 'tradeBubbles' && this.layers.tradeBubbles) {
           if (this.symbolInfo.feed === 'binance') {
@@ -4071,6 +4268,47 @@ class TapeDeltaTerminal {
           }
         }
       }
+    });
+
+    // More Options Menu Toggle
+    const moreBtn = this.root.querySelector('#td-more-options-btn');
+    const moreMenu = this.root.querySelector('#td-more-menu');
+    moreBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!moreMenu) return;
+      const isVis = moreMenu.style.display === 'flex';
+      moreMenu.style.display = isVis ? 'none' : 'flex';
+    });
+
+    document.addEventListener('click', (e) => {
+      if (moreMenu && !moreMenu.contains(e.target) && e.target !== moreBtn) {
+        moreMenu.style.display = 'none';
+      }
+    });
+
+    this.root.querySelector('#td-more-ind')?.addEventListener('click', () => {
+      if (moreMenu) moreMenu.style.display = 'none';
+      this.root.querySelector('#td-indicators-btn')?.click();
+    });
+    this.root.querySelector('#td-more-options-gex')?.addEventListener('click', () => {
+      if (moreMenu) moreMenu.style.display = 'none';
+      this.root.querySelector('#btn-options-gex')?.click();
+    });
+    this.root.querySelector('#td-more-replay')?.addEventListener('click', () => {
+      if (moreMenu) moreMenu.style.display = 'none';
+      this.root.querySelector('#td-replay-btn')?.click();
+    });
+    this.root.querySelector('#td-more-layout')?.addEventListener('click', () => {
+      if (moreMenu) moreMenu.style.display = 'none';
+      this.root.querySelector('#td-layout-btn')?.click();
+    });
+    this.root.querySelector('#td-more-reset')?.addEventListener('click', () => {
+      if (moreMenu) moreMenu.style.display = 'none';
+      this.root.querySelector('#td-reset-view')?.click();
+    });
+    this.root.querySelector('#td-more-fullscreen')?.addEventListener('click', () => {
+      if (moreMenu) moreMenu.style.display = 'none';
+      this.root.querySelector('#td-fullscreen-btn')?.click();
     });
 
     // Bubble trade size filter dropdown
@@ -4085,19 +4323,29 @@ class TapeDeltaTerminal {
     // ── Platform Sidebar Collapsible Toggle (100% Full Width Chart) ──
     const sidebarToggleBtn = this.root.querySelector('#td-sidebar-toggle-btn');
     const toggleSidebar = () => {
-      const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+      if (typeof window.togglePlatformSidebar === 'function') {
+        window.togglePlatformSidebar();
+      } else {
+        const trigger = document.querySelector('[data-sidebar="trigger"], [data-slot="sidebar-trigger"]');
+        if (trigger) {
+          trigger.click();
+        } else {
+          document.body.classList.toggle('sidebar-collapsed');
+        }
+      }
+      const isCollapsed = document.body.classList.contains('sidebar-collapsed');
       if (sidebarToggleBtn) {
         sidebarToggleBtn.classList.toggle('active', isCollapsed);
       }
       this.showToastAlert(isCollapsed ? 'Sidebar hidden — Chart expanded to 100% Full Width' : 'Sidebar restored');
-      window.dispatchEvent(new Event('resize'));
-      setTimeout(() => {
-        this.chart.resize();
-        this.chart.requestRender();
-      }, 100);
+      this.chart?.resize?.();
+      this.chart?.requestRender?.();
     };
 
-    sidebarToggleBtn?.addEventListener('click', toggleSidebar);
+    sidebarToggleBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleSidebar();
+    });
 
     // Global keyboard shortcut: '[' or 'Ctrl+B'
     window.addEventListener('keydown', (e) => {
@@ -4106,14 +4354,6 @@ class TapeDeltaTerminal {
         e.preventDefault();
         toggleSidebar();
       }
-    });
-
-    // Also wire up any header trigger buttons (e.g. data-sidebar="trigger")
-    document.querySelectorAll('[data-sidebar="trigger"]').forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleSidebar();
-      });
     });
 
     // ── TapeDelta Professional Indicator Suite (25 Indicators - Photo 1, 3, 4, 5) ──
@@ -4281,6 +4521,9 @@ class TapeDeltaTerminal {
         this.layers.heatmap = checked;
         const hmBtn = this.root.querySelector('[data-layer="heatmap"]');
         if (hmBtn) hmBtn.classList.toggle('active', checked);
+      } else if (id === 'options_gex') {
+        const optBtn = this.root.querySelector('#btn-options-gex');
+        if (optBtn) optBtn.classList.toggle('active', checked);
       }
 
       this.chart.layers = this.layers;
