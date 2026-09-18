@@ -1,0 +1,182 @@
+/* ==========================================================================
+   VETERIAN-FX PLATFORM SIDEBAR & NAVIGATION SYSTEM
+   Collapsible Sidebar + Accordion Category Sections + Mobile Drawer
+   ========================================================================== */
+
+/* --- Smooth Transitions for Sidebar Shell --- */
+[data-slot="sidebar-gap"],
+[data-slot="sidebar-container"],
+[data-slot="sidebar"],
+main[data-slot="sidebar-inset"] {
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* --- Collapsed Desktop Sidebar --- */
+body.sidebar-collapsed [data-slot="sidebar-wrapper"] {
+  --sidebar-width: 0rem !important;
+  --sidebar-width-icon: 0rem !important;
+}
+
+body.sidebar-collapsed [data-slot="sidebar"] {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+}
+
+body.sidebar-collapsed [data-slot="sidebar-gap"] {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+}
+
+body.sidebar-collapsed [data-slot="sidebar-container"] {
+  display: none !important;
+  transform: translateX(-100%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.sidebar-collapsed main[data-slot="sidebar-inset"] {
+  margin-left: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  border-radius: 0 !important;
+}
+
+/* --- Mobile Drawer Mode (< 768px) --- */
+@media (max-width: 767px) {
+  body.sidebar-mobile-open [data-slot="sidebar-container"] {
+    display: flex !important;
+    transform: translateX(0) !important;
+    z-index: 60 !important;
+    background: var(--sidebar, #171717) !important;
+    box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  body.sidebar-mobile-open .sidebar-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* ==========================================================================
+   INTERACTIVE COLLAPSIBLE CATEGORY SECTIONS
+   ========================================================================== */
+
+/* Category Group Label Trigger */
+[data-slot="sidebar-group-label"] {
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 6px 8px !important;
+  border-radius: 6px !important;
+  transition: background-color 0.15s ease, color 0.15s ease, padding 0.15s ease !important;
+  position: relative !important;
+}
+
+[data-slot="sidebar-group-label"]:hover {
+  background-color: var(--sidebar-accent, rgba(255, 255, 255, 0.06)) !important;
+  color: var(--sidebar-foreground, #ffffff) !important;
+}
+
+[data-slot="sidebar-group-label"]:active {
+  transform: translateY(0.5px);
+}
+
+/* Section Title text wrapper */
+.sidebar-group-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Rotating Chevron Icon */
+.sidebar-group-chevron {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.2;
+  opacity: 0.55;
+  transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+[data-slot="sidebar-group-label"]:hover .sidebar-group-chevron {
+  opacity: 1;
+}
+
+/* Collapsed State for Sections */
+[data-slot="sidebar-group"].is-collapsed .sidebar-group-chevron {
+  transform: rotate(-90deg);
+}
+
+/* Submenu container animation */
+[data-slot="sidebar-group"] > ul[data-slot="sidebar-menu"],
+[data-slot="sidebar-group"] > [data-slot="sidebar-group-content"] {
+  overflow: hidden;
+  max-height: 520px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height 0.26s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.22s ease,
+              transform 0.22s ease,
+              margin 0.22s ease;
+}
+
+[data-slot="sidebar-group"].is-collapsed > ul[data-slot="sidebar-menu"],
+[data-slot="sidebar-group"].is-collapsed > [data-slot="sidebar-group-content"] {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  transform: translateY(-4px) !important;
+  pointer-events: none !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Active Item Glow Indicator inside Section */
+[data-slot="sidebar-menu-button"][data-active],
+[data-slot="sidebar-menu-button"].active {
+  position: relative;
+  background-color: var(--sidebar-accent, rgba(255, 255, 255, 0.08)) !important;
+  color: var(--sidebar-foreground, #ffffff) !important;
+}
+
+[data-slot="sidebar-menu-button"][data-active]::before,
+[data-slot="sidebar-menu-button"].active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--primary, #3b82f6);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+}
+
+/* Smooth active feedback for sidebar toggle trigger */
+[data-sidebar="trigger"]:active {
+  transform: scale(0.94);
+}

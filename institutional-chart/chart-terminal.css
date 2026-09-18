@@ -1601,3 +1601,620 @@ input:checked + .td-toggle-slider:before {
 @media (max-width: 900px) {
   .hide-mobile { display: none !important; }
 }
+
+/* ==========================================================================
+   PLATFORM SIDEBAR COLLAPSE / MAXIMIZE TRADING VIEWPORT
+   ========================================================================== */
+body.sidebar-collapsed [data-slot="sidebar-wrapper"] {
+  --sidebar-width: 0rem !important;
+  --sidebar-width-icon: 0rem !important;
+}
+body.sidebar-collapsed [data-slot="sidebar"] {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+body.sidebar-collapsed [data-slot="sidebar-gap"] {
+  display: none !important;
+  width: 0 !important;
+}
+body.sidebar-collapsed [data-slot="sidebar-container"] {
+  display: none !important;
+  transform: translateX(-100%) !important;
+}
+body.sidebar-collapsed main[data-slot="sidebar-inset"] {
+  margin: 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  border-radius: 0 !important;
+}
+body.sidebar-collapsed #tapedelta-terminal-root {
+  width: 100vw !important;
+  max-width: 100vw !important;
+}
+.td-sidebar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--td-border);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--td-font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+.td-sidebar-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--td-accent);
+}
+.td-sidebar-btn.active {
+  background: var(--td-accent-glow);
+  border-color: var(--td-accent);
+  color: var(--td-accent);
+}
+
+/* ==========================================================================
+   TAPEDELTA PROFESSIONAL INDICATOR SUITE MODAL (PHOTO 1, 3, 4, 5 SPEC)
+   ========================================================================== */
+.td-modal-dialog-large {
+  width: 880px !important;
+  max-width: 95vw !important;
+  height: 640px !important;
+  max-height: 92vh !important;
+  background: #12151b !important;
+  border: 1px solid #272c35 !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.88) !important;
+  overflow: hidden !important;
+  color: #e2e8f0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.td-ind-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #232730;
+  background: #151820;
+}
+
+.td-ind-search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 520px;
+}
+.td-ind-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+  width: 16px;
+  height: 16px;
+}
+.td-ind-search-input {
+  width: 100%;
+  height: 38px;
+  background: #0d0f14;
+  border: 1px solid #2b313d;
+  border-radius: 8px;
+  padding: 0 14px 0 38px;
+  color: #ffffff;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.td-ind-search-input:focus {
+  border-color: #f59e0b;
+}
+
+.td-ind-modal-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Left Navigation Rail */
+.td-ind-nav-pane {
+  width: 210px;
+  background: #101217;
+  border-right: 1px solid #232730;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.td-ind-nav-group-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  text-transform: uppercase;
+  padding: 0 10px;
+  margin-bottom: 6px;
+}
+.td-ind-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+.td-ind-nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+.td-ind-nav-item.active {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border-left: 3px solid #f59e0b;
+}
+.td-ind-nav-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.td-ind-nav-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #1e232d;
+  color: #94a3b8;
+}
+.td-ind-nav-badge.pro-badge {
+  background: #f59e0b;
+  color: #000000;
+}
+.td-ind-nav-badge.hot-badge {
+  background: rgba(244, 63, 94, 0.2);
+  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+/* Right Indicators List */
+.td-ind-list-pane {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #12151b;
+}
+.td-ind-list-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.td-ind-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #161922;
+  border: 1px solid #232732;
+  border-radius: 8px;
+  transition: all 0.12s ease;
+}
+.td-ind-row:hover {
+  background: #1a1e2a;
+  border-color: #343c4d;
+}
+.td-ind-row.is-active {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.04);
+}
+
+.td-ind-row-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 74%;
+}
+.td-ind-row-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.td-ind-row-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+.td-ind-tag-pro {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid #f59e0b;
+  color: #f59e0b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.td-ind-tag-hot {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid #ef4444;
+  color: #f87171;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.td-ind-row-desc {
+  font-size: 11.5px;
+  color: #8392a5;
+  line-height: 1.35;
+}
+
+.td-ind-row-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.td-ind-star-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.12s;
+}
+.td-ind-star-btn:hover, .td-ind-star-btn.fav {
+  color: #f59e0b;
+}
+
+/* TapeDelta ON/OFF Pill Toggle Switch */
+.td-ind-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.td-ind-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.td-ind-switch-track {
+  width: 56px;
+  height: 25px;
+  background: #232732;
+  border: 1px solid #333a49;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 7px;
+  font-size: 9px;
+  font-weight: 900;
+  font-family: var(--td-font-mono);
+  color: #64748b;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.td-ind-switch-thumb {
+  position: absolute;
+  top: 2.5px;
+  left: 2.5px;
+  width: 18px;
+  height: 18px;
+  background: #94a3b8;
+  border-radius: 50%;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.td-ind-switch input:checked + .td-ind-switch-track {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+.td-ind-switch input:checked + .td-ind-switch-track .td-ind-switch-thumb {
+  transform: translateX(31px);
+  background: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+}
+
+/* ==========================================================================
+   LIVE LIQUIDATION FEED & HEATMAP DRAWER WIDGET
+   ========================================================================== */
+
+.td-liq-feed-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 10px;
+  gap: 10px;
+  background: var(--td-panel-bg);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.td-liq-feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--td-border);
+  border-radius: 6px;
+}
+
+.td-liq-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.td-liq-metric-card {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(20, 20, 24, 0.9);
+  border: 1px solid var(--td-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.td-liq-metric-card.long {
+  border-left: 3px solid #ff7a00;
+}
+
+.td-liq-metric-card.short {
+  border-left: 3px solid #00e5ff;
+}
+
+.td-liq-metric-card .lbl {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--td-text-muted);
+}
+
+.td-liq-metric-card.long .val {
+  font-size: 14px;
+  font-weight: 800;
+  font-family: var(--td-font-mono);
+  color: #ff7a00;
+}
+
+.td-liq-metric-card.short .val {
+  font-size: 14px;
+  font-weight: 800;
+  font-family: var(--td-font-mono);
+  color: #00e5ff;
+}
+
+.td-liq-metric-card .cnt {
+  font-size: 9px;
+  color: var(--td-text-dim);
+  font-family: var(--td-font-mono);
+}
+
+/* Ratio Bar */
+.td-liq-ratio-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.td-liq-ratio-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  font-family: var(--td-font-mono);
+}
+
+.td-liq-ratio-track {
+  height: 5px;
+  width: 100%;
+  background: #00e5ff;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.td-liq-ratio-fill-long {
+  height: 100%;
+  background: #ff7a00;
+  transition: width 0.3s ease;
+}
+
+/* Scope Toggle */
+.td-liq-scope-toggle {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 3px;
+  border-radius: 6px;
+  border: 1px solid var(--td-border);
+}
+
+.td-scope-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--td-text-muted);
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.td-scope-btn:hover {
+  color: var(--td-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.td-scope-btn.active {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+/* Liquidation Events Scroll List */
+.td-liq-event-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 2px;
+}
+
+.td-liq-card {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(18, 18, 22, 0.85);
+  border: 1px solid var(--td-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.td-liq-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-2px);
+}
+
+.td-liq-card.is-long {
+  border-left: 3px solid #ff7a00;
+}
+
+.td-liq-card.is-short {
+  border-left: 3px solid #00e5ff;
+}
+
+.td-liq-card.is-whale {
+  background: rgba(30, 20, 10, 0.85);
+  box-shadow: 0 0 12px rgba(255, 122, 0, 0.15);
+}
+
+.td-liq-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.td-liq-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1.5px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.td-liq-badge.long {
+  background: rgba(255, 122, 0, 0.2);
+  color: #ff7a00;
+  border: 1px solid rgba(255, 122, 0, 0.4);
+}
+
+.td-liq-badge.short {
+  background: rgba(0, 229, 255, 0.2);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+}
+
+.td-liq-card-sym {
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: var(--td-font-mono);
+  color: #ffffff;
+}
+
+.td-liq-card-time {
+  font-size: 9px;
+  color: var(--td-text-dim);
+  font-family: var(--td-font-mono);
+}
+
+.td-liq-card-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.td-liq-card-usd {
+  font-size: 13.5px;
+  font-weight: 800;
+  font-family: var(--td-font-mono);
+}
+
+.td-liq-card-price {
+  font-size: 11px;
+  color: var(--td-text-muted);
+  font-family: var(--td-font-mono);
+}
+
+.td-liq-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9.5px;
+  color: var(--td-text-dim);
+  font-family: var(--td-font-mono);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 4px;
+}
+
+.td-liq-whale-tag {
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #ff9d3b;
+  background: rgba(255, 157, 59, 0.18);
+  border: 1px solid rgba(255, 157, 59, 0.4);
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.td-liq-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  text-align: center;
+  color: var(--td-text-muted);
+  font-size: 11px;
+  padding: 20px;
+}

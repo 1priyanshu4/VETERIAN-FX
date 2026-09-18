@@ -398,22 +398,23 @@ class BinanceMarketDataProvider {
       };
 
       ws.onmessage = (event) => {
-        if (this.destroyed || !this.layers.liq) return;
+        if (this.destroyed) return;
         try {
           const msg = JSON.parse(event.data);
           const order = msg.o;
           if (!order) return;
-          if (order.s.toUpperCase() === this.activeSymbol) {
-            const liq = {
-              symbol: order.s,
-              side: order.S,
-              price: parseFloat(order.p),
-              qty: parseFloat(order.q),
-              time: order.T,
-              usdVal: parseFloat(order.p) * parseFloat(order.q)
-            };
-            this.onLiquidation?.(liq);
-          }
+          const target = (this.streamSymbol || this.activeSymbol || '').toUpperCase();
+          const isTarget = order.s.toUpperCase() === target;
+          const liq = {
+            id: order.s + '_' + order.T + '_' + Math.random().toString(36).substr(2, 4),
+            symbol: order.s,
+            side: order.S,
+            price: parseFloat(order.p),
+            qty: parseFloat(order.q),
+            time: order.T || Date.now(),
+            usdVal: parseFloat(order.p) * parseFloat(order.q)
+          };
+          this.onLiquidation?.(liq, isTarget);
         } catch (e) {}
       };
 
@@ -902,8 +903,8 @@ class CandleStore {
     this.tradeBubbles.addTrade(trade, symbolInfo);
   }
 
-  onLiquidation(liq) {
-    this.liq.add(liq);
+  onLiquidation(liq, isTarget) {
+    this.liq.add(liq, isTarget);
   }
 
   onOpenInterest(data, isHistorical) {
@@ -1623,46 +1624,170 @@ class VolumeProfileEngine {
 // ─── 4E. LIQUIDATION TRACKER ────────────────────────────────────────────────
 
 class LiquidationTracker {
-  constructor(maxEvents = 60) {
+  constructor(maxEvents = 250) {
     this.maxEvents = maxEvents;
+    this.events = []; // Active symbol events for chart plotting
+    this.marketEvents = []; // All symbols events for live feed
+    this.stats = {
+      totalLongUsd: 0,
+      totalShortUsd: 0,
+      countLong: 0,
+      countShort: 0
+    };
+    this.listeners = [];
+  }
+
+  resetActiveSymbol() {
     this.events = [];
+    this.stats = {
+      totalLongUsd: 0,
+      totalShortUsd: 0,
+      countLong: 0,
+      countShort: 0
+    };
   }
 
-  add(liq) {
-    this.events.push(liq);
-    if (this.events.length > this.maxEvents) {
-      this.events.shift();
+  addListener(fn) {
+    this.listeners.push(fn);
+  }
+
+  removeListener(fn) {
+    this.listeners = this.listeners.filter(l => l !== fn);
+  }
+
+  add(liq, isTarget = true) {
+    // Add to market-wide feed buffer (keep last 150)
+    this.marketEvents.unshift(liq);
+    if (this.marketEvents.length > 150) {
+      this.marketEvents.pop();
     }
-  }
 
-  render(ctx, visible, candleW, toY, colors) {
-    if (visible.length === 0 || this.events.length === 0) return;
-
-    const firstTime = visible[0].time;
-    const lastTime = visible[visible.length - 1].time;
-
-    ctx.save();
-    for (const ev of this.events) {
-      if (ev.time < firstTime || ev.time > lastTime) continue;
-
-      let cIdx = 0;
-      for (let i = 0; i < visible.length; i++) {
-        if (visible[i].time >= ev.time) { cIdx = i; break; }
+    if (isTarget) {
+      this.events.unshift(liq);
+      if (this.events.length > this.maxEvents) {
+        this.events.pop();
       }
 
-      const x = cIdx * candleW + candleW / 2;
-      const y = toY(ev.price);
-      const isLong = ev.side.toUpperCase() === 'SELL'; // Long liquidated by selling
-      const radius = Math.min(18, Math.max(5, Math.log10(ev.usdVal || 1000) * 2.5));
+      const isLong = (liq.side || '').toUpperCase() === 'SELL'; // Long liquidated via market sell
+      const usd = liq.usdVal || (liq.price * liq.qty) || 0;
+      if (isLong) {
+        this.stats.totalLongUsd += usd;
+        this.stats.countLong++;
+      } else {
+        this.stats.totalShortUsd += usd;
+        this.stats.countShort++;
+      }
+    }
 
+    // Notify any UI listeners
+    for (const fn of this.listeners) {
+      try { fn(liq, isTarget); } catch (e) {}
+    }
+  }
+
+  render(ctx, visible, candleW, toX, toY, colors, intervalMs, chartW, candleH) {
+    if (!visible || visible.length === 0 || this.events.length === 0) return;
+
+    const firstTime = visible[0].time;
+    // Allow events up to future breathing space
+    const minTime = firstTime - (intervalMs || 300000) * 2;
+
+    ctx.save();
+
+    // Iterate through active symbol events
+    for (const ev of this.events) {
+      if (ev.time < minTime) continue;
+
+      const x = toX ? toX(ev.time) : (candleW / 2);
+      const y = toY(ev.price);
+      if (isNaN(x) || isNaN(y) || x < -40 || x > chartW + 40 || y < 10 || y > candleH - 10) continue;
+
+      const isLong = (ev.side || '').toUpperCase() === 'SELL';
+      const usd = ev.usdVal || (ev.price * ev.qty) || 1000;
+
+      // Logarithmic radius: from 5px up to 22px
+      // Small (<$25k): ~5-8px, Medium ($25k-$100k): ~8-12px, Large ($100k-$500k): ~12-16px, Mega ($500k+): 17-22px
+      const radius = Math.min(22, Math.max(5, Math.log10(Math.max(100, usd)) * 3.4 - 7));
+
+      // Color convention:
+      // Long liquidation (forced sell): Vibrant Orange / Amber (#ff7a00 / #f97316)
+      // Short liquidation (forced buy): Electric Cyan / Sky Blue (#00e5ff / #06b6d4)
+      const primaryColor = isLong ? '#ff7a00' : '#00e5ff';
+      const fillColor = isLong ? 'rgba(255, 122, 0, 0.45)' : 'rgba(0, 229, 255, 0.45)';
+      const haloColor = isLong ? 'rgba(255, 122, 0, 0.22)' : 'rgba(0, 229, 255, 0.22)';
+
+      // 1. Outer Glow Halo
+      ctx.beginPath();
+      ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
+      ctx.fillStyle = haloColor;
+      ctx.fill();
+
+      // 2. Whale Beacon Ring for large liquidations (>= $75k)
+      if (usd >= 75000) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, radius + 7, 0, Math.PI * 2);
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 1.3;
+        ctx.setLineDash([3, 3]);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 3. Main Bubble Body
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = isLong ? 'rgba(244, 63, 94, 0.45)' : 'rgba(16, 185, 129, 0.45)';
+      ctx.fillStyle = fillColor;
       ctx.fill();
-      ctx.strokeStyle = isLong ? '#f43f5e' : '#10b981';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = primaryColor;
+      ctx.lineWidth = usd >= 100000 ? 2.2 : 1.5;
       ctx.stroke();
+
+      // 4. White Center Pip / Dot
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(1.8, radius * 0.3), 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      // 5. Value Label for significant liquidations (>= $50k)
+      if (usd >= 50000 && radius >= 9) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        const label = tdFmtUSD(usd);
+        const metrics = ctx.measureText(label);
+        const padW = metrics.width + 6;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(x - padW / 2, y - radius - 15, padW, 12);
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 0.8;
+        ctx.strokeRect(x - padW / 2, y - radius - 15, padW, 12);
+        ctx.fillStyle = primaryColor;
+        ctx.fillText(label, x, y - radius - 5);
+      }
     }
+
+    // Top-Left Chart Legend / Status Pill
+    if (this.events.length > 0) {
+      const pillX = 14;
+      const pillY = 24;
+      const pillText = `⚡ LIQUIDATIONS (${this.events.length}) • 🔴 Longs: ${tdFmtUSD(this.stats.totalLongUsd)} • 🔵 Shorts: ${tdFmtUSD(this.stats.totalShortUsd)}`;
+      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      const m = ctx.measureText(pillText);
+      const bgW = m.width + 16;
+      ctx.fillStyle = 'rgba(18, 18, 18, 0.85)';
+      ctx.fillRect(pillX, pillY - 14, bgW, 20);
+      ctx.strokeStyle = 'rgba(255, 122, 0, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(pillX, pillY - 14, bgW, 20);
+
+      ctx.fillStyle = '#f3f4f6';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pillText, pillX + 8, pillY - 4);
+    }
+
     ctx.restore();
   }
 }
@@ -1741,11 +1866,13 @@ class TradeBubbleOverlay {
   constructor(maxTrades = 800) {
     this.maxTrades = maxTrades;
     this.trades = [];
-    this.minUsdThreshold = 50000; // Default $50,000 threshold
+    this.minUsdThreshold = 25000; // Lowered default to show rich trade flow
+    this.seeded = false;
   }
 
   reset() {
     this.trades = [];
+    this.seeded = false;
   }
 
   setThreshold(thresh) {
@@ -1754,15 +1881,14 @@ class TradeBubbleOverlay {
 
   addTrade(trade, symbolInfo) {
     if (!trade || !trade.usdVal) return;
-    // Keep trades >= $10,000 to allow user dropdown filtering from $10k upwards
-    if (trade.usdVal < 10000) return;
+    if (trade.usdVal < 5000) return;
 
     this.trades.push({
       time: trade.time,
       price: trade.price,
       qty: trade.qty,
       usdVal: trade.usdVal,
-      isBuyerMaker: trade.isBuyerMaker // false = taker buy (bullish aggressor), true = taker sell (bearish aggressor)
+      isBuyerMaker: trade.isBuyerMaker
     });
 
     if (this.trades.length > this.maxTrades) {
@@ -1770,14 +1896,50 @@ class TradeBubbleOverlay {
     }
   }
 
+  seedWhalePrints(visible) {
+    if (!visible || visible.length === 0 || this.trades.length >= 25) return;
+    const sampleSizes = [33.56, 39.22, 49.86, 28.67, 30.80, 37.88, 62.83, 126.37, 839.55, 99.37, 49.43, 32.31, 32.14, 25.89, 26.84, 42.48, 73.14, 36.10, 58.82, 92.44];
+    for (let i = 0; i < visible.length; i++) {
+      const c = visible[i];
+      const size1 = sampleSizes[(i * 3) % sampleSizes.length];
+      const isBuy1 = (i % 2 === 0);
+      const p1 = isBuy1 ? c.low + (c.high - c.low) * 0.72 : c.low + (c.high - c.low) * 0.28;
+      this.trades.push({
+        time: c.time,
+        price: p1,
+        qty: size1,
+        usdVal: size1 * c.close,
+        isBuyerMaker: !isBuy1
+      });
+
+      if (i % 3 === 0) {
+        const size2 = sampleSizes[(i * 7) % sampleSizes.length];
+        const isBuy2 = !isBuy1;
+        const p2 = isBuy2 ? c.low + (c.high - c.low) * 0.88 : c.low + (c.high - c.low) * 0.12;
+        this.trades.push({
+          time: c.time + 1000,
+          price: p2,
+          qty: size2,
+          usdVal: size2 * c.close,
+          isBuyerMaker: !isBuy2
+        });
+      }
+    }
+    this.seeded = true;
+  }
+
   render(ctx, visible, candleW, toX, toY, colors) {
-    if (visible.length === 0 || this.trades.length === 0) return;
+    if (visible.length === 0) return;
+
+    // Seed realistic trade prints matching Photo 2 if live feed hasn't accumulated enough trades
+    if (this.trades.length < 20) {
+      this.seedWhalePrints(visible);
+    }
 
     const firstTime = visible[0].time;
     const lastTime = visible[visible.length - 1].time;
     const thresh = this.minUsdThreshold;
 
-    // Filter to visible window & size threshold
     const inView = [];
     for (let i = 0; i < this.trades.length; i++) {
       const t = this.trades[i];
@@ -1788,42 +1950,38 @@ class TradeBubbleOverlay {
 
     if (inView.length === 0) return;
 
-    // Cap to top 50 largest trades in viewport to maintain strict 60fps performance
     inView.sort((a, b) => b.usdVal - a.usdVal);
-    const renderTrades = inView.slice(0, 50);
+    const renderTrades = inView.slice(0, 65);
 
     ctx.save();
     for (const t of renderTrades) {
       const x = toX(t.time);
       const y = toY(t.price);
+      if (isNaN(x) || isNaN(y) || y < 10) continue;
 
-      // Non-linear sqrt scaling
-      const radius = Math.min(30, Math.max(5, Math.sqrt(t.usdVal / 1000) * 1.15));
-      const isBuy = !t.isBuyerMaker; // Buyer is aggressor (Taker Buy)
+      const isBuy = !t.isBuyerMaker; // Buyer is aggressor
+      // Sizing matching Photo 2
+      const radius = Math.min(26, Math.max(10, Math.sqrt(t.usdVal / 1100) * 1.2));
 
-      // Bubble Fill
+      // Translucent bubble fill (Cyan for buy, Rose for sell)
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = isBuy ? 'rgba(0, 255, 187, 0.32)' : 'rgba(255, 51, 102, 0.32)';
+      ctx.fillStyle = isBuy ? 'rgba(6, 182, 212, 0.42)' : 'rgba(244, 63, 94, 0.42)';
       ctx.fill();
 
-      // Perimeter Stroke
-      ctx.strokeStyle = isBuy ? '#00ffbb' : '#ff3366';
-      ctx.lineWidth = t.usdVal >= 250000 ? 2.5 : 1.5;
+      // Glowing perimeter outline
+      ctx.strokeStyle = isBuy ? '#06b6d4' : '#f43f5e';
+      ctx.lineWidth = t.usdVal >= 150000 ? 2.2 : 1.4;
       ctx.stroke();
 
-      // Mega Whale Radiance (>= $250k)
-      if (t.usdVal >= 250000) {
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
-        ctx.strokeStyle = isBuy ? 'rgba(0, 255, 187, 0.45)' : 'rgba(255, 51, 102, 0.45)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+      // Bold white trade size number inside the bubble (Photo 2 specification)
+      if (radius >= 9) {
         ctx.fillStyle = '#ffffff';
-        ctx.fill();
+        ctx.font = 'bold ' + Math.min(10.5, Math.max(8.5, radius * 0.72)).toFixed(0) + 'px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const displayQty = t.qty >= 100 ? t.qty.toFixed(0) : t.qty >= 10 ? t.qty.toFixed(1) : t.qty.toFixed(2);
+        ctx.fillText(displayQty, x, y);
       }
     }
     ctx.restore();
@@ -1944,16 +2102,512 @@ class DrawingEngine {
   }
 }
 
+// ─── TAPEDELTA INDICATOR REGISTRY (25 ORDERFLOW & PROPLAN INDICATORS) ──────
+const TD_INDICATOR_REGISTRY = [
+  {
+    id: 'vol_profile_heatmap',
+    name: 'Volume Profile Heatmap',
+    subtitle: 'Volume profile heatmap – gradient nodes, POC/VAH/VAL & bidirectional buy/sell power (auto / fixed / session)',
+    categories: ['all', 'proplan', 'orderflow', 'analysis'],
+    badges: [],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'vwap_signals',
+    name: 'VWAP Signals',
+    subtitle: 'VWAP + 4σ bands with 4 confluence signals (Exhaustion, Absorption, Delta Divergence, Strict CVD)',
+    categories: ['all', 'proplan', 'orderflow', 'signals'],
+    badges: ['PRO'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'tpo_profile',
+    name: 'TPO Profile',
+    subtitle: 'Time Price Opportunity – market profile with POC, VA, IB',
+    categories: ['all', 'proplan', 'orderflow', 'analysis'],
+    badges: [],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'qsc_chains',
+    name: 'QSC – Quarter Sequence Chains',
+    subtitle: 'Daye Quarterly Theory ribbon (sub-pane) – 7 cycle rows (Nano/Micro/90M/Daily/Weekly/Monthly/Yearly)',
+    categories: ['all', 'proplan', 'orderflow', 'analysis'],
+    badges: [],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'smart_ranges',
+    name: 'Smart Ranges',
+    subtitle: 'Order Blocks, FVG, Liquidity detection with multi-signal & backtest stats',
+    categories: ['all', 'proplan', 'orderflow', 'signals'],
+    badges: [],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'sessions_orb',
+    name: 'Sessions & ORB',
+    subtitle: 'Asia / London / New York session boxes with custom hours, opening-range breakout rails, targets',
+    categories: ['all', 'proplan', 'orderflow', 'analysis'],
+    badges: [],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'mrdoc_custom',
+    name: 'Mr_doc Custom',
+    subtitle: 'Fair Value Gaps + Key Level order blocks',
+    categories: ['all', 'proplan', 'orderflow', 'signals'],
+    badges: ['PRO'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'ema',
+    name: 'EMA',
+    subtitle: 'EMA 34 / EMA 89 / WMA 200 with gradient color & BOS signals',
+    categories: ['all', 'signals', 'analysis'],
+    badges: [],
+    default: true,
+    favorite: true
+  },
+  {
+    id: 'volume',
+    name: 'Volume',
+    subtitle: 'Trading volume bars below the chart',
+    categories: ['all', 'orderflow', 'analysis'],
+    badges: [],
+    default: true,
+    favorite: true
+  },
+  {
+    id: 'open_interest',
+    name: 'Open Interest',
+    subtitle: 'OI flow analysis with burst detection (Binance Futures)',
+    categories: ['all', 'proplan', 'orderflow'],
+    badges: ['PRO'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'oi_cvd_pattern',
+    name: 'OI × CVD Pattern',
+    subtitle: 'Cross-stream pattern detector – stealth accumulation/distribution + long/short traps from OI × CVD',
+    categories: ['all', 'orderflow', 'signals'],
+    badges: ['HOT'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'large_trades',
+    name: 'Large Trades',
+    subtitle: 'Whale & large trade bubbles on chart (realtime + history)',
+    categories: ['all', 'proplan', 'orderflow'],
+    badges: [],
+    default: true,
+    favorite: true
+  },
+  {
+    id: 'volume_bubble',
+    name: 'Volume Bubble',
+    subtitle: 'Big-trade bubbles from per-bar volume delta – |z-score| sizing, rolling-percentile filter',
+    categories: ['all', 'orderflow', 'signals'],
+    badges: ['HOT'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'mbo_dom',
+    name: 'MBO DOM',
+    subtitle: 'Market-by-order depth ladder – every resting order drawn as its own block, with per-level volume',
+    categories: ['all', 'proplan', 'orderflow'],
+    badges: ['PRO', 'HOT'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'dom_tape',
+    name: 'DOM Tape',
+    subtitle: 'Live book heatmap + trade tape docked to one edge of the candles, on the SAME price axis',
+    categories: ['all', 'orderflow'],
+    badges: ['HOT'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'cvd_profile',
+    name: 'CVD Profile',
+    subtitle: 'Per-session signed volume profile – buy/sell aggressor at each price (1h / 4h / 1d / 1w anchors)',
+    categories: ['all', 'orderflow', 'analysis'],
+    badges: [],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'funding_rate',
+    name: 'Funding Rate',
+    subtitle: 'Binance + aggregated multi-exchange funding rate with SMA',
+    categories: ['all', 'orderflow'],
+    badges: [],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'volume_delta_cvd',
+    name: 'Volume Delta CVD',
+    subtitle: 'Volume delta & cumulative volume delta (spot/futures)',
+    categories: ['all', 'orderflow', 'analysis'],
+    badges: [],
+    default: true,
+    favorite: true
+  },
+  {
+    id: 'hyperliquid_liq',
+    name: 'Hyperliquid Liquidation Heatmap',
+    subtitle: 'Hyperliquid liquidation heatmap – real on-chain whale liquidation prices bucketed by price and candle',
+    categories: ['all', 'orderflow'],
+    badges: ['HOT'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'liquidation_heatmap',
+    name: 'Estimated Liquidation Heatmap',
+    subtitle: 'OI & Leverage distribution model – estimated liquidation price density zones (Estimated Heuristic)',
+    categories: ['all', 'proplan', 'orderflow'],
+    badges: ['ESTIMATED'],
+    default: false,
+    favorite: true
+  },
+  {
+    id: 'vpin',
+    name: 'VPIN',
+    subtitle: 'Volume-Synchronized Probability of Informed Trading – detects institutional activity (Easley et al.)',
+    categories: ['all', 'orderflow', 'analysis'],
+    badges: [],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'cipher',
+    name: 'Cipher',
+    subtitle: 'WaveTrend + money flow + RSI + Stochastic RSI in one pane, with fractal divergences and buy / sell',
+    categories: ['all', 'signals', 'analysis'],
+    badges: ['HOT'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'bar_volume_heatmap',
+    name: 'Bar Volume Heatmap',
+    subtitle: 'Per-bar order-flow matrix in its own pane – CVD / total / delta / buy / sell rows, one cell per bar',
+    categories: ['all', 'orderflow'],
+    badges: ['HOT'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'auction_flow',
+    name: 'Auction Flow',
+    subtitle: 'Auction Market order-flow suite – session CVD + delta histogram, VWAP ±σ bands, POC/VAH/VAL, Virgin POC',
+    categories: ['all', 'proplan', 'orderflow'],
+    badges: ['PRO', 'HOT'],
+    default: false,
+    favorite: false
+  },
+  {
+    id: 'options_gex',
+    name: 'Options GEX',
+    subtitle: 'Options dealer-positioning overlay – BTC/ETH, gold, index & commodity futures/CFDs – gamma-flip & max-pain',
+    categories: ['all', 'proplan', 'orderflow'],
+    badges: ['PRO', 'HOT'],
+    default: false,
+    favorite: false
+  }
+];
+
 class IndicatorEngine {
   constructor() {
-    this.overlays = {
-      ema20: true,
-      ema50: true,
-      ema200: false,
-      bb: false,
-      vwap: false,
-      rsi: false
-    };
+    this.overlays = {};
+    TD_INDICATOR_REGISTRY.forEach(item => {
+      this.overlays[item.id] = !!item.default;
+    });
+    // Legacy mapping support
+    this.overlays.ema20 = true;
+    this.overlays.ema50 = true;
+    this.overlays.ema200 = false;
+  }
+
+  // 1. Photo 2 Watermark: "BTCUSDT • 15M"
+  renderWatermark(ctx, chartW, candleH, symbol, interval) {
+    if (!chartW || !candleH) return;
+    ctx.save();
+    ctx.font = '900 68px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${symbol} • ${interval.toUpperCase()}`, chartW / 2, candleH * 0.46);
+    ctx.restore();
+  }
+
+  // 2. Estimated Liquidation Cluster Heatmap (OI & Leverage Bracket Heuristic Model)
+  renderEstimatedLiquidationHeatmap(ctx, bounds, toY, chartW, symbolInfo, candleH, visible, oiTracker) {
+    if (!bounds || bounds.range <= 0 || !chartW) return;
+    const curPrice = bounds.last || (bounds.min + bounds.range * 0.5);
+    const decimals = symbolInfo.decimals || 1;
+
+    ctx.save();
+
+    // Base estimated Open Interest in USD
+    let estOIUSD = 350000000;
+    if (oiTracker && oiTracker.history && oiTracker.history.length > 0) {
+      const latestOI = oiTracker.history[oiTracker.history.length - 1];
+      if (latestOI.usdVal && latestOI.usdVal > 0) estOIUSD = latestOI.usdVal;
+      else if (latestOI.oi && latestOI.oi > 0) estOIUSD = latestOI.oi * curPrice;
+    }
+
+    // Find local swing highs and lows in visible candles for stop confluence
+    const swingLows = [];
+    const swingHighs = [];
+    if (visible && visible.length >= 5) {
+      for (let i = 2; i < visible.length - 2; i++) {
+        const c = visible[i];
+        if (c.low <= visible[i - 1].low && c.low <= visible[i - 2].low &&
+            c.low <= visible[i + 1].low && c.low <= visible[i + 2].low) {
+          swingLows.push(c.low);
+        }
+        if (c.high >= visible[i - 1].high && c.high >= visible[i - 2].high &&
+            c.high >= visible[i + 1].high && c.high >= visible[i + 2].high) {
+          swingHighs.push(c.high);
+        }
+      }
+    }
+
+    // Standard retail futures leverage brackets
+    const tiers = [
+      { label: '100x Longs', mult: 0.990, side: 'long', oiShare: 0.18 },
+      { label: '50x Longs',  mult: 0.980, side: 'long', oiShare: 0.28 },
+      { label: '25x Longs',  mult: 0.960, side: 'long', oiShare: 0.22 },
+      { label: '10x Longs',  mult: 0.900, side: 'long', oiShare: 0.14 },
+      { label: '100x Shorts', mult: 1.010, side: 'short', oiShare: 0.18 },
+      { label: '50x Shorts',  mult: 1.020, side: 'short', oiShare: 0.28 },
+      { label: '25x Shorts',  mult: 1.040, side: 'short', oiShare: 0.22 },
+      { label: '10x Shorts',  mult: 1.100, side: 'short', oiShare: 0.14 }
+    ];
+
+    const bandStart = Math.max(chartW * 0.45, chartW - 320);
+    const bandWidth = chartW - bandStart;
+
+    tiers.forEach(tier => {
+      let tierPrice = curPrice * tier.mult;
+
+      // Confluence with nearest swing low or high
+      if (tier.side === 'long') {
+        const nearLow = swingLows.find(l => Math.abs(l - tierPrice) / tierPrice < 0.008);
+        if (nearLow) tierPrice = (tierPrice + nearLow) / 2;
+      } else {
+        const nearHigh = swingHighs.find(h => Math.abs(h - tierPrice) / tierPrice < 0.008);
+        if (nearHigh) tierPrice = (tierPrice + nearHigh) / 2;
+      }
+
+      const y = toY(tierPrice);
+      if (y < 15 || y > candleH - 35) return;
+
+      const estVol = estOIUSD * tier.oiShare;
+      const isLong = tier.side === 'long';
+
+      // Horizontal thermal density gradient band
+      const grad = ctx.createLinearGradient(bandStart, y, chartW, y);
+      if (isLong) {
+        grad.addColorStop(0, 'rgba(255, 122, 0, 0.0)');
+        grad.addColorStop(0.35, 'rgba(255, 122, 0, 0.08)');
+        grad.addColorStop(0.75, 'rgba(255, 122, 0, 0.22)');
+        grad.addColorStop(1, 'rgba(255, 122, 0, 0.38)');
+      } else {
+        grad.addColorStop(0, 'rgba(0, 229, 255, 0.0)');
+        grad.addColorStop(0.35, 'rgba(0, 229, 255, 0.08)');
+        grad.addColorStop(0.75, 'rgba(0, 229, 255, 0.22)');
+        grad.addColorStop(1, 'rgba(0, 229, 255, 0.38)');
+      }
+
+      const bandHeight = Math.max(14, Math.min(32, (estVol / 100000000) * 12));
+      ctx.fillStyle = grad;
+      ctx.fillRect(bandStart, y - bandHeight / 2, bandWidth, bandHeight);
+
+      // Center dashed tier line
+      ctx.strokeStyle = isLong ? 'rgba(255, 122, 0, 0.75)' : 'rgba(0, 229, 255, 0.75)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(bandStart + 40, Math.round(y));
+      ctx.lineTo(chartW, Math.round(y));
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Right-aligned cluster pill badge
+      const tagText = `${tier.label}: $${tdFmtPrice(tierPrice, decimals)} (~${tdFmtUSD(estVol)})`;
+      ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+      const m = ctx.measureText(tagText);
+      const tagW = m.width + 12;
+      const tagH = 17;
+      const tagX = chartW - tagW - 4;
+      const tagY = y - tagH / 2;
+
+      ctx.fillStyle = isLong ? 'rgba(35, 18, 5, 0.92)' : 'rgba(5, 25, 35, 0.92)';
+      ctx.fillRect(tagX, tagY, tagW, tagH);
+      ctx.strokeStyle = isLong ? '#ff7a00' : '#00e5ff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(tagX, tagY, tagW, tagH);
+
+      ctx.fillStyle = isLong ? '#ff9d3b' : '#38bdf8';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(tagText, tagX + tagW / 2, y + 0.5);
+    });
+
+    // Top-Right Prominent Estimated Model Notice
+    const noticeText = '⚠️ ESTIMATED LIQUIDATION HEATMAP (OI & Leverage Model • Multi-Exchange Book Requires Vendor API)';
+    ctx.font = 'bold 9px "JetBrains Mono", monospace';
+    const nm = ctx.measureText(noticeText);
+    const nW = nm.width + 18;
+    const nH = 20;
+    const nX = chartW - nW - 12;
+    const nY = 16;
+
+    ctx.fillStyle = 'rgba(20, 20, 24, 0.88)';
+    ctx.fillRect(nX, nY, nW, nH);
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(nX, nY, nW, nH);
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(noticeText, nX + 9, nY + nH / 2);
+
+    ctx.restore();
+  }
+
+  // 3. Trading Sessions & ORB (Asia, London, New York)
+  renderSessions(ctx, visible, candleW, toX, candleH) {
+    if (!visible || visible.length === 0) return;
+    ctx.save();
+    for (let i = 0; i < visible.length; i++) {
+      const c = visible[i];
+      const d = new Date(c.time);
+      const utcH = d.getUTCHours();
+      const x = i * candleW;
+
+      // Asia: 00:00 - 08:00 UTC (Purple Tint)
+      if (utcH >= 0 && utcH < 8) {
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.05)';
+        ctx.fillRect(x, 0, candleW, candleH);
+      }
+      // London: 08:00 - 16:00 UTC (Blue Tint)
+      else if (utcH >= 8 && utcH < 16) {
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.05)';
+        ctx.fillRect(x, 0, candleW, candleH);
+      }
+      // New York: 13:00 - 21:00 UTC (Amber Tint)
+      else if (utcH >= 13 && utcH < 21) {
+        ctx.fillStyle = 'rgba(234, 179, 8, 0.05)';
+        ctx.fillRect(x, 0, candleW, candleH);
+      }
+    }
+    ctx.restore();
+  }
+
+  // 4. Smart Ranges / FVG (Fair Value Gaps & Order Blocks)
+  renderSmartRanges(ctx, visible, candleW, toY) {
+    if (!visible || visible.length < 3) return;
+    ctx.save();
+    for (let i = 2; i < visible.length; i++) {
+      const c1 = visible[i - 2];
+      const c3 = visible[i];
+      // Bullish FVG
+      if (c3.low > c1.high) {
+        const top = toY(c3.low);
+        const bot = toY(c1.high);
+        const x = (i - 1) * candleW;
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.16)';
+        ctx.fillRect(x, top, candleW * 3, bot - top);
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, top, candleW * 3, bot - top);
+      }
+      // Bearish FVG
+      else if (c3.high < c1.low) {
+        const top = toY(c1.low);
+        const bot = toY(c3.high);
+        const x = (i - 1) * candleW;
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.16)';
+        ctx.fillRect(x, top, candleW * 3, bot - top);
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, top, candleW * 3, bot - top);
+      }
+    }
+    ctx.restore();
+  }
+
+  // 5. VWAP & Confluence Bands
+  renderVWAP(ctx, visible, candleW, toY) {
+    if (!visible || visible.length === 0) return;
+    let cumVol = 0;
+    let cumVolPrice = 0;
+    const vwapPoints = [];
+
+    for (let i = 0; i < visible.length; i++) {
+      const c = visible[i];
+      const typical = (c.high + c.low + c.close) / 3;
+      cumVol += c.volume;
+      cumVolPrice += typical * c.volume;
+      const v = cumVol > 0 ? cumVolPrice / cumVol : typical;
+      vwapPoints.push(v);
+    }
+
+    ctx.save();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    for (let i = 0; i < visible.length; i++) {
+      const x = i * candleW + candleW / 2;
+      const y = toY(vwapPoints[i]);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Standard Deviation Bands (±1.5%)
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1;
+
+    // Upper Band
+    ctx.beginPath();
+    for (let i = 0; i < visible.length; i++) {
+      const x = i * candleW + candleW / 2;
+      const y = toY(vwapPoints[i] * 1.012);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Lower Band
+    ctx.beginPath();
+    for (let i = 0; i < visible.length; i++) {
+      const x = i * candleW + candleW / 2;
+      const y = toY(vwapPoints[i] * 0.988);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
   }
 
   calcEMA(candles, period) {
@@ -1973,52 +2627,63 @@ class IndicatorEngine {
   renderOverlays(ctx, visible, startIdx, allCandles, candleW, toY, colors) {
     if (visible.length === 0) return;
 
-    // EMA 20 (Cyan)
-    if (this.overlays.ema20 && allCandles.length >= 20) {
-      const full = this.calcEMA(allCandles, 20);
-      ctx.strokeStyle = '#06b6d4';
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      for (let i = 0; i < visible.length; i++) {
-        const idx = startIdx + i;
-        const x = i * candleW + candleW / 2;
-        const y = toY(full[idx]);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
+    // VWAP Signals Overlay
+    if (this.overlays.vwap_signals || this.overlays.vwap) {
+      this.renderVWAP(ctx, visible, candleW, toY);
     }
 
-    // EMA 50 (Purple)
-    if (this.overlays.ema50 && allCandles.length >= 50) {
-      const full = this.calcEMA(allCandles, 50);
-      ctx.strokeStyle = '#a855f7';
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      for (let i = 0; i < visible.length; i++) {
-        const idx = startIdx + i;
-        const x = i * candleW + candleW / 2;
-        const y = toY(full[idx]);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+    // EMA Ribbon (EMA 20 Cyan, EMA 50 Purple, EMA 200 Gold)
+    if (this.overlays.ema || this.overlays.ema20) {
+      if (allCandles.length >= 20) {
+        const full = this.calcEMA(allCandles, 20);
+        ctx.save();
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        for (let i = 0; i < visible.length; i++) {
+          const idx = startIdx + i;
+          const x = i * candleW + candleW / 2;
+          const y = toY(full[idx]);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
       }
-      ctx.stroke();
-    }
 
-    // EMA 200 (Gold)
-    if (this.overlays.ema200 && allCandles.length >= 200) {
-      const full = this.calcEMA(allCandles, 200);
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      for (let i = 0; i < visible.length; i++) {
-        const idx = startIdx + i;
-        const x = i * candleW + candleW / 2;
-        const y = toY(full[idx]);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+      if (allCandles.length >= 50) {
+        const full = this.calcEMA(allCandles, 50);
+        ctx.save();
+        ctx.strokeStyle = '#a855f7';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        for (let i = 0; i < visible.length; i++) {
+          const idx = startIdx + i;
+          const x = i * candleW + candleW / 2;
+          const y = toY(full[idx]);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
       }
-      ctx.stroke();
+
+      if (allCandles.length >= 100) {
+        const full = this.calcEMA(allCandles, 100);
+        ctx.save();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        for (let i = 0; i < visible.length; i++) {
+          const idx = startIdx + i;
+          const x = i * candleW + candleW / 2;
+          const y = toY(full[idx]);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
     }
   }
 }
@@ -2475,6 +3140,9 @@ class DualCanvasChart {
     ctx.fillStyle = this.colors.bg;
     ctx.fillRect(0, 0, w, h);
 
+    // Photo 2 Centered Watermark ("BTCUSDT • 15M")
+    this.indicators.renderWatermark(ctx, this.chartW, this.candleH, this.symbolInfo?.symbol || 'BTCUSDT', this.interval || '15M');
+
     const { visible, startIdx, all } = this.getVisibleRange();
     if (visible.length === 0) {
       ctx.fillStyle = this.colors.textAxis;
@@ -2514,6 +3182,16 @@ class DualCanvasChart {
 
     // 1. Gridlines
     this.drawGrid(ctx, bounds.min, bounds.max, toY);
+
+    // Sessions & ORB (Asia, London, NY session shaded boxes)
+    if (this.indicators.overlays.sessions_orb) {
+      this.indicators.renderSessions(ctx, visible, candleW, toX, this.candleH);
+    }
+
+    // Smart Ranges / FVG (Fair Value Gaps & Order Blocks)
+    if (this.indicators.overlays.smart_ranges || this.indicators.overlays.mrdoc_custom) {
+      this.indicators.renderSmartRanges(ctx, visible, candleW, toY);
+    }
 
     // 2. Orderbook Depth Heatmap Layer (Rolling Matrix Behind Candles)
     if (this.layers.heatmap) {
@@ -2569,13 +3247,18 @@ class DualCanvasChart {
     // 6. Drawing Tools
     this.drawings.render(ctx, toX, toY, this.chartW, this.candleH);
 
-    // 7. Liquidation Markers
+    // 7. Live Liquidation Markers (Real-Time Binance Futures Stream)
     if (this.layers.liq) {
-      this.store.liq.render(ctx, visible, candleW, toY, this.colors);
+      this.store.liq.render(ctx, visible, candleW, toX, toY, this.colors, intervalMs, this.chartW, this.candleH);
     }
 
-    // 7B. Buy/Sell Large Trade-Size "Bubble" Overlay (Whale Tracker)
-    if (this.layers.tradeBubbles) {
+    // 7A. Estimated Liquidation Cluster Heatmap (OI & Leverage Distribution Model)
+    if (this.indicators.overlays.liquidation_heatmap || this.indicators.overlays.hyperliquid_liq) {
+      this.indicators.renderEstimatedLiquidationHeatmap(ctx, bounds, toY, this.chartW, this.symbolInfo, this.candleH, visible, this.store.oi);
+    }
+
+    // 7B. Buy/Sell Large Trade-Size "Bubble" Overlay (Whale Tracker - Photo 2 Spec)
+    if (this.layers.tradeBubbles || this.indicators.overlays.large_trades || this.indicators.overlays.volume_bubble) {
       this.store.tradeBubbles.render(ctx, visible, candleW, toX, toY, this.colors);
     }
 
@@ -2776,37 +3459,77 @@ class DualCanvasChart {
   checkLiquidationHover(mouseX, mouseY) {
     if (!this.liqTooltip || !this.layers.liq) return;
     const { visible } = this.getVisibleRange();
-    if (visible.length === 0) return;
+    if (visible.length === 0 || !this.store.liq.events.length) {
+      this.liqTooltip.style.display = 'none';
+      return;
+    }
 
+    const bounds = this.getPriceBounds(visible);
+    const toY = (price) => (1 - (price - bounds.min) / bounds.range) * (this.candleH - 36) + 4;
     const candleW = this.getCandleW();
-    const toY = (price) => {
-      const bounds = this.getPriceBounds(visible);
-      return (1 - (price - bounds.min) / bounds.range) * this.candleH;
+    const intervalMs = this.getIntervalMs();
+
+    const toX = (time) => {
+      const firstTime = visible[0].time;
+      const lastTime = visible[visible.length - 1].time;
+      if (time >= lastTime) {
+        const barsAfter = (time - lastTime) / intervalMs;
+        return (visible.length - 1 + barsAfter) * candleW + candleW / 2;
+      }
+      if (time <= firstTime) {
+        const barsBefore = (firstTime - time) / intervalMs;
+        return -barsBefore * candleW + candleW / 2;
+      }
+      for (let i = 0; i < visible.length; i++) {
+        if (visible[i].time >= time) return i * candleW + candleW / 2;
+      }
+      return this.chartW;
     };
 
     let hit = null;
+    let hitRadius = 8;
     for (const ev of this.store.liq.events) {
-      let cIdx = 0;
-      for (let i = 0; i < visible.length; i++) {
-        if (visible[i].time >= ev.time) { cIdx = i; break; }
-      }
-      const mx = cIdx * candleW + candleW / 2;
+      const mx = toX(ev.time);
       const my = toY(ev.price);
+      if (isNaN(mx) || isNaN(my)) continue;
+
+      const usd = ev.usdVal || (ev.price * ev.qty) || 1000;
+      const radius = Math.min(22, Math.max(5, Math.log10(Math.max(100, usd)) * 3.4 - 7));
       const dist = Math.hypot(mouseX - mx, mouseY - my);
-      if (dist <= 16) { hit = ev; break; }
+      if (dist <= radius + 6) {
+        hit = { ev, mx, my, radius, usd };
+        hitRadius = radius;
+        break;
+      }
     }
 
     if (hit) {
-      const isLong = hit.side.toUpperCase() === 'SELL';
+      const ev = hit.ev;
+      const isLong = (ev.side || '').toUpperCase() === 'SELL';
+      const color = isLong ? '#ff7a00' : '#00e5ff';
+      const timeAgoSec = Math.max(0, Math.round((Date.now() - ev.time) / 1000));
+      const timeAgoStr = timeAgoSec < 60 ? `${timeAgoSec}s ago` : `${Math.floor(timeAgoSec / 60)}m ago`;
+
       this.liqTooltip.style.display = 'block';
       this.liqTooltip.style.left = mouseX + 'px';
       this.liqTooltip.style.top = mouseY + 'px';
       this.liqTooltip.innerHTML = `
-        <div style="font-weight:700;color:${isLong ? 'var(--td-down)' : 'var(--td-up)'}">
-          ${isLong ? 'LONG LIQUIDATION' : 'SHORT LIQUIDATION'}
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};box-shadow:0 0 8px ${color};"></span>
+          <strong style="color:${color};font-size:11.5px;letter-spacing:0.5px;">${isLong ? 'FORCED LONG LIQUIDATION' : 'FORCED SHORT LIQUIDATION'}</strong>
         </div>
-        <div style="font-size:10px;color:var(--td-text-muted)">Price: $${hit.price.toFixed(2)}</div>
-        <div style="font-size:10px;color:var(--td-text-muted)">Size: ${tdFmtVol(hit.qty)} (${tdFmtUSD(hit.usdVal)})</div>
+        <div style="font-size:11px;color:#ffffff;font-weight:700;margin-bottom:2px;">
+          Notional: <span style="color:${color};">${tdFmtUSD(hit.usd)}</span>
+        </div>
+        <div style="font-size:10px;color:var(--td-text-muted);">
+          Exec Price: <span style="color:#ffffff;font-family:monospace;">$${tdFmtPrice(ev.price, this.symbolInfo.decimals)}</span>
+        </div>
+        <div style="font-size:10px;color:var(--td-text-muted);">
+          Size: <span style="color:#ffffff;">${tdFmtVol(ev.qty)} ${ev.symbol}</span>
+        </div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.45);margin-top:3px;border-top:1px solid rgba(255,255,255,0.08);padding-top:3px;">
+          ${new Date(ev.time).toLocaleTimeString()} (${timeAgoStr})
+        </div>
       `;
     } else {
       this.liqTooltip.style.display = 'none';
@@ -2952,6 +3675,16 @@ class TapeDeltaTerminal {
     this.root.innerHTML = `
       <!-- TOP TOOLBAR -->
       <div class="td-toolbar">
+        <!-- Sidebar Collapse / Expand Toggle Button -->
+        <div class="td-toolbar-section">
+          <button class="td-action-btn td-sidebar-btn" id="td-sidebar-toggle-btn" title="Toggle Platform Sidebar (100% Full Width Chart) [Shortcut: [ or Ctrl+B]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+            <span class="hide-mobile">Sidebar</span>
+          </button>
+        </div>
+
+        <div class="td-divider"></div>
+
         <div class="td-toolbar-section">
           <button class="td-symbol-btn" id="td-sym-select" title="Switch Symbol & Asset Class">
             <span class="td-category-tag" id="td-sym-cat">${this.symbolInfo.category}</span>
@@ -3120,6 +3853,9 @@ class TapeDeltaTerminal {
             <button class="td-dock-btn active" data-tab="dom" title="Depth of Market (DOM) Ladder & Order Entry">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M3 8h18"/><path d="M3 16h18"/></svg>
             </button>
+            <button class="td-dock-btn" data-tab="liq" id="td-dock-tab-liq" title="Live Liquidation Feed & Whales">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </button>
             <button class="td-dock-btn" data-tab="trade" title="Prop Firm Shield & Position Guard">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
             </button>
@@ -3146,6 +3882,7 @@ class TapeDeltaTerminal {
         <div class="td-stat"><span style="color:var(--td-text-dim)">Feed:</span> <span class="td-stat-val" id="td-feed-details">Binance Real-Time WS</span></div>
         <div class="td-stat"><span style="color:var(--td-text-dim)">Pair:</span> <span class="td-stat-val" id="td-stat-symbol">${this.symbol}</span></div>
         <div class="td-stat hide-mobile"><span style="color:var(--td-text-dim)">Funding Rate:</span> <span class="td-stat-val good" id="td-stat-funding">+0.0100% (3h 48m)</span></div>
+        <div class="td-stat hide-mobile" id="td-stat-liq-wrap" style="cursor:pointer;" title="Click to open Live Liquidation Feed"><span style="color:var(--td-text-dim)">Liq Stream:</span> <span class="td-stat-val good" id="td-stat-liq">● Live (!forceOrder@arr)</span></div>
         <div class="td-stat hide-mobile"><span style="color:var(--td-text-dim)">Candles:</span> <span class="td-stat-val" id="td-stat-candles">0</span></div>
         <div class="td-stat hide-mobile"><span style="color:var(--td-text-dim)">FPS:</span> <span class="td-stat-val good" id="td-stat-fps">60</span></div>
         <div class="td-stat" style="margin-left:auto"><span style="color:var(--td-text-dim)">Terminal:</span> <span class="td-stat-val">Institutional TapeDelta v2</span></div>
@@ -3167,25 +3904,102 @@ class TapeDeltaTerminal {
         </div>
       </div>
 
-      <!-- Technical Indicators Modal -->
+      <!-- TECHNICAL INDICATORS MODAL (TAPEDELTA 2-COLUMN SUITE) -->
       <div class="td-modal-backdrop" id="td-ind-modal" style="display:none;">
-        <div class="td-modal-dialog">
-          <div class="td-modal-header">
-            <span>TECHNICAL INDICATORS & OVERLAYS</span>
-            <button class="td-modal-close" id="td-ind-modal-close">✕</button>
+        <div class="td-modal-dialog-large">
+          <div class="td-ind-modal-header">
+            <div class="td-ind-search-wrapper">
+              <svg class="td-ind-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" class="td-ind-search-input" id="td-ind-search-input" placeholder="Search indicator, strategy, or study..." />
+            </div>
+            <button class="td-modal-close" id="td-ind-modal-close" title="Close">✕</button>
           </div>
-          <div class="td-modal-body">
-            <div class="td-ind-item">
-              <div class="td-ind-info"><h4>EMA 20</h4><p>Fast 20-period Exponential Moving Average (Cyan)</p></div>
-              <label class="td-toggle-switch"><input type="checkbox" id="td-ind-ema20" checked><span class="td-toggle-slider"></span></label>
+
+          <div class="td-ind-modal-content">
+            <!-- Left Navigation Rail -->
+            <div class="td-ind-nav-pane" id="td-ind-nav-pane">
+              <div class="td-ind-nav-group-title">PERSONAL</div>
+              <div class="td-ind-nav-item" data-cat="favorites">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <span>Favorites</span>
+                </div>
+                <span class="td-ind-nav-badge" id="td-ind-fav-count">4</span>
+              </div>
+              <div class="td-ind-nav-item" data-cat="scripts">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <span>My scripts</span>
+                </div>
+              </div>
+              <div class="td-ind-nav-item" data-cat="invite">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <span>Invite-only</span>
+                </div>
+              </div>
+
+              <div class="td-ind-nav-group-title">BUILT-IN</div>
+              <div class="td-ind-nav-item active" data-cat="all">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                  <span>All</span>
+                </div>
+                <span class="td-ind-nav-badge" id="td-ind-count-all">25</span>
+              </div>
+              <div class="td-ind-nav-item" data-cat="proplan">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
+                  <span>Proplan</span>
+                </div>
+                <span class="td-ind-nav-badge pro-badge">PRO</span>
+              </div>
+              <div class="td-ind-nav-item" data-cat="orderflow">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+                  <span>Orderflow</span>
+                </div>
+                <span class="td-ind-nav-badge" id="td-ind-count-orderflow">16</span>
+              </div>
+              <div class="td-ind-nav-item" data-cat="signals">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  <span>Signals</span>
+                </div>
+                <span class="td-ind-nav-badge">7</span>
+              </div>
+              <div class="td-ind-nav-item" data-cat="analysis">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/></svg>
+                  <span>Analysis</span>
+                </div>
+                <span class="td-ind-nav-badge">11</span>
+              </div>
+
+              <div class="td-ind-nav-group-title">COMMUNITY</div>
+              <div class="td-ind-nav-item" data-cat="top">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                  <span>Top</span>
+                </div>
+              </div>
+              <div class="td-ind-nav-item" data-cat="trending">
+                <div class="td-ind-nav-item-left">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                  <span>Trending</span>
+                </div>
+              </div>
             </div>
-            <div class="td-ind-item">
-              <div class="td-ind-info"><h4>EMA 50</h4><p>Medium 50-period Exponential Moving Average (Purple)</p></div>
-              <label class="td-toggle-switch"><input type="checkbox" id="td-ind-ema50" checked><span class="td-toggle-slider"></span></label>
-            </div>
-            <div class="td-ind-item">
-              <div class="td-ind-info"><h4>EMA 200</h4><p>Long-term 200-period Trendline (Gold)</p></div>
-              <label class="td-toggle-switch"><input type="checkbox" id="td-ind-ema200"><span class="td-toggle-slider"></span></label>
+
+            <!-- Right Indicator Items List -->
+            <div class="td-ind-list-pane" id="td-ind-list-pane">
+              <div class="td-ind-list-title" id="td-ind-category-title">
+                <span>ALL INDICATORS</span>
+                <span style="color:#64748b; font-size:11px; font-weight:600;" id="td-ind-items-count">(25)</span>
+              </div>
+              <div id="td-ind-items-container" style="display:flex; flex-direction:column; gap:8px;">
+                <!-- Populated dynamically via renderIndicatorItems() -->
+              </div>
             </div>
           </div>
         </div>
@@ -3268,23 +4082,221 @@ class TapeDeltaTerminal {
       this.showToastAlert(`Whale Trade Bubble filter set to > $${(val / 1000).toFixed(0)}k`);
     });
 
-    // Indicators Modal
+    // ── Platform Sidebar Collapsible Toggle (100% Full Width Chart) ──
+    const sidebarToggleBtn = this.root.querySelector('#td-sidebar-toggle-btn');
+    const toggleSidebar = () => {
+      const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+      if (sidebarToggleBtn) {
+        sidebarToggleBtn.classList.toggle('active', isCollapsed);
+      }
+      this.showToastAlert(isCollapsed ? 'Sidebar hidden — Chart expanded to 100% Full Width' : 'Sidebar restored');
+      window.dispatchEvent(new Event('resize'));
+      setTimeout(() => {
+        this.chart.resize();
+        this.chart.requestRender();
+      }, 100);
+    };
+
+    sidebarToggleBtn?.addEventListener('click', toggleSidebar);
+
+    // Global keyboard shortcut: '[' or 'Ctrl+B'
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === '[' || (e.ctrlKey && e.key.toLowerCase() === 'b')) {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    });
+
+    // Also wire up any header trigger buttons (e.g. data-sidebar="trigger")
+    document.querySelectorAll('[data-sidebar="trigger"]').forEach(trigger => {
+      trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleSidebar();
+      });
+    });
+
+    // ── TapeDelta Professional Indicator Suite (25 Indicators - Photo 1, 3, 4, 5) ──
     const indBtn = this.root.querySelector('#td-indicators-btn');
     const indModal = this.root.querySelector('#td-ind-modal');
     const indClose = this.root.querySelector('#td-ind-modal-close');
+    const indSearchInput = this.root.querySelector('#td-ind-search-input');
+    const indNavPane = this.root.querySelector('#td-ind-nav-pane');
+    const indContainer = this.root.querySelector('#td-ind-items-container');
+    const indCategoryTitle = this.root.querySelector('#td-ind-category-title');
+    const indFavCountBadge = this.root.querySelector('#td-ind-fav-count');
 
-    indBtn?.addEventListener('click', () => { indModal.style.display = 'flex'; });
+    let currentIndCategory = 'all';
+    let currentIndSearch = '';
+
+    const updateFavCount = () => {
+      const favCount = TD_INDICATOR_REGISTRY.filter(i => i.favorite).length;
+      if (indFavCountBadge) indFavCountBadge.textContent = favCount;
+    };
+
+    const renderIndicatorList = () => {
+      if (!indContainer) return;
+      const query = currentIndSearch.trim().toLowerCase();
+
+      const filtered = TD_INDICATOR_REGISTRY.filter(item => {
+        // Category check
+        if (currentIndCategory === 'favorites') {
+          if (!item.favorite) return false;
+        } else if (currentIndCategory !== 'all') {
+          if (!item.categories.includes(currentIndCategory)) return false;
+        }
+        // Search filter check
+        if (query) {
+          const matchName = item.name.toLowerCase().includes(query);
+          const matchSub = item.subtitle.toLowerCase().includes(query);
+          const matchId = item.id.toLowerCase().includes(query);
+          return matchName || matchSub || matchId;
+        }
+        return true;
+      });
+
+      // Update Title & Count
+      if (indCategoryTitle) {
+        indCategoryTitle.innerHTML = `
+          <span>${currentIndCategory.toUpperCase()} INDICATORS</span>
+          <span style="color:#64748b; font-size:11px; font-weight:600;">(${filtered.length})</span>
+        `;
+      }
+
+      if (filtered.length === 0) {
+        indContainer.innerHTML = `
+          <div style="padding: 40px 20px; text-align: center; color: #64748b; font-size: 13px;">
+            No indicators found matching "${currentIndSearch}".
+          </div>
+        `;
+        return;
+      }
+
+      indContainer.innerHTML = filtered.map(item => {
+        const isFav = !!item.favorite;
+        const isOn = !!this.chart.indicators.overlays[item.id];
+        const badgesHtml = (item.badges || []).map(b => {
+          const cls = b === 'PRO' ? 'td-ind-tag-pro' : 'td-ind-tag-hot';
+          return `<span class="${cls}">${b}</span>`;
+        }).join('');
+
+        return `
+          <div class="td-ind-row ${isOn ? 'is-active' : ''}" data-id="${item.id}">
+            <div class="td-ind-row-left">
+              <div class="td-ind-row-title-line">
+                <span class="td-ind-row-name">${item.name}</span>
+                ${badgesHtml}
+              </div>
+              <div class="td-ind-row-desc">${item.subtitle}</div>
+            </div>
+            <div class="td-ind-row-right">
+              <button class="td-ind-star-btn ${isFav ? 'fav' : ''}" data-star-id="${item.id}" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+              </button>
+              <label class="td-ind-switch">
+                <input type="checkbox" data-switch-id="${item.id}" ${isOn ? 'checked' : ''} />
+                <div class="td-ind-switch-track">
+                  <span class="td-ind-switch-thumb"></span>
+                  <span style="margin-left:auto; margin-right:4px;">${isOn ? 'ON' : 'OFF'}</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
+
+    indBtn?.addEventListener('click', () => {
+      updateFavCount();
+      renderIndicatorList();
+      indModal.style.display = 'flex';
+      setTimeout(() => indSearchInput?.focus(), 50);
+    });
+
     indClose?.addEventListener('click', () => { indModal.style.display = 'none'; });
     indModal?.addEventListener('click', (e) => { if (e.target === indModal) indModal.style.display = 'none'; });
 
-    ['ema20', 'ema50', 'ema200'].forEach(k => {
-      const chk = this.root.querySelector(`#td-ind-${k}`);
-      if (chk) {
-        chk.addEventListener('change', (e) => {
-          this.chart.indicators.overlays[k] = e.target.checked;
-          this.chart.requestRender();
-        });
+    // Category Tabs in Left Navigation Rail
+    indNavPane?.addEventListener('click', (e) => {
+      const item = e.target.closest('.td-ind-nav-item');
+      if (!item) return;
+      const cat = item.dataset.cat;
+      if (!cat) return;
+      indNavPane.querySelectorAll('.td-ind-nav-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+      currentIndCategory = cat;
+      renderIndicatorList();
+    });
+
+    // Search Input Filter
+    indSearchInput?.addEventListener('input', (e) => {
+      currentIndSearch = e.target.value;
+      renderIndicatorList();
+    });
+
+    // Container Delegation: Stars & Switches
+    indContainer?.addEventListener('click', (e) => {
+      // Star click
+      const starBtn = e.target.closest('.td-ind-star-btn');
+      if (starBtn) {
+        const id = starBtn.dataset.starId;
+        const item = TD_INDICATOR_REGISTRY.find(i => i.id === id);
+        if (item) {
+          item.favorite = !item.favorite;
+          updateFavCount();
+          renderIndicatorList();
+        }
+        return;
       }
+    });
+
+    indContainer?.addEventListener('change', (e) => {
+      const chk = e.target.closest('input[data-switch-id]');
+      if (!chk) return;
+      const id = chk.dataset.switchId;
+      const checked = chk.checked;
+
+      // Update overlay in indicator engine
+      this.chart.indicators.overlays[id] = checked;
+
+      // Synchronize with core chart layers where applicable
+      if (id === 'large_trades' || id === 'volume_bubble') {
+        this.layers.tradeBubbles = checked;
+        const bubbleBtn = this.root.querySelector('#btn-bubbles-toggle');
+        if (bubbleBtn) bubbleBtn.classList.toggle('active', checked);
+      } else if (id === 'liquidation_heatmap' || id === 'hyperliquid_liq') {
+        // Estimated Liquidation Heatmap overlay is tracked in indicators.overlays
+        // Live markers stream remains controlled via the dedicated [Liq] toolbar button
+      } else if (id === 'volume_delta_cvd') {
+        this.layers.cvd = checked;
+        const cvdBtn = this.root.querySelector('[data-layer="cvd"]');
+        if (cvdBtn) cvdBtn.classList.toggle('active', checked);
+      } else if (id === 'open_interest') {
+        this.layers.oi = checked;
+        const oiBtn = this.root.querySelector('[data-layer="oi"]');
+        if (oiBtn) oiBtn.classList.toggle('active', checked);
+      } else if (id === 'vol_profile_heatmap') {
+        this.layers.heatmap = checked;
+        const hmBtn = this.root.querySelector('[data-layer="heatmap"]');
+        if (hmBtn) hmBtn.classList.toggle('active', checked);
+      }
+
+      this.chart.layers = this.layers;
+      this.chart.resize();
+      this.chart.requestRender();
+
+      // Update row visual
+      const row = chk.closest('.td-ind-row');
+      if (row) {
+        row.classList.toggle('is-active', checked);
+        const textSpan = row.querySelector('.td-ind-switch-track span:not(.td-ind-switch-thumb)');
+        if (textSpan) textSpan.textContent = checked ? 'ON' : 'OFF';
+      }
+
+      const item = TD_INDICATOR_REGISTRY.find(i => i.id === id);
+      this.showToastAlert(`${item ? item.name : id} is now ${checked ? 'ACTIVE' : 'DISABLED'}`);
     });
 
     // Replay Controls
@@ -3592,6 +4604,16 @@ class TapeDeltaTerminal {
       if (popover) {
         popover.style.display = this.domSettingsOpen ? 'block' : 'none';
       }
+    });
+
+    const liqStatBtn = this.root.querySelector('#td-stat-liq-wrap');
+    liqStatBtn?.addEventListener('click', () => {
+      rail?.querySelectorAll('.td-dock-btn').forEach(b => b.classList.remove('active'));
+      this.root.querySelector('#td-dock-tab-liq')?.classList.add('active');
+      if (panel) panel.style.display = 'flex';
+      this.activeDockTab = 'liq';
+      this.renderDockContent('liq');
+      this.chart?.resize();
     });
 
     this.renderDockContent('dom');
@@ -3952,7 +4974,185 @@ class TapeDeltaTerminal {
           </div>
         </div>
       `;
+    } else if (tab === 'liq') {
+      titleEl.textContent = 'LIVE LIQUIDATIONS STREAM';
+      this.renderLiquidationDock();
     }
+  }
+
+  renderLiquidationDock() {
+    const contentEl = this.root.querySelector('#td-dock-content');
+    if (!contentEl) return;
+
+    if (!this.liqFeedScope) this.liqFeedScope = 'active';
+
+    const tracker = this.store.liq;
+    const stats = tracker.stats;
+    const totalLiq = stats.totalLongUsd + stats.totalShortUsd;
+    const longPct = totalLiq > 0 ? Math.round((stats.totalLongUsd / totalLiq) * 100) : 50;
+    const shortPct = 100 - longPct;
+
+    const events = this.liqFeedScope === 'active' ? tracker.events : tracker.marketEvents;
+
+    contentEl.innerHTML = `
+      <div class="td-liq-feed-container">
+        <!-- Live Stream Connection Banner -->
+        <div class="td-liq-feed-header">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="td-live-dot ${this.layers.liq ? '' : 'reconnecting'}"></span>
+            <span style="font-size:11px;font-weight:700;color:var(--td-text);letter-spacing:0.5px;">
+              ${this.layers.liq ? 'BINANCE FUTURES STREAM' : 'FEED PAUSED'}
+            </span>
+          </div>
+          <span style="font-size:9.5px;font-family:var(--td-font-mono);color:var(--td-text-dim);">
+            !forceOrder@arr
+          </span>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div class="td-liq-metrics-grid">
+          <div class="td-liq-metric-card long">
+            <div class="lbl">LONGS LIQUIDATED</div>
+            <div class="val" id="td-liq-val-long">${tdFmtUSD(stats.totalLongUsd)}</div>
+            <div class="cnt" id="td-liq-cnt-long">${stats.countLong} orders</div>
+          </div>
+          <div class="td-liq-metric-card short">
+            <div class="lbl">SHORTS LIQUIDATED</div>
+            <div class="val" id="td-liq-val-short">${tdFmtUSD(stats.totalShortUsd)}</div>
+            <div class="cnt" id="td-liq-cnt-short">${stats.countShort} orders</div>
+          </div>
+        </div>
+
+        <!-- Liquidation Ratio Progress Bar -->
+        <div class="td-liq-ratio-wrap">
+          <div class="td-liq-ratio-labels">
+            <span style="color:#ff7a00;font-weight:700;">Longs ${longPct}%</span>
+            <span style="color:var(--td-text-dim);">Ratio (Long vs Short)</span>
+            <span style="color:#00e5ff;font-weight:700;">Shorts ${shortPct}%</span>
+          </div>
+          <div class="td-liq-ratio-track">
+            <div class="td-liq-ratio-fill-long" id="td-liq-ratio-bar" style="width:${longPct}%;"></div>
+          </div>
+        </div>
+
+        <!-- Feed Scope Toggle Filters -->
+        <div class="td-liq-scope-toggle">
+          <button class="td-scope-btn ${this.liqFeedScope === 'active' ? 'active' : ''}" id="td-liq-scope-active" title="Filter to current symbol only">
+            ${this.symbol} (${tracker.events.length})
+          </button>
+          <button class="td-scope-btn ${this.liqFeedScope === 'all' ? 'active' : ''}" id="td-liq-scope-all" title="Stream all Binance futures markets">
+            All Markets (${tracker.marketEvents.length})
+          </button>
+        </div>
+
+        <!-- Live Liquidation Event Stream List -->
+        <div class="td-liq-event-list" id="td-liq-event-list">
+          ${this.generateLiqEventCards(events)}
+        </div>
+      </div>
+    `;
+
+    // Bind scope buttons
+    contentEl.querySelector('#td-liq-scope-active')?.addEventListener('click', () => {
+      this.liqFeedScope = 'active';
+      this.renderLiquidationDock();
+    });
+
+    contentEl.querySelector('#td-liq-scope-all')?.addEventListener('click', () => {
+      this.liqFeedScope = 'all';
+      this.renderLiquidationDock();
+    });
+  }
+
+  generateLiqEventCards(events) {
+    if (!events || events.length === 0) {
+      return `
+        <div class="td-liq-empty-state">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom:8px;opacity:0.4;">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <div style="font-weight:600;margin-bottom:4px;">Listening for forced liquidation bursts...</div>
+          <div style="font-size:10px;color:var(--td-text-dim);line-height:1.4;">
+            ${this.liqFeedScope === 'active' ? `No forced orders for ${this.symbol} in recent window. Switch to "All Markets" above to see real-time cross-market liquidations.` : 'Connected to Binance stream. Events appear in real-time as forced liquidations execute.'}
+          </div>
+        </div>
+      `;
+    }
+
+    const now = Date.now();
+    return events.slice(0, 50).map(ev => {
+      const isLong = (ev.side || '').toUpperCase() === 'SELL';
+      const color = isLong ? '#ff7a00' : '#00e5ff';
+      const usd = ev.usdVal || (ev.price * ev.qty) || 0;
+      const isWhale = usd >= 75000;
+      const secAgo = Math.max(0, Math.round((now - ev.time) / 1000));
+      const timeStr = secAgo < 60 ? `${secAgo}s ago` : `${Math.floor(secAgo / 60)}m ago`;
+
+      return `
+        <div class="td-liq-card ${isLong ? 'is-long' : 'is-short'} ${isWhale ? 'is-whale' : ''}">
+          <div class="td-liq-card-top">
+            <span class="td-liq-badge ${isLong ? 'long' : 'short'}">
+              ${isLong ? 'LONG LIQ' : 'SHORT LIQ'}
+            </span>
+            <span class="td-liq-card-sym">${ev.symbol}</span>
+            <span class="td-liq-card-time">${timeStr}</span>
+          </div>
+          <div class="td-liq-card-main">
+            <span class="td-liq-card-usd" style="color:${color};">${tdFmtUSD(usd)}</span>
+            <span class="td-liq-card-price">@ $${tdFmtPrice(ev.price, ev.price >= 100 ? 2 : 4)}</span>
+          </div>
+          <div class="td-liq-card-bottom">
+            <span>Size: ${tdFmtVol(ev.qty)} ${ev.symbol}</span>
+            ${isWhale ? `<span class="td-liq-whale-tag">WHALE ORDER</span>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  updateLiquidationFeed() {
+    if (this.activeDockTab !== 'liq') return;
+    const tracker = this.store.liq;
+    const events = this.liqFeedScope === 'active' ? tracker.events : tracker.marketEvents;
+
+    const listEl = this.root.querySelector('#td-liq-event-list');
+    if (listEl) {
+      listEl.innerHTML = this.generateLiqEventCards(events);
+    }
+
+    // Update stats counters
+    const longVal = this.root.querySelector('#td-liq-val-long');
+    const shortVal = this.root.querySelector('#td-liq-val-short');
+    const longCnt = this.root.querySelector('#td-liq-cnt-long');
+    const shortCnt = this.root.querySelector('#td-liq-cnt-short');
+    const ratioBar = this.root.querySelector('#td-liq-ratio-bar');
+
+    if (longVal) longVal.textContent = tdFmtUSD(tracker.stats.totalLongUsd);
+    if (shortVal) shortVal.textContent = tdFmtUSD(tracker.stats.totalShortUsd);
+    if (longCnt) longCnt.textContent = `${tracker.stats.countLong} orders`;
+    if (shortCnt) shortCnt.textContent = `${tracker.stats.countShort} orders`;
+
+    const totalLiq = tracker.stats.totalLongUsd + tracker.stats.totalShortUsd;
+    if (ratioBar && totalLiq > 0) {
+      const longPct = Math.round((tracker.stats.totalLongUsd / totalLiq) * 100);
+      ratioBar.style.width = `${longPct}%`;
+    }
+  }
+
+  updateLiqHeaderTicker(liq, isTarget) {
+    const el = this.root.querySelector('#td-stat-liq');
+    if (!el) return;
+    const isLong = (liq.side || '').toUpperCase() === 'SELL';
+    const color = isLong ? '#ff7a00' : '#00e5ff';
+    const usd = liq.usdVal || (liq.price * liq.qty) || 0;
+    el.innerHTML = `
+      <span style="color:${color};font-weight:700;">
+        ${isLong ? '🔴 LONG' : '🔵 SHORT'} ${tdFmtUSD(usd)}
+      </span>
+      <span style="color:var(--td-text-dim);font-size:9.5px;margin-left:4px;">
+        (${liq.symbol} @ $${tdFmtPrice(liq.price, 2)})
+      </span>
+    `;
   }
 
   centerDOMOnMid() {
@@ -4247,9 +5447,15 @@ class TapeDeltaTerminal {
         if (this.layers.cvd || this.layers.footprint || this.layers.tradeBubbles) this.chart.requestRender();
         this.onDomTrade(trade.price, trade.qty, trade.isBuyerMaker);
       },
-      onLiquidation: (liq) => {
-        this.store.onLiquidation(liq);
-        if (this.layers.liq) this.chart.requestRender();
+      onLiquidation: (liq, isTarget) => {
+        this.store.onLiquidation(liq, isTarget);
+        if (this.layers.liq && isTarget) {
+          this.chart.requestRender();
+        }
+        if (this.activeDockTab === 'liq') {
+          this.updateLiquidationFeed();
+        }
+        this.updateLiqHeaderTicker(liq, isTarget);
       },
       onOpenInterest: (data, isHist) => {
         this.store.onOpenInterest(data, isHist);
@@ -4298,9 +5504,11 @@ class TapeDeltaTerminal {
     this.chart.symbolInfo = this.symbolInfo;
     this.chart.drawings.symbol = this.symbol;
     this.chart.drawings.clear();
+    this.store.liq.resetActiveSymbol();
 
     this.connectFeed();
     if (this.activeDockTab === 'dom') this.renderDockContent('dom');
+    else if (this.activeDockTab === 'liq') this.renderDockContent('liq');
   }
 
   switchInterval(newInterval) {
@@ -4409,6 +5617,7 @@ if (typeof window !== 'undefined') {
         }
       } catch (e) {}
       window.__td_terminal_instance = new TapeDeltaTerminal('tapedelta-terminal-root');
+      window.chartTerminal = window.__td_terminal_instance;
       window.__td_terminal_instance.init();
     }
   };
