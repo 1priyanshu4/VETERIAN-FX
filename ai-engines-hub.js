@@ -1553,10 +1553,10 @@ print(consensus_trade.summary())
     const syncIcon = document.getElementById('sync-icon');
     if (!wireFeed) return;
 
-    let realArticles = [];
-    let articleIndex = 0;
-    let eventCount = 0;
+    const seenArticleKeys = new Set();
+    const incomingQueue = [];
     let isFetching = false;
+    let eventCount = 0;
 
     // Helper: Clean HTML tags and entities
     function stripHtml(html) {
@@ -1581,6 +1581,11 @@ print(consensus_trade.summary())
       return `${diffDays}d ago`;
     }
 
+    // Helper: Normalize unique key
+    function getArticleKey(item) {
+      return (item.link || item.title || '').trim().toLowerCase();
+    }
+
     // Fetch verified live feeds from real sources
     async function fetchRealFeeds() {
       if (isFetching) return;
@@ -1592,6 +1597,7 @@ print(consensus_trade.summary())
         { type: 'yellow', badge: 'YELLOW FOLDER', source: 'ForexLive Macro', url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.forexlive.com/feed/news' },
         { type: 'news', badge: 'CRYPTO WIRE', source: 'CoinTelegraph', url: 'https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss' },
         { type: 'news', badge: 'MARKET NEWS', source: 'Decrypt', url: 'https://api.rss2json.com/v1/api.json?rss_url=https://decrypt.co/feed' },
+        { type: 'news', badge: 'CRYPTO WIRE', source: 'CoinDesk', url: 'https://api.rss2json.com/v1/api.json?rss_url=https://www.coindesk.com/arc/outboundfeeds/rss/' },
         { type: 'news', badge: 'BTC WIRE', source: 'Yahoo Finance', url: 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.finance.yahoo.com/rss/2.0/headline?s=BTC-USD' }
       ];
 
@@ -1614,19 +1620,18 @@ print(consensus_trade.summary())
           })
         );
 
-        const newItems = [];
+        const allFetched = [];
         responses.forEach(r => {
           if (r.status === 'fulfilled' && Array.isArray(r.value)) {
-            newItems.push(...r.value);
+            allFetched.push(...r.value);
           }
         });
 
-        if (newItems.length > 0) {
-          const redItems = newItems.filter(i => i.type === 'red');
-          const yellowItems = newItems.filter(i => i.type === 'yellow');
-          const newsItems = newItems.filter(i => i.type === 'news');
+        if (allFetched.length > 0) {
+          const redItems = allFetched.filter(i => i.type === 'red');
+          const yellowItems = allFetched.filter(i => i.type === 'yellow');
 
-          // Render top Red Folder items into Red Folder card dynamically
+          // Render top Red Folder items into Red Folder card (only update if container exists)
           if (redContainer && redItems.length > 0) {
             redContainer.innerHTML = redItems.slice(0, 3).map(it => `
               <div class="p-2.5 rounded-lg bg-background/80 border border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 transition-colors hover:border-rose-500/40">
@@ -1649,7 +1654,7 @@ print(consensus_trade.summary())
             `).join('');
           }
 
-          // Render top Yellow Folder items into Yellow Folder card dynamically
+          // Render top Yellow Folder items into Yellow Folder card
           if (yellowContainer && yellowItems.length > 0) {
             yellowContainer.innerHTML = yellowItems.slice(0, 3).map(it => `
               <div class="p-2.5 rounded-lg bg-background/80 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 transition-colors hover:border-amber-500/40">
@@ -1672,26 +1677,34 @@ print(consensus_trade.summary())
             `).join('');
           }
 
-          // Interleave real items for continuous wire stream
-          const interleaved = [];
-          const maxLen = Math.max(redItems.length, yellowItems.length, newsItems.length);
-          for (let i = 0; i < maxLen; i++) {
-            if (redItems[i]) interleaved.push(redItems[i]);
-            if (newsItems[i]) interleaved.push(newsItems[i]);
-            if (yellowItems[i]) interleaved.push(yellowItems[i]);
-            if (newsItems[i + 1]) interleaved.push(newsItems[i + 1]);
-          }
-
-          realArticles = interleaved;
-
           // Remove loading element
           const loadingEl = document.getElementById('news-feed-loading');
           if (loadingEl) loadingEl.remove();
 
-          // Prepopulate wire feed with first 4 items if empty
-          if (wireFeed.children.length === 0) {
-            realArticles.slice(0, 4).forEach(it => insertArticleIntoFeed(it, false));
+          // DEDUPLICATION: Find only items that have NOT been seen yet
+          const brandNewItems = [];
+          for (const it of allFetched) {
+            const key = getArticleKey(it);
+            if (key && !seenArticleKeys.has(key)) {
+              seenArticleKeys.add(key);
+              brandNewItems.push(it);
+            }
           }
+
+          if (brandNewItems.length > 0) {
+            // If wire feed is empty (initial load), insert the first 6 articles immediately without animation
+            if (wireFeed.querySelectorAll('.news-item').length === 0) {
+              const initialBatch = brandNewItems.slice(0, 6);
+              initialBatch.forEach(it => insertArticleIntoFeed(it, false));
+              // Queue the rest to be streamed one by one
+              incomingQueue.push(...brandNewItems.slice(6));
+            } else {
+              // On subsequent refreshes, push brand new articles to queue so they stream in one by one
+              incomingQueue.push(...brandNewItems);
+            }
+          }
+
+          updateStreamStatus();
         }
       } catch (err) {
         console.warn('Real news feed sync error:', err);
@@ -1701,9 +1714,18 @@ print(consensus_trade.summary())
       }
     }
 
+    function updateStreamStatus() {
+      if (!counterEl) return;
+      if (incomingQueue.length > 0) {
+        counterEl.textContent = `${eventCount} Events • ${incomingQueue.length} In Queue`;
+      } else {
+        counterEl.textContent = `${eventCount} Verified Events • Live`;
+      }
+    }
+
     function insertArticleIntoFeed(item, animate = true) {
       eventCount++;
-      if (counterEl) counterEl.textContent = `${eventCount} Events Ingested`;
+      updateStreamStatus();
 
       const div = document.createElement('div');
       const badgeColor = item.type === 'red' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : (item.type === 'yellow' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30');
@@ -1734,24 +1756,27 @@ print(consensus_trade.summary())
         setTimeout(() => div.classList.remove('animate-pulse'), 1200);
       }
 
-      if (wireFeed.children.length > 35) {
+      // Limit feed to latest 50 items so page remains fast
+      if (wireFeed.children.length > 50) {
         wireFeed.removeChild(wireFeed.lastChild);
       }
     }
 
-    // Stream next real article every 2.5 seconds (max 2-3s delay)
+    // Stream next article ONLY from incomingQueue (NEVER loop old articles!)
     setInterval(() => {
-      if (realArticles.length === 0) return;
-      const item = realArticles[articleIndex % realArticles.length];
-      articleIndex++;
-      insertArticleIntoFeed(item, true);
+      if (incomingQueue.length === 0) {
+        // Queue is empty: DO NOT POP UP OLD ARTICLES!
+        return;
+      }
+      const nextItem = incomingQueue.shift();
+      insertArticleIntoFeed(nextItem, true);
     }, 2500);
 
     // Initial fetch of real feeds
     fetchRealFeeds();
 
-    // Auto-refresh real feeds every 90 seconds
-    setInterval(fetchRealFeeds, 90000);
+    // Auto-refresh real feeds every 30 seconds to catch brand new breaking releases
+    setInterval(fetchRealFeeds, 30000);
 
     // Manual sync button
     if (syncBtn) {
