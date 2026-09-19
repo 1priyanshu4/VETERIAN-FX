@@ -528,14 +528,14 @@
           </div>
 
           <!-- Center Hero with 3D Glowing Orb & Headline -->
-          <div class="relative z-10 flex flex-col items-center justify-center pt-2 pb-6 text-center">
-            <div class="relative mb-4 flex items-center justify-center">
-              <div class="absolute size-28 rounded-full bg-purple-500/25 blur-2xl animate-pulse"></div>
-              <div class="relative size-20 sm:size-24 rounded-full overflow-hidden shadow-[0_0_50px_rgba(168,85,247,0.5)] ring-1 ring-purple-400/30">
-                <img src="/ai_glowing_orb.jpg" alt="AI Orb" class="size-full object-cover select-none pointer-events-none" />
+          <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 8px; padding-bottom: 24px; text-align: center;">
+            <div style="position: relative; margin-bottom: 18px; display: flex; align-items: center; justify-content: center; width: 100px; height: 100px;">
+              <div style="position: absolute; width: 120px; height: 120px; border-radius: 50%; background: rgba(168, 85, 247, 0.4); filter: blur(24px); pointer-events: none;"></div>
+              <div style="position: relative; width: 96px; height: 96px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 50px rgba(168, 85, 247, 0.55); border: 1px solid rgba(192, 132, 252, 0.35);">
+                <img src="/ai_glowing_orb.jpg" alt="AI Orb" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;" />
               </div>
             </div>
-            <h2 class="font-sans text-2xl sm:text-3xl font-normal text-white/95 tracking-tight">
+            <h2 style="font-family: inherit; font-size: 28px; font-weight: 400; color: rgba(255, 255, 255, 0.95); letter-spacing: -0.02em; margin: 0;">
               Ready to Create Something New?
             </h2>
           </div>
@@ -557,7 +557,7 @@
           </div>
 
           <!-- Main Floating Glassmorphic Prompt / Chat Input Box -->
-          <div class="relative z-10 max-w-3xl mx-auto rounded-2xl p-4 transition-all" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(192, 132, 252, 0.32); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px);">
+          <div style="position: relative; z-index: 10; max-width: 760px; width: 100%; margin: 0 auto; border-radius: 20px; padding: 16px 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(192, 132, 252, 0.32); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px);">
             <!-- Top Input Row -->
             <div class="flex items-start gap-3">
               <div class="pt-1.5 text-purple-400 shrink-0">
@@ -617,7 +617,7 @@
           </div>
 
           <!-- Bottom 3 Feature Cards -->
-          <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 max-w-4xl mx-auto">
+          <div style="position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 860px; width: 100%; margin: 24px auto 0;">
             <!-- Card 1: Image Generator -->
             <div class="ai-feature-card group rounded-2xl p-4 transition-all cursor-pointer" data-feature="image" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px);">
               <div class="flex items-center justify-between pb-3">
