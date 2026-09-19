@@ -10,7 +10,7 @@
  * 6. UNIFIED MODEL • 5-Engine Consensus Brain
  * 
  * Major Enhancements:
- * - Enlarged TradingView Real-Time Candlestick Chart (Height: 1200px)
+ * - Screen-Fitted TradingView Real-Time Candlestick Chart (Height: 480px, balanced size, matches News Card proportion)
  * - Complete removal/suppression of legacy demo cards (My Balance, BTC/ETH/SOL cards, My Portfolio, etc.)
  * - High-Frequency News Insight Widget:
  *   • Red Folder News (High-Impact: CPI, FOMC, NFP, GDP, PCE)
@@ -378,7 +378,7 @@
         </div>
       </div>
 
-      <!-- 1. LIVE TRADINGVIEW CANDLESTICK CHART (EXPANDED PROPORTIONS: 1200px DOUBLE HEIGHT) -->
+      <!-- 1. LIVE TRADINGVIEW CANDLESTICK CHART (SCREEN-FITTED: 480px BALANCED HEIGHT, MATCHES NEWS CARD) -->
       <div class="px-5">
         <div class="rounded-xl border border-border bg-background overflow-hidden ring-1 ring-foreground/5 shadow-xs">
           <!-- TradingView Chart Header -->
@@ -394,9 +394,9 @@
             </div>
           </div>
 
-          <!-- TradingView Embedded Frame (Double Height: 1200px) -->
-          <div class="w-full bg-black" style="height: 1200px; min-height: 1100px; width: 100%;">
-            <iframe id="hub-tradingview-iframe" src="https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(activeAsset.tv)}&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=rgba(0,0,0,0)&theme=dark&style=1&timezone=Etc%2FUTC&locale=en" width="100%" height="100%" style="width: 100%; height: 100%; min-height: 1100px;" frameborder="0" allowtransparency="true" scrolling="no" class="w-full h-full"></iframe>
+          <!-- TradingView Embedded Frame (Balanced Size: 480px, fits on screen, not too small, not too big) -->
+          <div class="w-full bg-black" style="height: 480px; min-height: 450px; max-height: 520px; width: 100%;">
+            <iframe id="hub-tradingview-iframe" src="https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(activeAsset.tv)}&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=rgba(0,0,0,0)&theme=dark&style=1&timezone=Etc%2FUTC&locale=en" width="100%" height="100%" style="width: 100%; height: 100%; min-height: 450px; border: 0;" frameborder="0" allowtransparency="true" scrolling="no" class="w-full h-full"></iframe>
           </div>
         </div>
       </div>
