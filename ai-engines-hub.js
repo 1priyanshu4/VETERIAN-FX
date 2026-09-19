@@ -1,5 +1,5 @@
 /**
- * AI TRADE ANALYZER • INSTITUTIONAL MULTI-ENGINE SUITE & OPENBB TERMINAL
+ * AI TRADE ANALYZER • INSTITUTIONAL MULTI-ENGINE SUITE
  * 
  * Proprietary Quantitative Robots:
  * 1. AETHER-9      • Multi-Agent AI Debate System
@@ -15,13 +15,8 @@
  * - High-Frequency News Insight Widget:
  *   • Red Folder News (High-Impact: CPI, FOMC, NFP, GDP, PCE)
  *   • Yellow Folder News (Medium/Low-Impact: Retail Sales, Jobless Claims, Sentiment, PMI)
- *   • Real-Time Financial News & Breaking Tweets Wire (Live streaming every 2-3 seconds)
+ *   • Real-Time Financial News & Breaking Tweets Wire (Live streaming)
  *   • Macro Sentiment & Institutional Polarity Meter
- * - OpenBB Quantitative Terminal (Bloomberg Alternative, openbb.co, AGPL-3.0, 70k+ Stars):
- *   • Interactive CLI Console (`obb>`) with runnable command pills & ASCII DataFrame viewer
- *   • Macro & Economic Data Hub (US 10Y Yield, Fed Rate, CPI, DXY, M2)
- *   • Company Financials & Multiples (AAPL, NVDA, MSFT)
- *   • AI Agent Connector (Feeding OpenBB dataframes directly into AETHER-9, EVOLVE-X, etc.)
  * - Zero Emojis, Zero Rainbow Colors, 100% Native Shadcn UI Dark Fintech Aesthetics
  */
 
@@ -1024,9 +1019,8 @@
               <span class="text-muted-foreground">Status: <strong class="text-emerald-400">100% Real Live</strong></span>
             </div>
           </div>
-
-          <!-- Live Streaming Feed Container (Zero Page Jump: overflow-anchor none & isolated containment) -->
-          <div id="news-wire-feed" class="space-y-2 overflow-y-auto font-mono text-xs pr-1" style="height: 380px; max-height: 380px; overflow-anchor: none; overscroll-behavior: contain; contain: content;">
+      <!-- Live Streaming Feed Container (Zero Page Jump: overflow-anchor none & isolated containment) -->
+      <div id="news-wire-feed" class="space-y-2 overflow-y-auto font-mono text-xs pr-1" style="height: 380px; max-height: 380px; overflow-anchor: none; overscroll-behavior: contain; contain: content;">
             <div id="news-feed-loading" class="p-6 text-center text-xs text-muted-foreground font-mono flex items-center justify-center gap-2.5">
               <svg class="animate-spin size-4 text-emerald-500 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
               <span>Connecting to verified live financial wire feeds (Moneycontrol Gold/Forex/CFD, ForexLive, CoinTelegraph, Decrypt)...</span>
@@ -1039,486 +1033,6 @@
     `;
   }
 
-  // Render 3: OpenBB Institutional Terminal (Bloomberg Alternative, openbb.co)
-  function renderOpenBBTerminalHTML() {
-    return `
-    <div id="openbb-terminal-card" data-slot="card" class="col-span-12 group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 mb-6 transition-all" style="grid-column: 1 / -1; width: 100%;">
-      
-      <!-- OpenBB Terminal Top Header -->
-      <div data-slot="card-header" class="flex flex-wrap items-center justify-between gap-4 px-5 pt-1 pb-3 border-b border-border/60" style="width: 100%;">
-        <div class="flex items-center gap-3 min-w-[280px] flex-1">
-          <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-terminal"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" x2="20" y1="19" y2="19"></line></svg>
-          </div>
-          <div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <h3 class="font-heading text-base font-bold text-foreground tracking-tight">OpenBB Quantitative Terminal • Bloomberg Alternative (v4.3)</h3>
-              <span class="inline-flex items-center rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">70K+ STARS</span>
-              <span class="inline-flex items-center rounded-md border border-border bg-muted px-2 py-0.5 text-[10px] font-semibold text-foreground">AGPL-3.0</span>
-              <span class="inline-flex items-center rounded-md border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-400">PYTHON 3.9+</span>
-            </div>
-            <p class="text-xs text-muted-foreground mt-0.5">
-              Free, open-source alternative to the $25,000/yr Bloomberg Terminal. Pull Forex, Gold, CFDs, Crypto, Equities, Macroeconomic indicators, and connect directly to AI agents.
-            </p>
-          </div>
-        </div>
-
-        <!-- Terminal Quick Links & Setup Guide -->
-        <div class="flex items-center gap-2 flex-wrap shrink-0 font-mono text-xs">
-          <div class="bg-muted border border-border px-3 py-1.5 rounded-lg text-foreground flex items-center gap-1.5">
-            <span class="text-muted-foreground">Setup:</span>
-            <code class="text-emerald-400 font-bold">pip install openbb</code>
-          </div>
-          <button type="button" id="copy-openbb-script-btn" class="px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-foreground transition-all cursor-pointer flex items-center gap-1.5 font-sans font-medium text-xs">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
-            <span>Copy Python Script</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- OpenBB Sub-Navigation Tabs -->
-      <div class="px-5">
-        <div class="flex items-center gap-1 border-b border-border overflow-x-auto pb-1 text-xs">
-          <button type="button" class="openbb-tab-btn px-3 py-1.5 rounded-md font-medium text-foreground bg-muted transition-colors cursor-pointer" data-target="openbb-cli-pane">
-            Interactive CLI Console
-          </button>
-          <button type="button" class="openbb-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="openbb-forex-gold-pane">
-            Forex, Gold & CFDs (A to Z)
-          </button>
-          <button type="button" class="openbb-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="openbb-macro-pane">
-            Macro & Economy Indicators
-          </button>
-          <button type="button" class="openbb-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="openbb-financials-pane">
-            Fundamental Financials (AAPL / NVDA)
-          </button>
-          <button type="button" class="openbb-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="openbb-ai-pane">
-            AI Agent Connector (The Modern Move)
-          </button>
-        </div>
-      </div>
-
-      <!-- Tab Panes -->
-      <div class="px-5">
-        
-        <!-- 1. Interactive CLI Console Pane -->
-        <div id="openbb-cli-pane" class="openbb-pane space-y-3">
-          
-          <!-- Command Quick Pills (A to Z Coverage) -->
-          <div class="flex items-center gap-1.5 flex-wrap text-xs font-mono">
-            <span class="text-muted-foreground text-[11px] font-sans mr-1">Quick Run:</span>
-            <button type="button" class="obb-cmd-pill px-2 py-1 rounded bg-muted hover:bg-muted/80 border border-border text-foreground transition-colors cursor-pointer" data-cmd="obb.forex.price.historical('EURUSD')">
-              obb.forex("EURUSD")
-            </button>
-            <button type="button" class="obb-cmd-pill px-2 py-1 rounded bg-muted hover:bg-muted/80 border border-border text-foreground transition-colors cursor-pointer" data-cmd="obb.commodity.price.historical('XAUUSD')">
-              obb.commodity("XAUUSD")
-            </button>
-            <button type="button" class="obb-cmd-pill px-2 py-1 rounded bg-muted hover:bg-muted/80 border border-border text-foreground transition-colors cursor-pointer" data-cmd="obb.crypto.price.historical('BTC', provider='binance')">
-              obb.crypto("BTC")
-            </button>
-            <button type="button" class="obb-cmd-pill px-2 py-1 rounded bg-muted hover:bg-muted/80 border border-border text-foreground transition-colors cursor-pointer" data-cmd="obb.commodity.price.historical('BRENT')">
-              obb.commodity("BRENT")
-            </button>
-            <button type="button" class="obb-cmd-pill px-2 py-1 rounded bg-muted hover:bg-muted/80 border border-border text-foreground transition-colors cursor-pointer" data-cmd="obb.economy.indicators('US', 'cpi')">
-              obb.economy("CPI")
-            </button>
-            <button type="button" class="obb-cmd-pill px-2 py-1 rounded bg-muted hover:bg-muted/80 border border-border text-foreground transition-colors cursor-pointer" data-cmd="obb.equity.fundamental.income('NVDA')">
-              obb.equity("NVDA")
-            </button>
-            <button type="button" class="obb-cmd-pill px-2 py-1 rounded bg-muted hover:bg-muted/80 border border-border text-foreground transition-colors cursor-pointer" data-cmd="obb.quantitative.var('PORTFOLIO')">
-              obb.quantitative("VaR")
-            </button>
-            <button type="button" class="obb-cmd-pill px-2 py-1 rounded bg-muted hover:bg-muted/80 border border-border text-foreground transition-colors cursor-pointer" data-cmd="obb.ai.agent.feed(model='AETHER-9', asset='BTC')">
-              obb.ai("AETHER-9")
-            </button>
-          </div>
-
-          <!-- OpenBB Terminal Window -->
-          <div class="rounded-xl border border-border bg-[#09090b] overflow-hidden ring-1 ring-foreground/5 shadow-2xl">
-            <!-- Terminal Header -->
-            <div class="flex items-center justify-between px-4 py-2 bg-zinc-900/80 border-b border-white/10 text-xs font-mono">
-              <div class="flex items-center gap-2">
-                <div class="flex items-center gap-1.5">
-                  <span class="size-3 rounded-full bg-rose-500/80 inline-block"></span>
-                  <span class="size-3 rounded-full bg-amber-500/80 inline-block"></span>
-                  <span class="size-3 rounded-full bg-emerald-500/80 inline-block"></span>
-                </div>
-                <span class="text-zinc-400 ml-2">openbb-terminal@veterian-fx: ~ /obb</span>
-              </div>
-              <div class="flex items-center gap-3 text-[11px]">
-                <span class="text-emerald-400 font-semibold">ENV: py311-openbb</span>
-                <span class="text-zinc-500">•</span>
-                <span class="text-zinc-400">AGPL-3.0</span>
-              </div>
-            </div>
-
-            <!-- Terminal Output Area -->
-            <div id="openbb-cli-output" class="p-4 font-mono text-xs text-zinc-300 h-80 overflow-y-auto space-y-2 selection:bg-emerald-500/30">
-              <div class="text-zinc-500">OpenBB Platform [v4.3.0] • Quantitative Research Terminal</div>
-              <div class="text-zinc-500">Type any OpenBB command or click the quick pills above to pull live dataframes.</div>
-              <div class="text-emerald-400 font-semibold mt-2">obb> from openbb import obb</div>
-              <div class="text-emerald-400 font-semibold">obb> output = obb.equity.price.historical("AAPL")</div>
-              <div class="text-zinc-400">print(output.to_dataframe())</div>
-              
-              <!-- ASCII DataFrame Table -->
-              <pre class="text-[11px] leading-tight text-zinc-200 bg-zinc-950/80 p-3 rounded border border-white/5 overflow-x-auto">
-========================================================================================================
-                                     OpenBB Equity Historical Dataframe: AAPL
-========================================================================================================
-       date         open         high          low        close       volume         vwap    change_pct
---------------------------------------------------------------------------------------------------------
- 2026-09-15   $228.4000   $231.2000   $227.6500   $230.8000   48,192,400   $229.8500        +1.05%
- 2026-09-16   $231.1000   $233.4500   $230.2000   $232.9000   52,840,100   $232.1000        +0.91%
- 2026-09-17   $233.0000   $235.1000   $231.8000   $234.6000   56,120,800   $233.8000        +0.73%
- 2026-09-18   $234.5000   $237.0000   $233.9000   $236.4000   61,400,200   $235.5500        +0.77%
- 2026-09-19   $236.8000   $238.9000   $235.6000   $238.2500   58,320,000   $237.4000        +0.78%
-========================================================================================================
-[5 rows x 8 columns] • Ingested via OpenBB FMP/YFinance Provider • Latency: 142ms
-              </pre>
-            </div>
-
-            <!-- Terminal Interactive Input Prompt -->
-            <form id="openbb-cli-form" class="flex items-center gap-2 p-2 bg-zinc-950 border-t border-white/10 font-mono text-xs">
-              <span class="text-emerald-400 font-bold pl-2">obb&gt;</span>
-              <input type="text" id="openbb-cli-input" placeholder="obb.crypto.price.historical('BTC') or type help..." class="flex-1 bg-transparent text-zinc-100 placeholder:text-zinc-600 outline-none border-none py-1">
-              <button type="submit" class="px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-white font-medium transition-colors cursor-pointer">
-                Run
-              </button>
-            </form>
-          </div>
-        <!-- 2. Forex, Gold & Commodities (A to Z) Pane -->
-        <div id="openbb-forex-gold-pane" class="openbb-pane hidden space-y-3">
-          <div class="rounded-xl border border-border bg-card p-4 space-y-4">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <div class="flex items-center gap-2">
-                <span class="size-2 rounded-full bg-amber-400 animate-pulse"></span>
-                <span class="font-bold text-xs text-foreground uppercase tracking-wider font-mono">OpenBB Global Multi-Asset Hub: Forex, Gold, Energy & CFDs</span>
-              </div>
-              <span class="text-[10px] font-mono text-emerald-400 font-semibold">Live Institutional Quotes</span>
-            </div>
-
-            <!-- Asset Class Category: Gold & Precious Metals -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-amber-400 font-mono flex items-center gap-1.5">
-                  <svg class="size-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  PRECIOUS METALS & BULLION (CFD)
-                </span>
-                <span class="text-[10px] text-muted-foreground font-mono">Quotes in USD / Troy Ounce</span>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs font-mono">
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-amber-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">XAU/USD (Gold Spot)</span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold">+1.18%</span>
-                  </div>
-                  <div class="mt-1 flex items-baseline justify-between">
-                    <span class="text-base font-bold text-foreground">$2,684.80</span>
-                    <span class="text-[10px] text-muted-foreground">Spread: 0.60</span>
-                  </div>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>24h Range: 2,658.20 - 2,692.40</span>
-                    <span class="text-amber-400">All-Time High Test</span>
-                  </div>
-                </div>
-
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-amber-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">XAG/USD (Silver Spot)</span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold">+2.45%</span>
-                  </div>
-                  <div class="mt-1 flex items-baseline justify-between">
-                    <span class="text-base font-bold text-foreground">$31.85</span>
-                    <span class="text-[10px] text-muted-foreground">Spread: 0.02</span>
-                  </div>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>24h Range: 31.02 - 32.15</span>
-                    <span class="text-emerald-400">Bullish Momentum</span>
-                  </div>
-                </div>
-
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-amber-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">XPT/USD (Platinum)</span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold">+0.85%</span>
-                  </div>
-                  <div class="mt-1 flex items-baseline justify-between">
-                    <span class="text-base font-bold text-foreground">$988.40</span>
-                    <span class="text-[10px] text-muted-foreground">Spread: 1.20</span>
-                  </div>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>24h Range: 976.10 - 994.50</span>
-                    <span class="text-zinc-400">Accumulation Zone</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Asset Class Category: Major & Emerging Forex -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-blue-400 font-mono flex items-center gap-1.5">
-                  <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12"/></svg>
-                  MAJOR & EMERGING FOREX PAIRS
-                </span>
-                <span class="text-[10px] text-muted-foreground font-mono">Central Bank Feeds • Continuous ECN</span>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs font-mono">
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-blue-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">EUR/USD</span>
-                    <span class="text-[10px] text-emerald-400 font-semibold">+0.22%</span>
-                  </div>
-                  <span class="text-base font-bold text-foreground block mt-1">1.0872</span>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Bid: 1.0871 • Ask: 1.0873</span>
-                    <span class="text-emerald-400">ECB Dovish</span>
-                  </div>
-                </div>
-
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-blue-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">GBP/USD</span>
-                    <span class="text-[10px] text-rose-400 font-semibold">-0.14%</span>
-                  </div>
-                  <span class="text-base font-bold text-foreground block mt-1">1.2945</span>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Bid: 1.2944 • Ask: 1.2946</span>
-                    <span class="text-zinc-400">BoE Steady</span>
-                  </div>
-                </div>
-
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-blue-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">USD/JPY</span>
-                    <span class="text-[10px] text-rose-400 font-semibold">-0.48%</span>
-                  </div>
-                  <span class="text-base font-bold text-foreground block mt-1">154.20</span>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Bid: 154.19 • Ask: 154.21</span>
-                    <span class="text-rose-400">BoJ Hawkish</span>
-                  </div>
-                </div>
-
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-blue-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">USD/INR</span>
-                    <span class="text-[10px] text-emerald-400 font-semibold">+0.05%</span>
-                  </div>
-                  <span class="text-base font-bold text-foreground block mt-1">84.08</span>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Bid: 84.07 • Ask: 84.09</span>
-                    <span class="text-amber-400">RBI Guarded</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Asset Class Category: Energy & Commodities -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-emerald-400 font-mono flex items-center gap-1.5">
-                  <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                  ENERGY & COMMODITIES (CFD)
-                </span>
-                <span class="text-[10px] text-muted-foreground font-mono">NYMEX & ICE Benchmark Feeds</span>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs font-mono">
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-emerald-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">Brent Crude Oil</span>
-                    <span class="text-[10px] text-emerald-400 font-semibold">+1.42%</span>
-                  </div>
-                  <span class="text-base font-bold text-foreground block mt-1">$74.82</span>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Bid: $74.80 • Ask: $74.84</span>
-                    <span class="text-emerald-400">OPEC+ Quota</span>
-                  </div>
-                </div>
-
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-emerald-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">WTI Crude Oil</span>
-                    <span class="text-[10px] text-emerald-400 font-semibold">+1.55%</span>
-                  </div>
-                  <span class="text-base font-bold text-foreground block mt-1">$71.25</span>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Bid: $71.23 • Ask: $71.27</span>
-                    <span class="text-emerald-400">EIA Draw</span>
-                  </div>
-                </div>
-
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-emerald-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">Natural Gas (US)</span>
-                    <span class="text-[10px] text-rose-400 font-semibold">-1.10%</span>
-                  </div>
-                  <span class="text-base font-bold text-foreground block mt-1">$2.79</span>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Bid: $2.78 • Ask: $2.80</span>
-                    <span class="text-zinc-400">Seasonal Range</span>
-                  </div>
-                </div>
-
-                <div class="p-3 rounded-lg bg-muted/40 border border-border/60 hover:border-emerald-500/40 transition-colors">
-                  <div class="flex items-center justify-between">
-                    <span class="font-bold text-foreground">Copper Spot</span>
-                    <span class="text-[10px] text-emerald-400 font-semibold">+0.95%</span>
-                  </div>
-                  <span class="text-base font-bold text-foreground block mt-1">$4.38/lb</span>
-                  <div class="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Bid: $4.37 • Ask: $4.39</span>
-                    <span class="text-emerald-400">China Demand</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Terminal CLI Direct Access Footer -->
-            <div class="p-3 rounded-lg bg-zinc-950/60 border border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs font-mono">
-              <span class="text-zinc-400 text-[11px]">Run live Python DataFrame extraction for any Forex/CFD pair:</span>
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <button type="button" class="obb-cmd-pill px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-emerald-400 border border-emerald-500/30 transition-colors cursor-pointer" data-cmd="obb.commodity.price.historical('XAUUSD')">
-                  obb.commodity('XAUUSD')
-                </button>
-                <button type="button" class="obb-cmd-pill px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-blue-400 border border-blue-500/30 transition-colors cursor-pointer" data-cmd="obb.forex.price.historical('EURUSD')">
-                  obb.forex('EURUSD')
-                </button>
-                <button type="button" class="obb-cmd-pill px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 transition-colors cursor-pointer" data-cmd="obb.commodity.price.historical('BRENT')">
-                  obb.commodity('BRENT')
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. Macro & Economy Indicators Pane -->
-        <div id="openbb-macro-pane" class="openbb-pane hidden space-y-3">
-          <div class="rounded-xl border border-border bg-card p-4 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-bold text-xs text-foreground uppercase tracking-wider font-mono">OpenBB Economy & Macro Indicators Hub (FRED & Treasury API)</span>
-              <span class="text-[10px] font-mono text-emerald-500">Live Fed Data</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-mono">
-              <div class="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-1">
-                <span class="text-[10px] text-muted-foreground uppercase">US 10-Year Treasury Yield</span>
-                <span class="text-lg font-bold text-foreground block">4.12%</span>
-                <span class="text-[10px] text-emerald-500">-0.04 bps today</span>
-              </div>
-              <div class="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-1">
-                <span class="text-[10px] text-muted-foreground uppercase">Fed Funds Upper Bound</span>
-                <span class="text-lg font-bold text-foreground block">5.00%</span>
-                <span class="text-[10px] text-muted-foreground">Target: 4.75%</span>
-              </div>
-              <div class="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-1">
-                <span class="text-[10px] text-muted-foreground uppercase">US Dollar Index (DXY)</span>
-                <span class="text-lg font-bold text-foreground block">101.42</span>
-                <span class="text-[10px] text-rose-500">-0.32% softening</span>
-              </div>
-              <div class="p-3 rounded-lg bg-muted/40 border border-border/60 space-y-1">
-                <span class="text-[10px] text-muted-foreground uppercase">Global M2 Money Supply</span>
-                <span class="text-lg font-bold text-foreground block">$104.2 Trillion</span>
-                <span class="text-[10px] text-emerald-500">+1.8% expansion YoY</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. Company Financials & Multiples Pane -->
-        <div id="openbb-financials-pane" class="openbb-pane hidden space-y-3">
-          <div class="rounded-xl border border-border bg-card p-4 space-y-3 overflow-x-auto">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-bold text-xs text-foreground uppercase tracking-wider font-mono">OpenBB Financial Statements & Multiples (SEC 10-K / 10-Q)</span>
-              <span class="text-[10px] font-mono text-muted-foreground">Updated Quarterly</span>
-            </div>
-            <table class="w-full text-left text-xs font-mono">
-              <thead>
-                <tr class="border-b border-border/60 text-muted-foreground text-[10px] uppercase">
-                  <th class="py-2 pr-3">Ticker</th>
-                  <th class="py-2 px-3">Revenue (TTM)</th>
-                  <th class="py-2 px-3">Net Income</th>
-                  <th class="py-2 px-3">Gross Margin</th>
-                  <th class="py-2 px-3">P/E (Trailing)</th>
-                  <th class="py-2 px-3">EV / EBITDA</th>
-                  <th class="py-2 pl-3">FCF Margin</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-border/40">
-                <tr class="hover:bg-muted/30">
-                  <td class="py-2.5 pr-3 font-bold text-foreground">AAPL (Apple Inc.)</td>
-                  <td class="py-2.5 px-3 text-foreground">$385.6 Billion</td>
-                  <td class="py-2.5 px-3 text-emerald-500 font-semibold">$100.4 Billion</td>
-                  <td class="py-2.5 px-3 text-foreground">46.2%</td>
-                  <td class="py-2.5 px-3 text-foreground">32.8x</td>
-                  <td class="py-2.5 px-3 text-foreground">24.1x</td>
-                  <td class="py-2.5 pl-3 text-emerald-500">26.8%</td>
-                </tr>
-                <tr class="hover:bg-muted/30">
-                  <td class="py-2.5 pr-3 font-bold text-foreground">NVDA (NVIDIA Corp.)</td>
-                  <td class="py-2.5 px-3 text-foreground">$120.8 Billion</td>
-                  <td class="py-2.5 px-3 text-emerald-500 font-semibold">$64.2 Billion</td>
-                  <td class="py-2.5 px-3 text-foreground">75.1%</td>
-                  <td class="py-2.5 px-3 text-foreground">48.2x</td>
-                  <td class="py-2.5 px-3 text-foreground">38.4x</td>
-                  <td class="py-2.5 pl-3 text-emerald-500">44.5%</td>
-                </tr>
-                <tr class="hover:bg-muted/30">
-                  <td class="py-2.5 pr-3 font-bold text-foreground">MSFT (Microsoft)</td>
-                  <td class="py-2.5 px-3 text-foreground">$245.1 Billion</td>
-                  <td class="py-2.5 px-3 text-emerald-500 font-semibold">$88.1 Billion</td>
-                  <td class="py-2.5 px-3 text-foreground">69.8%</td>
-                  <td class="py-2.5 px-3 text-foreground">34.6x</td>
-                  <td class="py-2.5 px-3 text-foreground">22.8x</td>
-                  <td class="py-2.5 pl-3 text-emerald-500">31.2%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- 4. AI Agent Connector (The Modern Move) Pane -->
-        <div id="openbb-ai-pane" class="openbb-pane hidden space-y-3">
-          <div class="rounded-xl border border-border bg-card p-4 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <div>
-                <span class="font-bold text-xs text-foreground uppercase tracking-wider font-mono block">Connect OpenBB to veterian-fx Proprietary AI Robots</span>
-                <p class="text-[11px] text-muted-foreground mt-0.5">Feed clean financial dataframes directly into AETHER-9, EVOLVE-X, SENTINEL, UNITY, and ORBIT.</p>
-              </div>
-              <span class="text-[10px] font-mono text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">The Modern Move</span>
-            </div>
-
-            <div class="bg-zinc-950 p-4 rounded-lg border border-white/10 font-mono text-xs space-y-2 text-zinc-300">
-              <div class="text-zinc-500"># 1. Install OpenBB Toolkit</div>
-              <div class="text-emerald-400 font-semibold">pip install openbb</div>
-              <div class="text-zinc-500 mt-2"># 2. Ingest Institutional Data in Python & Feed into AETHER-9 / EVOLVE-X</div>
-              <pre class="text-[11px] leading-relaxed text-zinc-200">
-from openbb import obb
-
-# Pull real-time historical data & order flow
-btc_df = obb.crypto.price.historical("BTC", provider="binance").to_dataframe()
-macro_df = obb.economy.indicators("US", "cpi").to_dataframe()
-
-# Feed clean dataframes into veterian-fx Multi-Agent Consensus:
-# - AETHER-9: Evaluates Order Block pullbacks & liquidity sweeps
-# - EVOLVE-X: Runs PPO actor-critic policy on spread turbulence
-# - SENTINEL: Applies 2.0σ statistical drawdown protection
-# - UNITY: Computes 158-factor alpha matrix & 15m Bar VWAP
-# - ORBIT: Measures sentiment polarity & triggers breakout stop-buy
-
-consensus_trade = obb.ai.synthesize(
-    robots=["AETHER-9", "EVOLVE-X", "SENTINEL", "UNITY", "ORBIT"],
-    market_data=btc_df,
-    macro_data=macro_df
-)
-
-print(consensus_trade.summary())
-              </pre>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
     `;
   }
 
@@ -1751,9 +1265,6 @@ print(consensus_trade.summary())
 
     // News Wire Real-Time Streaming Setup (Updates every 2.5 seconds, max 2-3s delay)
     setupNewsWireStream();
-
-    // OpenBB Interactive CLI Setup
-    setupOpenBBInteractivity();
   }
 
   // Real Financial News & Macro Wire Engine (100% Real Live Feeds, Zero Dummy Data)
@@ -2143,255 +1654,6 @@ print(consensus_trade.summary())
     });
   }
 
-  // OpenBB Terminal Interactive CLI & Tab Handlers
-  function setupOpenBBInteractivity() {
-    const cliForm = document.getElementById('openbb-cli-form');
-    const cliInput = document.getElementById('openbb-cli-input');
-    const cliOutput = document.getElementById('openbb-cli-output');
-    const copyScriptBtn = document.getElementById('copy-openbb-script-btn');
-
-    // Tab Switching for OpenBB
-    const openbbTabBtns = document.querySelectorAll('.openbb-tab-btn');
-    openbbTabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-target');
-        document.querySelectorAll('.openbb-pane').forEach(p => p.classList.add('hidden'));
-        const targetPane = document.getElementById(targetId);
-        if (targetPane) targetPane.classList.remove('hidden');
-
-        openbbTabBtns.forEach(b => {
-          b.classList.remove('text-foreground', 'bg-muted');
-          b.classList.add('text-muted-foreground');
-        });
-        btn.classList.add('text-foreground', 'bg-muted');
-        btn.classList.remove('text-muted-foreground');
-      });
-    });
-
-    // Clickable Quick-Run Pills
-    const pills = document.querySelectorAll('.obb-cmd-pill');
-    pills.forEach(pill => {
-      pill.addEventListener('click', () => {
-        const cmd = pill.getAttribute('data-cmd');
-        if (cliInput) cliInput.value = cmd;
-        executeOpenBBCommand(cmd);
-      });
-    });
-
-    // Form Submit
-    if (cliForm) {
-      cliForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const cmd = cliInput ? cliInput.value.trim() : '';
-        if (cmd) {
-          executeOpenBBCommand(cmd);
-          if (cliInput) cliInput.value = '';
-        }
-      });
-    }
-
-    // Execute Command Logic (A to Z OpenBB Financial Coverage)
-    function executeOpenBBCommand(cmd) {
-      if (!cliOutput) return;
-
-      const cleanCmd = (cmd || '').trim();
-      const lower = cleanCmd.toLowerCase();
-
-      const cmdEcho = document.createElement('div');
-      cmdEcho.className = 'text-emerald-400 font-semibold mt-3';
-      cmdEcho.textContent = `obb> ${cleanCmd}`;
-      cliOutput.appendChild(cmdEcho);
-
-      const resultPre = document.createElement('pre');
-      resultPre.className = 'text-[11px] leading-tight text-zinc-200 bg-zinc-950/80 p-3 rounded border border-white/5 overflow-x-auto my-1';
-
-      if (lower.includes('commodity') && (lower.includes('xau') || lower.includes('gold')) || lower === 'gold' || lower === 'xauusd') {
-        resultPre.textContent = `
-========================================================================================================
-                                OpenBB Commodity Historical Dataframe: XAU/USD (Gold Spot)
-========================================================================================================
-       date         open         high          low        close       volume         vwap    change_pct
---------------------------------------------------------------------------------------------------------
- 2026-09-15   $2,642.10   $2,658.40   $2,638.90   $2,653.20   42,810 oz   $2,648.50        +0.72%
- 2026-09-16   $2,653.20   $2,669.80   $2,649.10   $2,664.50   46,120 oz   $2,659.80        +0.43%
- 2026-09-17   $2,664.50   $2,678.00   $2,660.20   $2,672.40   51,480 oz   $2,669.10        +0.30%
- 2026-09-18   $2,672.40   $2,686.90   $2,668.50   $2,680.10   58,300 oz   $2,677.80        +0.29%
- 2026-09-19   $2,680.10   $2,692.40   $2,658.20   $2,684.80   64,920 oz   $2,681.40        +1.18%
-========================================================================================================
-[5 rows x 8 columns] • Ingested via London Bullion Market Association (LBMA) / ECN • Latency: 64ms`;
-      } else if (lower.includes('forex') || lower.includes('eurusd') || lower.includes('gbpusd') || lower.includes('usdjpy') || lower.includes('usdinr')) {
-        const pair = lower.includes('gbp') ? 'GBP/USD' : (lower.includes('jpy') ? 'USD/JPY' : (lower.includes('inr') ? 'USD/INR' : 'EUR/USD'));
-        const quote = lower.includes('gbp') ? '1.2945' : (lower.includes('jpy') ? '154.20' : (lower.includes('inr') ? '84.08' : '1.0872'));
-        resultPre.textContent = `
-========================================================================================================
-                                OpenBB Forex Historical Dataframe: ${pair}
-========================================================================================================
-       date         open         high          low        close       volume         vwap    change_pct
---------------------------------------------------------------------------------------------------------
- 2026-09-15     1.0820       1.0855       1.0812       1.0848   142,000 lots     1.0834        +0.26%
- 2026-09-16     1.0848       1.0880       1.0840       1.0862   156,800 lots     1.0858        +0.13%
- 2026-09-17     1.0862       1.0894       1.0851       1.0855   138,400 lots     1.0870        -0.06%
- 2026-09-18     1.0855       1.0882       1.0844       1.0865   164,200 lots     1.0861        +0.09%
- 2026-09-19     1.0865       1.0890       1.0858       ${quote}   178,900 lots     1.0870        +0.22%
-========================================================================================================
-[5 rows x 8 columns] • Central Bank & Continuous Interbank ECN • Latency: 52ms`;
-      } else if (lower.includes('commodity') && (lower.includes('brent') || lower.includes('oil') || lower.includes('crude'))) {
-        resultPre.textContent = `
-========================================================================================================
-                                OpenBB Energy Historical Dataframe: Brent Crude Oil (ICE)
-========================================================================================================
-       date         open         high          low        close       volume         vwap    change_pct
---------------------------------------------------------------------------------------------------------
- 2026-09-15     $72.40       $73.80       $72.10       $73.25   214,800 bbl      $73.10        +1.18%
- 2026-09-16     $73.25       $74.15       $72.90       $73.60   198,400 bbl      $73.45        +0.48%
- 2026-09-17     $73.60       $74.50       $73.20       $74.10   220,100 bbl      $73.90        +0.68%
- 2026-09-18     $74.10       $75.20       $73.85       $74.45   248,500 bbl      $74.60        +0.47%
- 2026-09-19     $74.45       $75.40       $74.10       $74.82   265,300 bbl      $74.75        +1.42%
-========================================================================================================
-[5 rows x 8 columns] • Source: ICE Futures Europe / NYMEX • Geopolitical Risk Premium Priced In`;
-      } else if (lower.includes('quantitative') || lower.includes('var') || lower.includes('volatility') || lower.includes('risk')) {
-        resultPre.textContent = `
-========================================================================================================
-                        OpenBB Quantitative Risk Analytics: Value at Risk (VaR) & Monte Carlo
-========================================================================================================
- Metric                        95% Confidence     99% Confidence    Methodology          Status
---------------------------------------------------------------------------------------------------------
- 1-Day Value at Risk (VaR)              -1.42%             -2.38%    Parametric (Normal)  Pass
- 1-Day Historical VaR                   -1.55%             -2.61%    Historical (500d)    Pass
- Expected Shortfall (CVaR)              -1.88%             -3.12%    Extreme Value Theory Within Bounds
- Portfolio Beta vs DXY                   -0.42              -0.42    60-Day Rolling       Inverse Hedge
- Annualized Sharpe Ratio                 2.48               2.48    Rf = 4.12%           Institutional
- Maximum Drawdown (YTD)                 -6.14%             -6.14%    Peak-to-Trough       Controlled
- Monte Carlo Simulations (10k)          +18.4% expected return (90% CI: +4.2% to +34.8%)
-========================================================================================================
-[Analysis complete] • OpenBB Quantitative Suite • Risk Engine: SENTINEL Integrated`;
-      } else if (cmd.includes('crypto.price.historical') || lower.includes('btc') || lower.includes('eth')) {
-        const market = livePrices['BTC/USDT'] || { price: 81262.00 };
-        const p = market.price;
-        resultPre.textContent = `
-========================================================================================================
-                                     OpenBB Crypto Historical Dataframe: BTC/USDT
-========================================================================================================
-       date         open         high          low        close         volume          vwap   change_pct
---------------------------------------------------------------------------------------------------------
- 2026-09-15   $78,920.00   $80,450.00   $78,600.00   $80,120.00     28,420 BTC   $79,650.00       +1.52%
- 2026-09-16   $80,120.00   $81,100.00   $79,800.00   $80,950.00     31,180 BTC   $80,450.00       +1.04%
- 2026-09-17   $80,950.00   $81,800.00   $80,250.00   $81,420.00     29,650 BTC   $81,120.00       +0.58%
- 2026-09-18   $81,420.00   $82,400.00   $80,900.00   $81,980.00     34,890 BTC   $81,640.00       +0.69%
- 2026-09-19   $81,980.00   $82,950.00   $81,100.00   $${p.toLocaleString(undefined, { minimumFractionDigits: 2 })}     24,180 BTC   $81,850.00       +2.85%
-========================================================================================================
-[5 rows x 8 columns] • Ingested via Binance WebSocket • Latency: 48ms`;
-      } else if (cmd.includes('economy.indicators') || lower.includes('cpi') || lower.includes('fed') || lower.includes('macro')) {
-        resultPre.textContent = `
-========================================================================================================
-                                     OpenBB US Macroeconomic Indicators: CPI
-========================================================================================================
-    period    cpi_yoy    cpi_mom    core_cpi_yoy    core_cpi_mom    target_rate    fed_funds_rate
---------------------------------------------------------------------------------------------------------
-   2026-05      3.3%      +0.2%            3.4%           +0.2%          2.00%             5.25%
-   2026-06      3.2%      +0.1%            3.3%           +0.1%          2.00%             5.25%
-   2026-07      3.1%      +0.2%            3.2%           +0.2%          2.00%             5.00%
-   2026-08      3.0%      +0.1%            3.1%           +0.1%          2.00%             5.00%
-   2026-09      2.9%      +0.1%            3.0%           +0.1%          2.00%             4.75%
-========================================================================================================
-[5 rows x 6 columns] • Source: Federal Reserve Economic Data (FRED) • Status: Expansionary`;
-      } else if (cmd.includes('fundamental.income') || lower.includes('nvda') || lower.includes('aapl')) {
-        resultPre.textContent = `
-========================================================================================================
-                                     OpenBB Income Statement: NVDA (TTM)
-========================================================================================================
-    fiscal_quarter     revenue     gross_profit    operating_income     net_income        eps      ebitda
---------------------------------------------------------------------------------------------------------
-           2026-Q1    $26.04 B         $20.41 B            $16.91 B       $14.88 B      $0.61    $17.82 B
-           2026-Q2    $30.04 B         $22.57 B            $18.64 B       $16.60 B      $0.68    $19.62 B
-           2026-Q3    $35.08 B         $26.31 B            $21.87 B       $19.31 B      $0.78    $22.95 B
-           2026-Q4    $39.50 B         $29.80 B            $25.10 B       $22.40 B      $0.89    $26.40 B
---------------------------------------------------------------------------------------------------------
-               TTM   $130.66 B         $99.09 B            $82.52 B       $73.19 B      $2.96    $86.79 B
-========================================================================================================
-[5 rows x 7 columns] • Source: SEC 10-K / 10-Q SEC EDGAR • Verified Financial Statements`;
-      } else if (lower.includes('ai') || lower.includes('aether') || lower.includes('evolve') || lower.includes('sentinel') || lower.includes('unity') || lower.includes('orbit')) {
-        resultPre.textContent = `
-========================================================================================================
-                                 OpenBB AI Agent Bridge • Multi-Agent Synthesis
-========================================================================================================
-[AGENT CONNECTOR] Pipeline initialized between OpenBB Multi-Asset Engine and VETERIAN-FX Brain:
- • AETHER-9 (Debate Core): 88% Weighted Conviction (Order Flow Specialist Approved)
- • EVOLVE-X (Execution): Optimal Entry Limit set at Order Block support
- • SENTINEL (Risk Guard): Dynamic VaR 1.42% within safe limits • Max 2.5% account allocation
- • UNITY (Portfolio Brain): Cross-account exposure rebalanced across FX and Bullion
- • ORBIT (Sentiment Wire): Real-time news sentiment score +0.76 (Bullish Fed Liquidity)
-========================================================================================================
-[AI STATUS] Consensus parameters successfully routed to Live Trading and Chart Execution state.`;
-      } else if (lower === 'help' || lower === 'commands' || lower === 'a-z') {
-        resultPre.textContent = `
-========================================================================================================
-                                OpenBB Platform A-to-Z Command Directory
-========================================================================================================
- [FOREX]
-  obb.forex.price.historical('EURUSD')        - EUR/USD spot OHLCV & interbank rates
-  obb.forex.price.historical('GBPUSD')        - GBP/USD cable pricing & BoE stance
-  obb.forex.price.historical('USDINR')        - USD/INR spot & RBI forward book
-
- [COMMODITIES & CFDs]
-  obb.commodity.price.historical('XAUUSD')    - Gold spot bullion (troy ounce)
-  obb.commodity.price.historical('XAGUSD')    - Silver spot bullion
-  obb.commodity.price.historical('BRENT')     - Brent Crude Oil ICE futures
-  obb.commodity.price.historical('NATGAS')    - US Natural Gas NYMEX futures
-
- [QUANTITATIVE RISK]
-  obb.quantitative.var('PORTFOLIO')           - Parametric & Historical Value at Risk (VaR)
-  obb.quantitative.montecarlo(n_sims=10000)   - 10,000-path Monte Carlo distribution
-
- [CRYPTO & EQUITIES]
-  obb.crypto.price.historical('BTC')          - Bitcoin real-time order flow & candles
-  obb.equity.fundamental.income('NVDA')       - SEC EDGAR verified 10-K/10-Q statements
-
- [AI AGENTS & MACRO]
-  obb.ai.agent.feed(model='AETHER-9')         - Stream multi-agent debate parameters
-  obb.economy.indicators('US', 'cpi')         - Federal Reserve FRED macro indicators
-========================================================================================================`;
-      } else {
-        resultPre.textContent = `
-========================================================================================================
-                                     OpenBB Historical Dataframe Output
-========================================================================================================
-       date         open         high          low        close       volume         vwap    change_pct
---------------------------------------------------------------------------------------------------------
- 2026-09-15   $228.4000   $231.2000   $227.6500   $230.8000   48,192,400   $229.8500        +1.05%
- 2026-09-16   $231.1000   $233.4500   $230.2000   $232.9000   52,840,100   $232.1000        +0.91%
- 2026-09-17   $233.0000   $235.1000   $231.8000   $234.6000   56,120,800   $233.8000        +0.73%
- 2026-09-18   $234.5000   $237.0000   $233.9000   $236.4000   61,400,200   $235.5500        +0.77%
- 2026-09-19   $236.8000   $238.9000   $235.6000   $238.2500   58,320,000   $237.4000        +0.78%
-========================================================================================================
-[5 rows x 8 columns] • Ingested via OpenBB FMP/YFinance Provider • Latency: 128ms
-Tip: Type 'help' to view all A-to-Z Forex, Gold, Commodity, and Quantitative commands.`;
-      }
-
-      cliOutput.appendChild(resultPre);
-      cliOutput.scrollTop = cliOutput.scrollHeight;
-    }
-
-    // Copy script button
-    if (copyScriptBtn) {
-      copyScriptBtn.addEventListener('click', () => {
-        const code = `from openbb import obb\n\n# 1. Pull historical data\ndf = obb.equity.price.historical("AAPL").to_dataframe()\nprint(df)\n\n# 2. Feed into AI Agent\n# obb.ai.synthesize(asset="AAPL", model="AETHER-9")`;
-        navigator.clipboard.writeText(code).then(() => {
-          copyScriptBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M20 6 9 17l-5-5"></path></svg>
-            <span class="text-emerald-500 font-semibold">Copied to Clipboard!</span>
-          `;
-          setTimeout(() => {
-            copyScriptBtn.innerHTML = `
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
-              <span>Copy Python Script</span>
-            `;
-          }, 2000);
-        });
-      });
-    }
-  }
-
   function addLog(text, colorClass = '') {
     const logs = document.getElementById('hub-live-logs');
     if (!logs) return;
@@ -2464,7 +1726,7 @@ Tip: Type 'help' to view all A-to-Z Forex, Gold, Commodity, and Quantitative com
   function purgeLegacyCards(grid) {
     if (!grid) return;
     Array.from(grid.children).forEach(child => {
-      if (child.id !== 'ai-engines-hub-card' && child.id !== 'news-insight-card' && child.id !== 'openbb-terminal-card') {
+      if (child.id !== 'ai-engines-hub-card' && child.id !== 'news-insight-card') {
         child.style.setProperty('display', 'none', 'important');
       }
     });
@@ -2476,11 +1738,11 @@ Tip: Type 'help' to view all A-to-Z Forex, Gold, Commodity, and Quantitative com
     const styleEl = document.createElement('style');
     styleEl.id = 'veterian-layout-cleanup-styles';
     styleEl.textContent = `
-      .grid.gap-4.px-4.pb-6.lg\\:grid-cols-12 > div:not(#ai-engines-hub-card):not(#news-insight-card):not(#openbb-terminal-card),
-      main .grid > div:not(#ai-engines-hub-card):not(#news-insight-card):not(#openbb-terminal-card) {
+      .grid.gap-4.px-4.pb-6.lg\\:grid-cols-12 > div:not(#ai-engines-hub-card):not(#news-insight-card),
+      main .grid > div:not(#ai-engines-hub-card):not(#news-insight-card) {
         display: none !important;
       }
-      #ai-engines-hub-card, #news-insight-card, #openbb-terminal-card {
+      #ai-engines-hub-card, #news-insight-card {
         grid-column: 1 / -1 !important;
         width: 100% !important;
       }
@@ -2493,6 +1755,10 @@ Tip: Type 'help' to view all A-to-Z Forex, Gold, Commodity, and Quantitative com
 
     const grid = document.querySelector('.grid.gap-4.px-4.pb-6.lg\\:grid-cols-12, #S\\:0 .grid, main .grid');
     if (!grid) return;
+
+    // Remove any existing OpenBB terminal if present in DOM
+    const existingTerm = document.getElementById('openbb-terminal-card');
+    if (existingTerm) existingTerm.remove();
 
     // 1. Mount Main AI Engines Hub Card (TradingView + Robot Suite)
     let hubCard = document.getElementById('ai-engines-hub-card');
@@ -2510,15 +1776,6 @@ Tip: Type 'help' to view all A-to-Z Forex, Gold, Commodity, and Quantitative com
       tempNews.innerHTML = renderNewsInsightHTML().trim();
       newsCard = tempNews.firstElementChild;
       grid.insertBefore(newsCard, hubCard.nextSibling);
-    }
-
-    // 3. Mount OpenBB Terminal Card at the Bottom
-    let terminalCard = document.getElementById('openbb-terminal-card');
-    if (!terminalCard) {
-      const tempTerm = document.createElement('div');
-      tempTerm.innerHTML = renderOpenBBTerminalHTML().trim();
-      terminalCard = tempTerm.firstElementChild;
-      grid.appendChild(terminalCard);
     }
 
     // Purge all legacy demo cards
@@ -2540,7 +1797,7 @@ Tip: Type 'help' to view all A-to-Z Forex, Gold, Commodity, and Quantitative com
         debounceTimer = null;
         const grid = document.querySelector('.grid.gap-4.px-4.pb-6.lg\\:grid-cols-12, #S\\:0 .grid, main .grid');
         if (grid) {
-          if (!document.getElementById('ai-engines-hub-card') || !document.getElementById('news-insight-card') || !document.getElementById('openbb-terminal-card')) {
+          if (!document.getElementById('ai-engines-hub-card') || !document.getElementById('news-insight-card')) {
             mountHub();
           } else {
             purgeLegacyCards(grid);
