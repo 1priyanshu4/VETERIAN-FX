@@ -1109,9 +1109,16 @@
       <!-- Live Streaming Feed Container (Zero Page Jump: overflow-anchor none & isolated containment) -->
       <div id="news-wire-feed" class="space-y-2 overflow-y-auto font-mono text-xs pr-1" style="height: 380px; max-height: 380px; overflow-anchor: none; overscroll-behavior: contain; contain: content;">
             <div id="news-feed-loading" class="p-6 text-center text-xs text-muted-foreground font-mono flex items-center justify-center gap-2.5">
-              <svg class="animate-spin size-4 text-emerald-500 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-              <span>Connecting to verified live financial wire feeds (Moneycontrol Gold/Forex/CFD, ForexLive, CoinTelegraph, Decrypt)...</span>
-         // Render 3: Marine Traffic & Crude Oil Intelligence • Geopolitical War Wire (Bloomberg Model + Live Military Feed)
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    `;
+  }
+
+  // Render 3: Marine Traffic & Crude Oil Intelligence • Geopolitical War Wire (Bloomberg Model + Live Military Feed)
   function renderMarineTrafficHTML() {
     return `
     <div id="marine-traffic-card" data-slot="card" class="col-span-12 group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 mb-6 transition-all" style="grid-column: 1 / -1; width: 100%;">
@@ -1378,14 +1385,6 @@
   // Legacy War Wire placeholder (Consolidated into renderMarineTrafficHTML)
   function renderWarWireHTML() {
     return '';
-  }t wire (Al Jazeera, Washington Post, NPR, BBC, Reuters)...</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-    `;
   }
 
   // Multi-Trade Lifecycle & Real-Time Active Trade Tracker
