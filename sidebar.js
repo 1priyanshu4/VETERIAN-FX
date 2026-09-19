@@ -16,6 +16,10 @@
     initCollapsibleGroups();
     initMobileDrawer();
     initThemeToggle();
+    ensureInstitutionalChartLink();
+    setTimeout(ensureInstitutionalChartLink, 80);
+    setTimeout(ensureInstitutionalChartLink, 300);
+    setTimeout(ensureInstitutionalChartLink, 1000);
   }
 
   /* --------------------------------------------------------------------------
@@ -262,10 +266,95 @@
     });
   }
 
+  /* --------------------------------------------------------------------------
+     5. GUARANTEE INSTITUTIONAL CHART LINK IN SIDEBAR
+     -------------------------------------------------------------------------- */
+  function ensureInstitutionalChartLink() {
+    const sidebar = document.querySelector('[data-slot="sidebar"], [data-sidebar="sidebar"], aside, nav');
+    if (!sidebar) return;
+
+    // Find first sidebar-menu
+    const firstMenu = sidebar.querySelector('[data-slot="sidebar-group"] [data-slot="sidebar-menu"]') || sidebar.querySelector('[data-slot="sidebar-menu"]');
+    if (!firstMenu) return;
+
+    const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+    const isChartPage = currentPath === '/institutional-chart' || currentPath.includes('institutional-chart');
+
+    let existingLink = sidebar.querySelector('a[href="/institutional-chart"], a[href*="institutional-chart"]');
+
+    if (existingLink) {
+      existingLink.style.display = '';
+      // Ensure it has the LIVE badge
+      if (!existingLink.querySelector('.chart-live-badge')) {
+        const badge = document.createElement('span');
+        badge.className = 'chart-live-badge ml-auto flex items-center gap-1 text-[9px] font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded';
+        badge.innerHTML = '<span class="size-1.5 rounded-full bg-emerald-400 animate-pulse"></span>LIVE';
+        existingLink.appendChild(badge);
+      }
+      // Ensure SVG is emerald candlestick
+      const svg = existingLink.querySelector('svg');
+      if (svg && !svg.classList.contains('lucide-candlestick-chart')) {
+        svg.outerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-candlestick-chart text-emerald-400" aria-hidden="true"><path d="M9 5v4"></path><rect width="4" height="6" x="7" y="9" rx="1"></rect><path d="M9 15v4"></path><path d="M17 3v2"></path><rect width="4" height="8" x="15" y="5" rx="1"></rect><path d="M17 13v8"></path></svg>`;
+      }
+      return;
+    }
+
+    const li = document.createElement('li');
+    li.setAttribute('data-slot', 'sidebar-menu-item');
+    li.setAttribute('data-sidebar', 'menu-item');
+    li.className = 'group/menu-item relative';
+    li.innerHTML = `
+      <a data-slot="sidebar-menu-button" data-sidebar="menu-button" data-size="default" class="peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left ring-sidebar-ring outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm" ${isChartPage ? 'data-active=""' : ''} href="/institutional-chart">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-candlestick-chart text-emerald-400" aria-hidden="true">
+          <path d="M9 5v4"></path>
+          <rect width="4" height="6" x="7" y="9" rx="1"></rect>
+          <path d="M9 15v4"></path>
+          <path d="M17 3v2"></path>
+          <rect width="4" height="8" x="15" y="5" rx="1"></rect>
+          <path d="M17 13v8"></path>
+        </svg>
+        <span class="truncate">Institutional Chart</span>
+        <span class="chart-live-badge ml-auto flex items-center gap-1 text-[9px] font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+          <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse"></span>LIVE
+        </span>
+      </a>
+    `;
+
+    // Insert right after Dashboard (index 1) or at beginning
+    if (firstMenu.children.length > 1) {
+      firstMenu.insertBefore(li, firstMenu.children[1]);
+    } else {
+      firstMenu.appendChild(li);
+    }
+  }
+
+  // Set up MutationObserver to re-assert link whenever React re-renders sidebar
+  function initSidebarObserver() {
+    ensureInstitutionalChartLink();
+    let timeoutId = null;
+    const observer = new MutationObserver(() => {
+      if (timeoutId) return;
+      timeoutId = setTimeout(() => {
+        timeoutId = null;
+        ensureInstitutionalChartLink();
+      }, 50);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
   // Initialize once DOM is ready or immediately if already loaded
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPlatformSidebar);
+    document.addEventListener('DOMContentLoaded', () => {
+      initPlatformSidebar();
+      initSidebarObserver();
+    });
   } else {
     initPlatformSidebar();
+    initSidebarObserver();
   }
 })();
+

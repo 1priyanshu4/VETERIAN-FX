@@ -892,6 +892,16 @@ class CandleStore {
   }
 
   updateLive(candle) {
+    if (!candle || isNaN(candle.close) || isNaN(candle.time)) return;
+    candle.open = Number(candle.open) || candle.close;
+    candle.high = Number(candle.high) || Math.max(candle.open, candle.close);
+    candle.low = Number(candle.low) || Math.min(candle.open, candle.close);
+    candle.close = Number(candle.close);
+    candle.volume = Number(candle.volume) || 0;
+
+    if (candle.close > candle.high) candle.high = candle.close;
+    if (candle.close < candle.low) candle.low = candle.close;
+
     if (this.candles.length === 0) {
       this.candles.push(candle);
       this.clusters.lastPrice = candle.close;
@@ -901,13 +911,13 @@ class CandleStore {
     this.clusters.lastPrice = candle.close;
     const last = this.candles[this.candles.length - 1];
     if (candle.time === last.time) {
-      this.candles[this.candles.length - 1] = candle;
+      this.candles[this.candles.length - 1] = { ...candle };
     } else if (candle.time > last.time) {
       this.candles.push(candle);
       if (this.candles.length > this.maxCandles) {
         this.candles.shift();
       }
-      this.footprint.initCandle(candle.time);
+      this.footprint.initCandle(candle.time, this.symbolInfo);
     }
   }
 
@@ -1210,10 +1220,11 @@ class FootprintEngine {
     this.candles.clear();
   }
 
-  initCandle(time) {
+  initCandle(time, symbolInfo) {
     if (!this.candles.has(time)) {
+      const tick = symbolInfo?.tickSize || 0.01;
       this.candles.set(time, {
-        step: 1,
+        step: tick * 2,
         bins: new Map(),
         pocPrice: null,
         totalDelta: 0,
@@ -1324,10 +1335,15 @@ class FootprintEngine {
 
   addTrade(time, trade, symbolInfo) {
     if (!this.candles.has(time)) {
-      this.initCandle(time);
+      this.initCandle(time, symbolInfo);
     }
     const fp = this.candles.get(time);
-    const step = fp.step || (symbolInfo?.tickSize * 4) || 1;
+    const tick = symbolInfo?.tickSize || 0.01;
+    let step = fp.step;
+    if (!step || step > trade.price * 0.1) {
+      step = Math.max(tick, tick * 2);
+      fp.step = step;
+    }
     const binPrice = parseFloat((Math.round(trade.price / step) * step).toFixed(symbolInfo?.decimals || 4));
 
     if (!fp.bins.has(binPrice)) {
@@ -1448,8 +1464,8 @@ class FootprintEngine {
       const isAskImbalance = lowerBid ? (vol.askVol >= 2.5 * lowerBid && vol.askVol >= 1) : false;
       const isBidImbalance = higherAsk ? (vol.bidVol >= 2.5 * higherAsk && vol.bidVol >= 1) : false;
 
-      // Dark cluster background for max contrast
-      ctx.fillStyle = 'rgba(8, 12, 22, 0.9)';
+      // Dark cluster background with subtle translucency for depth
+      ctx.fillStyle = 'rgba(8, 12, 22, 0.72)';
       ctx.fillRect(leftX, yTop, bodyW, rowH - 1);
 
       // ── BID CELL (LEFT HALF) ──
@@ -4707,14 +4723,14 @@ class DualCanvasChart {
     this.symbolInfo = symbolInfo;
     this.interval = interval;
 
-    // View state: Default to Macro Institutional Footprint Mode (8 bars for huge legible clusters)
-    this.visibleCandles = 8;
+    // View state: Default to Standard Institutional Overview (55 bars with 7 bars breathing room)
+    this.visibleCandles = 55;
     this.scrollOffset = 0;
     this.priceAxisW = 84;
     this.timeAxisH = 28;
 
-    // Right margin future space (2 empty bar slots reserved past latest candle)
-    this.rightOffsetBars = 2;
+    // Right margin future space (7 empty bar slots reserved past latest candle)
+    this.rightOffsetBars = 7;
 
     this.layers = {
       heatmap: true,
@@ -4800,8 +4816,12 @@ class DualCanvasChart {
       <div class="td-liq-tooltip" id="td-bubble-tooltip"></div>
       <div class="td-footprint-hint" id="td-footprint-hint" style="display:none;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        Zoom in (≤45 candles) to inspect bid/ask footprint clusters
+        Zoom in (≤32 candles) to inspect bid/ask footprint clusters
       </div>
+      <button class="td-jump-live-btn" id="td-jump-live-btn" style="display:none;" title="Snap back to real-time live candle">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        <span>Live</span>
+      </button>
     `;
 
     this.baseCanvas = this.container.querySelector('.td-canvas-base');
@@ -4809,6 +4829,14 @@ class DualCanvasChart {
     this.liqTooltip = this.container.querySelector('#td-liq-tooltip');
     this.bubbleTooltip = this.container.querySelector('#td-bubble-tooltip');
     this.footprintHint = this.container.querySelector('#td-footprint-hint');
+    this.jumpLiveBtn = this.container.querySelector('#td-jump-live-btn');
+
+    this.jumpLiveBtn?.addEventListener('click', () => {
+      this.scrollOffset = 0;
+      if (this.jumpLiveBtn) this.jumpLiveBtn.style.display = 'none';
+      this.requestRender();
+      this.renderOverlay();
+    });
 
     this.baseCtx = this.baseCanvas.getContext('2d');
     this.overlayCtx = this.overlayCanvas.getContext('2d');
@@ -4913,6 +4941,9 @@ class DualCanvasChart {
         const candleW = this.getCandleW();
         const deltaCandles = Math.round(dx / candleW);
         this.scrollOffset = Math.max(0, Math.min(this.store.length - 10, this.dragStartOffset + deltaCandles));
+        if (this.jumpLiveBtn) {
+          this.jumpLiveBtn.style.display = this.scrollOffset > 0 ? 'flex' : 'none';
+        }
         this.requestRender();
       }
 
@@ -4961,10 +4992,12 @@ class DualCanvasChart {
     el.addEventListener('wheel', (e) => {
       e.preventDefault();
       const step = e.deltaY > 0 ? 4 : -4;
-      this.visibleCandles = Math.max(10, Math.min(350, this.visibleCandles + step));
+      this.visibleCandles = Math.max(6, Math.min(250, this.visibleCandles + step));
+      this.rightOffsetBars = Math.max(2, Math.min(16, Math.round(this.visibleCandles * 0.12)));
       this.requestRender();
       this.renderOverlay();
       this.updateFootprintHint();
+      window.chartTerminal?.syncZoomPills?.(this.visibleCandles);
     }, { passive: false });
 
     el.addEventListener('dblclick', () => {
@@ -4977,16 +5010,20 @@ class DualCanvasChart {
     if (visible.length === 0) return null;
     const bounds = this.getPriceBounds(visible);
     const candleW = this.getCandleW();
+    const startX = Math.max(0, (this.visibleCandles - visible.length) * candleW);
     const intervalMs = this.getIntervalMs();
 
-    const cIdx = Math.floor(x / candleW);
+    const cIdx = Math.floor((x - startX) / candleW);
     let time;
-    if (cIdx < visible.length) {
+    if (cIdx >= 0 && cIdx < visible.length) {
       time = visible[Math.max(0, cIdx)].time;
-    } else {
+    } else if (cIdx >= visible.length) {
       // Future space
       const futureBars = cIdx - (visible.length - 1);
       time = visible[visible.length - 1].time + futureBars * intervalMs;
+    } else {
+      const pastBars = -cIdx;
+      time = visible[0].time - pastBars * intervalMs;
     }
 
     const price = bounds.min + (1 - (y - 4) / Math.max(1, this.candleH - 36)) * bounds.range;
@@ -4995,7 +5032,7 @@ class DualCanvasChart {
 
   updateFootprintHint() {
     const candleW = this.getCandleW();
-    if (this.layers.footprint && (this.visibleCandles <= 55 || candleW >= 34)) {
+    if (this.layers.footprint && (this.visibleCandles <= 32 || candleW >= 34)) {
       if (this.footprintHint) this.footprintHint.style.display = 'none';
     } else if (this.layers.footprint) {
       if (this.footprintHint) this.footprintHint.style.display = 'flex';
@@ -5005,9 +5042,10 @@ class DualCanvasChart {
   }
 
   resetView() {
-    this.visibleCandles = 8; // Default to Macro Footprint Focus (Massive Legible Clusters)
+    this.visibleCandles = 55; // Standard Institutional View (55 bars)
     this.scrollOffset = 0;
-    this.rightOffsetBars = 2;
+    this.rightOffsetBars = 7;
+    if (this.jumpLiveBtn) this.jumpLiveBtn.style.display = 'none';
     this.requestRender();
     this.renderOverlay();
     this.updateFootprintHint();
