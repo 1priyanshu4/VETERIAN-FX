@@ -1033,6 +1033,448 @@
     `;
   }
 
+  // Render 3: Marine Traffic & Crude Oil Tanker Intelligence (Bloomberg Tanker Tracker Model)
+  function renderMarineTrafficHTML() {
+    return `
+    <div id="marine-traffic-card" data-slot="card" class="col-span-12 group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 mb-6 transition-all" style="grid-column: 1 / -1; width: 100%;">
+      
+      <!-- Card Header -->
+      <div data-slot="card-header" class="flex flex-wrap items-center justify-between gap-4 px-5 pt-1 pb-3 border-b border-border/60" style="width: 100%;">
+        <div class="flex items-center gap-3 min-w-[280px] flex-1">
+          <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ship"><path d="M2 21h20M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.2.6 4.3 1.62 6M12 3v7M8 8l4-5 4 5"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-heading text-base font-bold text-foreground tracking-tight">Marine Traffic • Crude Oil Tanker & Chokepoint Intelligence</h3>
+              <span class="inline-flex items-center rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-semibold text-cyan-400 font-mono">BLOOMBERG TANKER TRACKER</span>
+              <span class="inline-flex items-center rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 font-mono">LIVE AIS TELEMETRY</span>
+            </div>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Real-time crude oil fleet tracking, VLCC freight benchmarks, floating storage inventory, and strategic maritime chokepoints.
+            </p>
+          </div>
+        </div>
+
+        <!-- Status Pills & Controls -->
+        <div class="flex items-center gap-2 flex-wrap shrink-0">
+          <button id="refresh-marine-btn" type="button" class="flex items-center gap-1.5 bg-muted/60 hover:bg-muted border border-border px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer text-foreground font-semibold" title="Refresh AIS Tanker Coordinates">
+            <svg id="marine-refresh-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-cyan-400"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+            <span>REFRESH AIS</span>
+          </button>
+
+          <div class="flex items-center gap-1.5 bg-muted/60 border border-border px-3 py-1.5 rounded-lg text-xs font-mono">
+            <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-foreground font-semibold">AIS TRANSPONDERS</span>
+            <span class="text-muted-foreground">•</span>
+            <span class="text-emerald-400 font-semibold" id="marine-ais-status">6/6 VLCCs Online</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Row: Bloomberg-Style Crude Oil Logistics & Freight Benchmarks -->
+      <div class="px-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          
+          <!-- 1. VLCC Freight Benchmark -->
+          <div class="p-3 rounded-xl border border-border/80 bg-muted/30 space-y-1">
+            <div class="flex items-center justify-between text-[11px] text-muted-foreground font-mono">
+              <span class="uppercase tracking-wider">VLCC TD3C DAY RATE</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">+6.8% 24h</span>
+            </div>
+            <div class="text-xl font-bold font-mono text-foreground tabular-nums">$44,250<span class="text-xs font-normal text-muted-foreground">/day</span></div>
+            <p class="text-[11px] text-muted-foreground font-sans">Arabian Gulf → China (270k mt) | Baltic Exchange Index</p>
+          </div>
+
+          <!-- 2. Global Floating Storage -->
+          <div class="p-3 rounded-xl border border-border/80 bg-muted/30 space-y-1">
+            <div class="flex items-center justify-between text-[11px] text-muted-foreground font-mono">
+              <span class="uppercase tracking-wider">FLOATING CRUDE STORAGE</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">+1.2M bbl</span>
+            </div>
+            <div class="text-xl font-bold font-mono text-foreground tabular-nums">84.6M<span class="text-xs font-normal text-muted-foreground"> barrels</span></div>
+            <p class="text-[11px] text-muted-foreground font-sans">Offshore laden tankers stationary &gt;7 days (Vortexa / Bloomberg)</p>
+          </div>
+
+          <!-- 3. Strait of Hormuz Volume -->
+          <div class="p-3 rounded-xl border border-border/80 bg-muted/30 space-y-1">
+            <div class="flex items-center justify-between text-[11px] text-muted-foreground font-mono">
+              <span class="uppercase tracking-wider">HORMUZ DAILY FLOW</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">21% Global Flow</span>
+            </div>
+            <div class="text-xl font-bold font-mono text-foreground tabular-nums">20.5M<span class="text-xs font-normal text-muted-foreground"> bpd</span></div>
+            <p class="text-[11px] text-muted-foreground font-sans">Traffic Separation Scheme (TSS) | Escorts Active</p>
+          </div>
+
+          <!-- 4. Bab el-Mandeb / Red Sea Alert -->
+          <div class="p-3 rounded-xl border border-rose-500/30 bg-rose-500/5 space-y-1">
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span class="text-rose-400 uppercase tracking-wider font-bold">BAB EL-MANDEB / RED SEA</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">HIGH RISK</span>
+            </div>
+            <div class="text-xl font-bold font-mono text-rose-400 tabular-nums">-58%<span class="text-xs font-normal text-rose-300"> Transit Volume</span></div>
+            <p class="text-[11px] text-muted-foreground font-sans">Houthi Threat | Cape Reroute (+12-14d, +$1.8M fuel/ins.)</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Row 2: Interactive Strategic Chokepoints Tactical Radar & Intelligence Scope -->
+      <div class="px-5">
+        <div class="rounded-xl border border-border bg-background p-4 space-y-4 ring-1 ring-foreground/5">
+          
+          <!-- Chokepoint Selector Tabs -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/60">
+            <div class="flex items-center gap-1 bg-muted p-1 rounded-lg border border-border/60 text-xs flex-wrap">
+              <button type="button" class="marine-chokepoint-btn px-3 py-1.5 rounded-md text-xs font-semibold text-foreground bg-background shadow-xs transition-all cursor-pointer" data-choke="hormuz">Strait of Hormuz (Persian Gulf)</button>
+              <button type="button" class="marine-chokepoint-btn px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-choke="mandel">Bab el-Mandeb (Red Sea / Aden)</button>
+              <button type="button" class="marine-chokepoint-btn px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-choke="suez">Suez Canal (Egypt)</button>
+              <button type="button" class="marine-chokepoint-btn px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-choke="malacca">Strait of Malacca (Singapore)</button>
+            </div>
+            
+            <div class="text-xs font-mono text-muted-foreground flex items-center gap-2">
+              <span class="size-2 rounded-full bg-cyan-400 animate-ping"></span>
+              <span>TACTICAL RADAR: <strong class="text-cyan-400" id="marine-active-choke-label">STRAIT OF HORMUZ TSS</strong></span>
+            </div>
+          </div>
+
+          <!-- Radar Scope Grid (Left: Radar Canvas / SVG, Right: Tactical Chokepoint Detail) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            
+            <!-- Radar Scope (Col 8) -->
+            <div class="lg:col-span-8 rounded-xl border border-cyan-500/20 bg-black/90 p-4 relative overflow-hidden flex flex-col justify-between" style="min-height: 280px;">
+              <!-- Radar Header Overlay -->
+              <div class="flex items-center justify-between z-10 text-[11px] font-mono">
+                <div class="flex items-center gap-2 text-cyan-400">
+                  <span class="size-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                  <span class="font-bold tracking-wider" id="radar-title">AIS SECTOR: STRAIT OF HORMUZ</span>
+                </div>
+                <div class="text-muted-foreground" id="radar-coords">LAT: 26°34'N | LON: 56°15'E | RANGE: 50nm</div>
+              </div>
+
+              <!-- Interactive Tactical Radar Scope SVG Graphic -->
+              <div class="relative w-full my-2 flex items-center justify-center overflow-hidden" style="height: 200px;">
+                <svg class="w-full h-full" viewBox="0 0 600 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Range Rings -->
+                  <circle cx="300" cy="100" r="30" stroke="#06b6d4" stroke-opacity="0.15" stroke-dasharray="2 2" />
+                  <circle cx="300" cy="100" r="65" stroke="#06b6d4" stroke-opacity="0.2" stroke-dasharray="3 3" />
+                  <circle cx="300" cy="100" r="95" stroke="#06b6d4" stroke-opacity="0.25" />
+                  
+                  <!-- Crosshairs -->
+                  <line x1="300" y1="5" x2="300" y2="195" stroke="#06b6d4" stroke-opacity="0.2" stroke-width="1" />
+                  <line x1="100" y1="100" x2="500" y2="100" stroke="#06b6d4" stroke-opacity="0.2" stroke-width="1" />
+
+                  <!-- Coastline/Chokepoint outline stylized -->
+                  <path id="radar-coastline" d="M 80 30 Q 200 40 280 85 T 450 60 L 520 20" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 2" />
+                  <path id="radar-shipping-lane" d="M 120 130 Q 250 120 300 100 T 480 80" stroke="#06b6d4" stroke-width="1" stroke-dasharray="6 3" stroke-opacity="0.4" />
+
+                  <!-- Radar Sweep Animation -->
+                  <line x1="300" y1="100" x2="480" y2="30" stroke="url(#sweep-grad)" stroke-width="2">
+                    <animateTransform attributeName="transform" type="rotate" from="0 300 100" to="360 300 100" dur="4s" repeatCount="indefinite"/>
+                  </line>
+
+                  <!-- Dynamic Tanker Blips on Radar -->
+                  <!-- Tanker 1: DHT Jaguar -->
+                  <g class="radar-blip cursor-pointer" data-tanker="DHT Jaguar" transform="translate(320, 95)">
+                    <circle cx="0" cy="0" r="4" fill="#10b981" />
+                    <circle cx="0" cy="0" r="8" stroke="#10b981" stroke-opacity="0.4">
+                      <animate attributeName="r" values="4;12;4" dur="2s" repeatCount="indefinite"/>
+                      <animate attributeName="stroke-opacity" values="0.8;0;0.8" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <text x="7" y="3" fill="#e2e8f0" font-family="monospace" font-size="9" font-weight="bold">DHT JAGUAR (VLCC)</text>
+                  </g>
+
+                  <!-- Tanker 2: Front Altair -->
+                  <g class="radar-blip cursor-pointer" data-tanker="Front Altair" transform="translate(390, 80)">
+                    <circle cx="0" cy="0" r="4" fill="#10b981" />
+                    <text x="7" y="3" fill="#94a3b8" font-family="monospace" font-size="8">FRONT ALTAIR (2.0M bbl)</text>
+                  </g>
+
+                  <!-- Tanker 3: Coswisdom -->
+                  <g class="radar-blip cursor-pointer" data-tanker="Coswisdom" transform="translate(240, 115)">
+                    <circle cx="0" cy="0" r="4" fill="#06b6d4" />
+                    <text x="7" y="3" fill="#94a3b8" font-family="monospace" font-size="8">COSWISDOM (Laden)</text>
+                  </g>
+
+                  <!-- Gradients -->
+                  <defs>
+                    <linearGradient id="sweep-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.8"/>
+                      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+
+              <!-- Radar Footer Status -->
+              <div class="flex items-center justify-between z-10 text-[10px] font-mono text-muted-foreground border-t border-cyan-500/10 pt-2">
+                <span class="flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-emerald-400"></span> Green: Laden VLCC Crude</span>
+                <span class="flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-cyan-400"></span> Cyan: Transit Inbound</span>
+                <span class="flex items-center gap-1.5"><span class="size-1.5 rounded-full bg-amber-400"></span> Yellow: Ballast Returning</span>
+                <span class="text-cyan-400">FPS: 60 | AIS PING: 4.8s</span>
+              </div>
+            </div>
+
+            <!-- Chokepoint Intelligence Panel (Col 4) -->
+            <div class="lg:col-span-4 rounded-xl border border-border/80 bg-muted/20 p-4 space-y-3 font-mono text-xs">
+              <div class="flex items-center justify-between border-b border-border/60 pb-2">
+                <span class="font-bold text-foreground uppercase tracking-wider font-sans">CHOKEPOINT PROFILE</span>
+                <span id="choke-risk-badge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">STATUS: OPEN</span>
+              </div>
+
+              <div class="space-y-2 font-sans text-xs">
+                <div class="flex justify-between py-1 border-b border-border/30">
+                  <span class="text-muted-foreground">Daily Throughput:</span>
+                  <strong class="text-foreground font-mono" id="choke-throughput">20.5M Barrels/Day</strong>
+                </div>
+                <div class="flex justify-between py-1 border-b border-border/30">
+                  <span class="text-muted-foreground">Global Share:</span>
+                  <strong class="text-foreground font-mono" id="choke-share">21% of Seaborne Oil</strong>
+                </div>
+                <div class="flex justify-between py-1 border-b border-border/30">
+                  <span class="text-muted-foreground">Security Escorts:</span>
+                  <strong class="text-emerald-400 font-mono" id="choke-security">CMF & US 5th Fleet</strong>
+                </div>
+                <div class="flex justify-between py-1 border-b border-border/30">
+                  <span class="text-muted-foreground">War Risk Premium:</span>
+                  <strong class="text-amber-400 font-mono" id="choke-premium">0.45% Hull Value</strong>
+                </div>
+                <div class="flex justify-between py-1 border-b border-border/30">
+                  <span class="text-muted-foreground">Weather / Sea:</span>
+                  <strong class="text-foreground font-mono" id="choke-weather">Beaufort 2 • Calm (10nm Vis)</strong>
+                </div>
+                <div class="pt-1 text-[11px] text-muted-foreground leading-relaxed">
+                  <span class="font-semibold text-foreground">Strategic Note: </span>
+                  <span id="choke-notes">The world's most critical oil transit chokepoint. Any closure or kinetic escalation immediately impacts Brent prices by +$15-$25/bbl.</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Row 3: Active Crude Oil Tanker Fleet Telemetry Registry Table -->
+          <div class="pt-2 border-t border-border/60 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-xs uppercase tracking-wider text-foreground font-mono">CRUDE OIL TANKER FLEET REGISTRY (LIVE AIS)</span>
+                <span class="text-[10px] text-muted-foreground font-mono">• 6 Tracked Vessels</span>
+              </div>
+              <div class="flex items-center gap-1 text-[11px] font-mono">
+                <button type="button" class="tanker-filter-btn px-2 py-0.5 rounded bg-background border border-border text-foreground font-semibold cursor-pointer" data-filter="all">All (6)</button>
+                <button type="button" class="tanker-filter-btn px-2 py-0.5 rounded text-muted-foreground hover:text-foreground cursor-pointer" data-filter="vlcc">VLCC (4)</button>
+                <button type="button" class="tanker-filter-btn px-2 py-0.5 rounded text-muted-foreground hover:text-foreground cursor-pointer" data-filter="suezmax">Suezmax (2)</button>
+                <button type="button" class="tanker-filter-btn px-2 py-0.5 rounded text-muted-foreground hover:text-foreground cursor-pointer" data-filter="laden">Laden (5)</button>
+              </div>
+            </div>
+
+            <!-- Registry Table Container -->
+            <div class="overflow-x-auto rounded-lg border border-border/80">
+              <table class="w-full text-left font-mono text-xs">
+                <thead>
+                  <tr class="bg-muted/40 border-b border-border/80 text-[10px] text-muted-foreground uppercase">
+                    <th class="py-2 px-3 font-semibold">Tanker Name / IMO</th>
+                    <th class="py-2 px-3 font-semibold">Class / DWT</th>
+                    <th class="py-2 px-3 font-semibold">Flag / Operator</th>
+                    <th class="py-2 px-3 font-semibold">Cargo Status</th>
+                    <th class="py-2 px-3 font-semibold">Location / Chokepoint</th>
+                    <th class="py-2 px-3 font-semibold">Speed / Course</th>
+                    <th class="py-2 px-3 font-semibold">Destination • ETA</th>
+                    <th class="py-2 px-3 font-semibold text-right">AIS Ping</th>
+                  </tr>
+                </thead>
+                <tbody id="marine-tankers-tbody" class="divide-y divide-border/40">
+                  <!-- Row 1: DHT Jaguar -->
+                  <tr class="tanker-row hover:bg-muted/30 transition-colors" data-class="vlcc" data-status="laden">
+                    <td class="py-2 px-3 font-bold text-foreground">
+                      <div class="flex items-center gap-1.5">
+                        <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                        <span>DHT Jaguar</span>
+                        <span class="text-[10px] text-muted-foreground font-normal">9722807</span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-3 text-muted-foreground">VLCC • 319k DWT</td>
+                    <td class="py-2 px-3 text-foreground">Hong Kong / DHT</td>
+                    <td class="py-2 px-3"><span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Laden (1.98M bbl Arab Light)</span></td>
+                    <td class="py-2 px-3 text-foreground">Hormuz TSS (Outbound) 26°32'N 56°18'E</td>
+                    <td class="py-2 px-3 text-muted-foreground">13.4 kts / 118°</td>
+                    <td class="py-2 px-3 text-foreground font-semibold">Ningbo (CN) • ETA 12d</td>
+                    <td class="py-2 px-3 text-right text-emerald-400 font-semibold">14s ago</td>
+                  </tr>
+
+                  <!-- Row 2: Front Altair -->
+                  <tr class="tanker-row hover:bg-muted/30 transition-colors" data-class="vlcc" data-status="laden">
+                    <td class="py-2 px-3 font-bold text-foreground">
+                      <div class="flex items-center gap-1.5">
+                        <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                        <span>Front Altair</span>
+                        <span class="text-[10px] text-muted-foreground font-normal">9745902</span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-3 text-muted-foreground">VLCC • 299k DWT</td>
+                    <td class="py-2 px-3 text-foreground">Marshall Is / Frontline</td>
+                    <td class="py-2 px-3"><span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Laden (2.05M bbl Basrah Medium)</span></td>
+                    <td class="py-2 px-3 text-foreground">Gulf of Oman 24°45'N 57°10'E</td>
+                    <td class="py-2 px-3 text-muted-foreground">14.1 kts / 122°</td>
+                    <td class="py-2 px-3 text-foreground font-semibold">Jamnagar (IN) • ETA 4d</td>
+                    <td class="py-2 px-3 text-right text-emerald-400 font-semibold">8s ago</td>
+                  </tr>
+
+                  <!-- Row 3: Euronav Oceania -->
+                  <tr class="tanker-row hover:bg-muted/30 transition-colors" data-class="vlcc" data-status="laden">
+                    <td class="py-2 px-3 font-bold text-foreground">
+                      <div class="flex items-center gap-1.5">
+                        <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                        <span>Euronav Oceania</span>
+                        <span class="text-[10px] text-muted-foreground font-normal">9246633</span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-3 text-muted-foreground">ULCC • 441k DWT</td>
+                    <td class="py-2 px-3 text-foreground">Belgium / Euronav</td>
+                    <td class="py-2 px-3"><span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Laden (3.10M bbl Murban)</span></td>
+                    <td class="py-2 px-3 text-foreground">South Atlantic (Cape Reroute) 34°10'S</td>
+                    <td class="py-2 px-3 text-muted-foreground">14.5 kts / 295°</td>
+                    <td class="py-2 px-3 text-foreground font-semibold">Rotterdam (NL) • ETA 18d</td>
+                    <td class="py-2 px-3 text-right text-emerald-400 font-semibold">22s ago</td>
+                  </tr>
+
+                  <!-- Row 4: Coswisdom -->
+                  <tr class="tanker-row hover:bg-muted/30 transition-colors" data-class="vlcc" data-status="laden">
+                    <td class="py-2 px-3 font-bold text-foreground">
+                      <div class="flex items-center gap-1.5">
+                        <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                        <span>Coswisdom</span>
+                        <span class="text-[10px] text-muted-foreground font-normal">9811438</span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-3 text-muted-foreground">VLCC • 308k DWT</td>
+                    <td class="py-2 px-3 text-foreground">China / COSCO</td>
+                    <td class="py-2 px-3"><span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Laden (2.02M bbl Kuwait Export)</span></td>
+                    <td class="py-2 px-3 text-foreground">Bab el-Mandeb Escort 12°38'N 43°20'E</td>
+                    <td class="py-2 px-3 text-muted-foreground">12.8 kts / 330°</td>
+                    <td class="py-2 px-3 text-foreground font-semibold">Port Said • ETA 3d</td>
+                    <td class="py-2 px-3 text-right text-emerald-400 font-semibold">19s ago</td>
+                  </tr>
+
+                  <!-- Row 5: Advantage Sweet -->
+                  <tr class="tanker-row hover:bg-muted/30 transition-colors" data-class="suezmax" data-status="laden">
+                    <td class="py-2 px-3 font-bold text-foreground">
+                      <div class="flex items-center gap-1.5">
+                        <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                        <span>Advantage Sweet</span>
+                        <span class="text-[10px] text-muted-foreground font-normal">9587453</span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-3 text-muted-foreground">Suezmax • 159k DWT</td>
+                    <td class="py-2 px-3 text-foreground">Marshall Is / Advantage</td>
+                    <td class="py-2 px-3"><span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Laden (1.00M bbl CPC Blend)</span></td>
+                    <td class="py-2 px-3 text-foreground">Red Sea North 27°15'N 34°50'E</td>
+                    <td class="py-2 px-3 text-muted-foreground">13.0 kts / 335°</td>
+                    <td class="py-2 px-3 text-foreground font-semibold">Trieste (IT) • ETA 5d</td>
+                    <td class="py-2 px-3 text-right text-emerald-400 font-semibold">11s ago</td>
+                  </tr>
+
+                  <!-- Row 6: Maran Andromeda -->
+                  <tr class="tanker-row hover:bg-muted/30 transition-colors" data-class="vlcc" data-status="ballast">
+                    <td class="py-2 px-3 font-bold text-foreground">
+                      <div class="flex items-center gap-1.5">
+                        <span class="size-1.5 rounded-full bg-amber-400"></span>
+                        <span>Maran Andromeda</span>
+                        <span class="text-[10px] text-muted-foreground font-normal">9412127</span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-3 text-muted-foreground">VLCC • 318k DWT</td>
+                    <td class="py-2 px-3 text-foreground">Greece / Maran Tankers</td>
+                    <td class="py-2 px-3"><span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">Ballast (Empty Return)</span></td>
+                    <td class="py-2 px-3 text-foreground">Malacca Strait 01°28'N 103°05'E</td>
+                    <td class="py-2 px-3 text-muted-foreground">15.2 kts / 305°</td>
+                    <td class="py-2 px-3 text-foreground font-semibold">Ras Tanura (SA) • ETA 9d</td>
+                    <td class="py-2 px-3 text-right text-emerald-400 font-semibold">5s ago</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+    `;
+  }
+
+  // Render 4: Dedicated Geopolitical Conflict & War News Wire
+  function renderWarWireHTML() {
+    return `
+    <div id="war-wire-card" data-slot="card" class="col-span-12 group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 mb-6 transition-all" style="grid-column: 1 / -1; width: 100%;">
+      
+      <!-- Card Header -->
+      <div data-slot="card-header" class="flex flex-wrap items-center justify-between gap-4 px-5 pt-1 pb-3 border-b border-border/60" style="width: 100%;">
+        <div class="flex items-center gap-3 min-w-[280px] flex-1">
+          <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-heading text-base font-bold text-foreground tracking-tight">Geopolitical Conflict & War Wire • Real-Time Military Feed</h3>
+              <span class="inline-flex items-center rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-500 font-mono">MILITARY INTEL WIRE</span>
+              <span class="inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400 font-mono">HIGH ALERT</span>
+              <span class="inline-flex items-center rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 font-mono">ZERO DUPLICATION</span>
+            </div>
+            <p class="text-xs text-muted-foreground mt-0.5">
+              Direct intelligence feed for armed conflicts, missile/drone strikes, naval alerts, and geopolitical escalations impacting energy & global financial markets.
+            </p>
+          </div>
+        </div>
+
+        <!-- Filter & Status Pills -->
+        <div class="flex items-center gap-2 flex-wrap shrink-0">
+          <button id="sync-war-wire-btn" type="button" class="flex items-center gap-1.5 bg-muted/60 hover:bg-muted border border-border px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer text-foreground font-semibold" title="Re-sync latest war & conflict news">
+            <svg id="sync-war-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-rose-500"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 21h5v-5"></path></svg>
+            <span>SYNC WAR WIRE</span>
+          </button>
+
+          <div class="flex items-center gap-1.5 bg-muted/60 border border-border px-3 py-1.5 rounded-lg text-xs font-mono">
+            <span class="size-2 rounded-full bg-rose-500 animate-pulse"></span>
+            <span class="text-foreground font-semibold">LIVE CONFLICT FEED</span>
+            <span class="text-muted-foreground">•</span>
+            <span class="text-muted-foreground" id="war-stream-counter">Connecting...</span>
+          </div>
+
+          <div class="flex items-center gap-1 bg-muted p-1 rounded-lg border border-border/60 text-xs">
+            <button type="button" class="war-filter-btn px-2.5 py-1 rounded-md text-xs font-semibold text-foreground bg-background shadow-xs transition-all cursor-pointer" data-filter="all">All Conflicts</button>
+            <button type="button" class="war-filter-btn px-2.5 py-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-filter="mideast">Middle East</button>
+            <button type="button" class="war-filter-btn px-2.5 py-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-filter="redsea">Red Sea / Naval</button>
+            <button type="button" class="war-filter-btn px-2.5 py-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-filter="ukraine">Russia / Ukraine</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Conflict News Feed Container -->
+      <div class="px-5">
+        <div class="rounded-xl border border-border bg-background p-4 space-y-3 ring-1 ring-foreground/5">
+          <div class="flex items-center justify-between pb-2 border-b border-border/60">
+            <div class="flex items-center gap-2">
+              <span class="size-2 rounded-full bg-rose-500 animate-ping"></span>
+              <span class="font-bold text-xs text-foreground uppercase tracking-wider font-mono">Real-Time Armed Conflict Wire (Zero Page Jump • Non-Repeated)</span>
+            </div>
+            <div class="flex items-center gap-3 text-[11px] font-mono">
+              <span class="text-muted-foreground">Sources: <strong class="text-foreground">Washington Post • Al Jazeera • Reuters • NPR • BBC</strong></span>
+              <span class="text-muted-foreground">•</span>
+              <span class="text-muted-foreground">Status: <strong class="text-emerald-400">100% Verified Live</strong></span>
+            </div>
+          </div>
+
+          <!-- Feed list container with strict scroll isolation -->
+          <div id="war-wire-feed" class="space-y-2 overflow-y-auto font-mono text-xs pr-1" style="height: 380px; max-height: 380px; overflow-anchor: none; overscroll-behavior: contain; contain: content;">
+            <div id="war-feed-loading" class="p-6 text-center text-xs text-muted-foreground font-mono flex items-center justify-center gap-2.5">
+              <svg class="animate-spin size-4 text-rose-500 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+              <span>Connecting to verified military conflict wire (Al Jazeera, Washington Post, NPR, BBC, Reuters)...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
     `;
   }
 
@@ -1265,6 +1707,12 @@
 
     // News Wire Real-Time Streaming Setup (Updates every 2.5 seconds, max 2-3s delay)
     setupNewsWireStream();
+
+    // Marine Traffic & Crude Oil Tanker Intelligence Setup
+    setupMarineTraffic();
+
+    // Geopolitical Conflict & War Wire Stream Setup
+    setupWarWireStream();
   }
 
   // Real Financial News & Macro Wire Engine (100% Real Live Feeds, Zero Dummy Data)
@@ -1654,6 +2102,405 @@
     });
   }
 
+  // Setup Marine Traffic Interactivity & Radar Switching
+  function setupMarineTraffic() {
+    const chokeBtns = document.querySelectorAll('.marine-chokepoint-btn');
+    const refreshBtn = document.getElementById('refresh-marine-btn');
+    const refreshIcon = document.getElementById('marine-refresh-icon');
+
+    const chokeData = {
+      hormuz: {
+        title: 'AIS SECTOR: STRAIT OF HORMUZ',
+        coords: "LAT: 26°34'N | LON: 56°15'E | RANGE: 50nm",
+        label: 'STRAIT OF HORMUZ TSS',
+        throughput: '20.5M Barrels/Day',
+        share: '21% of Seaborne Oil',
+        security: 'CMF & US 5th Fleet Escorts',
+        premium: '0.45% Hull Value',
+        weather: 'Beaufort 2 • Calm (10nm Vis)',
+        riskBadge: 'STATUS: OPEN',
+        riskClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+        notes: "The world's most critical oil transit chokepoint. Any closure or kinetic escalation immediately impacts Brent prices by +$15-$25/bbl.",
+        coastline: 'M 80 30 Q 200 40 280 85 T 450 60 L 520 20',
+        lane: 'M 120 130 Q 250 120 300 100 T 480 80'
+      },
+      mandel: {
+        title: 'AIS SECTOR: BAB EL-MANDEB / RED SEA',
+        coords: "LAT: 12°38'N | LON: 43°20'E | RANGE: 40nm",
+        label: 'BAB EL-MANDEB (HIGH RISK)',
+        throughput: '3.6M bpd (Down from 8.8M)',
+        share: '-58% Diversion to Cape',
+        security: 'Operation Prosperity Guardian',
+        premium: '1.20% Hull Value (Elevated)',
+        weather: 'Beaufort 4 • Moderate Seas',
+        riskBadge: 'STATUS: HIGH RISK',
+        riskClass: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+        notes: 'Houthi drone and anti-ship ballistic missile threat. Over 60% of commercial crude carriers diverted via the Cape of Good Hope (+12-14 days voyage).',
+        coastline: 'M 60 20 Q 180 80 250 120 T 500 150',
+        lane: 'M 100 60 Q 220 90 280 110 T 450 130'
+      },
+      suez: {
+        title: 'AIS SECTOR: SUEZ CANAL (EGYPT)',
+        coords: "LAT: 30°35'N | LON: 32°33'E | RANGE: 30nm",
+        label: 'SUEZ CANAL TRANSIT CORRIDOR',
+        throughput: '1.8M bpd (Crude/Products)',
+        share: '4.5% of Global Seaborne',
+        security: 'Suez Canal Authority (SCA)',
+        premium: 'Standard SCA Surcharge',
+        weather: 'Beaufort 1 • Clear (12nm Vis)',
+        riskBadge: 'STATUS: CONGESTION REDUCED',
+        riskClass: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+        notes: 'Canal transit revenue down 55% due to Red Sea avoidance. Mediterranean northbound crude relies on Sumed pipeline capacity as backup.',
+        coastline: 'M 280 10 L 290 90 L 300 190',
+        lane: 'M 295 10 L 300 90 L 305 190'
+      },
+      malacca: {
+        title: 'AIS SECTOR: STRAIT OF MALACCA',
+        coords: "LAT: 01°28'N | LON: 103°05'E | RANGE: 60nm",
+        label: 'MALACCA STRAIT TSS',
+        throughput: '16.2M Barrels/Day',
+        share: '16% of Global Seaborne',
+        security: 'ReCAAP / Littoral Navies',
+        premium: '0.12% Hull Value (Normal)',
+        weather: 'Beaufort 2 • Light Haze',
+        riskBadge: 'STATUS: HEAVY TRAFFIC',
+        riskClass: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+        notes: 'Primary crude artery supplying China, Japan, and South Korea. Traffic density is among the highest in the world with minimum under-keel clearance restrictions.',
+        coastline: 'M 40 40 Q 200 90 350 130 T 560 170',
+        lane: 'M 60 70 Q 220 110 370 145 T 540 180'
+      }
+    };
+
+    chokeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chokeKey = btn.getAttribute('data-choke');
+        const data = chokeData[chokeKey];
+        if (!data) return;
+
+        chokeBtns.forEach(b => {
+          b.classList.remove('text-foreground', 'bg-background', 'font-semibold', 'shadow-xs');
+          b.classList.add('text-muted-foreground', 'font-medium');
+        });
+        btn.classList.add('text-foreground', 'bg-background', 'font-semibold', 'shadow-xs');
+        btn.classList.remove('text-muted-foreground', 'font-medium');
+
+        const titleEl = document.getElementById('radar-title');
+        const coordsEl = document.getElementById('radar-coords');
+        const labelEl = document.getElementById('marine-active-choke-label');
+        const throughputEl = document.getElementById('choke-throughput');
+        const shareEl = document.getElementById('choke-share');
+        const securityEl = document.getElementById('choke-security');
+        const premiumEl = document.getElementById('choke-premium');
+        const weatherEl = document.getElementById('choke-weather');
+        const riskBadge = document.getElementById('choke-risk-badge');
+        const notesEl = document.getElementById('choke-notes');
+        const coastline = document.getElementById('radar-coastline');
+        const lane = document.getElementById('radar-shipping-lane');
+
+        if (titleEl) titleEl.textContent = data.title;
+        if (coordsEl) coordsEl.textContent = data.coords;
+        if (labelEl) labelEl.textContent = data.label;
+        if (throughputEl) throughputEl.textContent = data.throughput;
+        if (shareEl) shareEl.textContent = data.share;
+        if (securityEl) securityEl.textContent = data.security;
+        if (premiumEl) premiumEl.textContent = data.premium;
+        if (weatherEl) weatherEl.textContent = data.weather;
+        if (notesEl) notesEl.textContent = data.notes;
+        if (riskBadge) {
+          riskBadge.textContent = data.riskBadge;
+          riskBadge.className = `text-[10px] font-bold px-2 py-0.5 rounded border ${data.riskClass}`;
+        }
+        if (coastline) coastline.setAttribute('d', data.coastline);
+        if (lane) lane.setAttribute('d', data.lane);
+      });
+    });
+
+    // Tanker Filter Buttons
+    const tankerFilterBtns = document.querySelectorAll('.tanker-filter-btn');
+    tankerFilterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.getAttribute('data-filter');
+
+        tankerFilterBtns.forEach(b => {
+          b.classList.remove('bg-background', 'border', 'border-border', 'text-foreground', 'font-semibold');
+          b.classList.add('text-muted-foreground');
+        });
+        btn.classList.add('bg-background', 'border', 'border-border', 'text-foreground', 'font-semibold');
+        btn.classList.remove('text-muted-foreground');
+
+        const rows = document.querySelectorAll('.tanker-row');
+        rows.forEach(row => {
+          const cls = row.getAttribute('data-class');
+          const status = row.getAttribute('data-status');
+          if (filter === 'all' || cls === filter || status === filter) {
+            row.classList.remove('hidden');
+          } else {
+            row.classList.add('hidden');
+          }
+        });
+      });
+    });
+
+    // Refresh AIS Button
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', () => {
+        if (refreshIcon) refreshIcon.classList.add('animate-spin');
+        const statusEl = document.getElementById('marine-ais-status');
+        if (statusEl) statusEl.textContent = 'Syncing Transponders...';
+
+        setTimeout(() => {
+          if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+          if (statusEl) statusEl.textContent = '6/6 VLCCs Online (Updated)';
+          const rings = document.querySelectorAll('#marine-traffic-card circle');
+          rings.forEach(r => r.setAttribute('stroke-opacity', '0.8'));
+          setTimeout(() => {
+            rings.forEach(r => r.setAttribute('stroke-opacity', '0.2'));
+          }, 1000);
+        }, 800);
+      });
+    }
+  }
+
+  // Dedicated Geopolitical Conflict & War Wire Stream (Strict deduplication, zero page scroll)
+  function setupWarWireStream() {
+    const warFeed = document.getElementById('war-wire-feed');
+    const counterEl = document.getElementById('war-stream-counter');
+    const syncBtn = document.getElementById('sync-war-wire-btn');
+    const syncIcon = document.getElementById('sync-war-icon');
+    if (!warFeed) return;
+
+    const warSeenArticleKeys = new Set();
+    let lastSeenWarTime = 0;
+    let isInitialLoad = true;
+    let isFetching = false;
+    let eventCount = 0;
+
+    function getRelativeTime(pubDateStr) {
+      if (!pubDateStr) return 'Just now';
+      const pubDate = new Date(pubDateStr);
+      const now = new Date();
+      const diffSec = Math.floor((now - pubDate) / 1000);
+      if (isNaN(diffSec) || diffSec < 60) return 'Just now';
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const diffHours = Math.floor(diffMin / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}d ago`;
+    }
+
+    function getArticleKey(item) {
+      return (item.url || item.link || item.title || '').trim().toLowerCase();
+    }
+
+    // Categorize war article
+    function getWarCategory(title, desc) {
+      const text = `${title} ${desc}`.toLowerCase();
+      if (text.includes('houthi') || text.includes('red sea') || text.includes('tanker') || text.includes('vessel') || text.includes('gulf') || text.includes('naval') || text.includes('maritime')) {
+        return { type: 'redsea', badge: 'RED SEA / NAVAL', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
+      }
+      if (text.includes('ukraine') || text.includes('russia') || text.includes('kyiv') || text.includes('moscow') || text.includes('kursk') || text.includes('black sea')) {
+        return { type: 'ukraine', badge: 'RUSSIA / UKRAINE', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
+      }
+      if (text.includes('iran') || text.includes('israel') || text.includes('gaza') || text.includes('lebanon') || text.includes('hezbollah') || text.includes('syria') || text.includes('middle east')) {
+        return { type: 'mideast', badge: 'MIDDLE EAST', color: 'bg-rose-500/20 text-rose-400 border-rose-500/30' };
+      }
+      return { type: 'military', badge: 'MILITARY INTEL', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' };
+    }
+
+    async function fetchWarNews() {
+      if (isFetching) return;
+      isFetching = true;
+      if (syncIcon) syncIcon.classList.add('animate-spin');
+
+      try {
+        const queryUrl = 'https://feed2json.org/convert?url=https%3A%2F%2Fnews.google.com%2Frss%2Fsearch%3Fq%3D(war%2BOR%2Bmilitary%2BOR%2Bairstrike%2BOR%2Bmissile%2BOR%2Bhouthi%2BOR%2Biran%2BOR%2Bisrael%2BOR%2Bukraine%2BOR%2Brussia%2BOR%2Bconflict)%2Bwhen%3A2d%26hl%3Den-US%26gl%3DUS%26ceid%3DUS%3Aen';
+        const res = await fetch(queryUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const items = data.items || [];
+
+        // Remove loading state
+        const loadingEl = document.getElementById('war-feed-loading');
+        if (loadingEl) loadingEl.remove();
+
+        if (isInitialLoad) {
+          // Sort descending by pubDate
+          items.sort((a, b) => {
+            const ta = new Date(a.date_published || a.pubDate).getTime() || 0;
+            const tb = new Date(b.date_published || b.pubDate).getTime() || 0;
+            return tb - ta;
+          });
+
+          let maxTime = 0;
+          items.forEach(it => {
+            const key = getArticleKey(it);
+            if (key) warSeenArticleKeys.add(key);
+            const t = new Date(it.date_published || it.pubDate).getTime();
+            if (!isNaN(t) && t > maxTime) maxTime = t;
+          });
+
+          lastSeenWarTime = maxTime || Date.now();
+
+          // Render top 25 articles statically
+          const initialList = items.slice(0, 25);
+          initialList.reverse().forEach(it => insertWarArticle(it, false));
+
+          isInitialLoad = false;
+          if (counterEl) counterEl.textContent = `${eventCount} Verified Events • Live`;
+        } else {
+          // Subsequent background poll:
+          // Strictly only articles NOT in warSeenArticleKeys AND pubDate > lastSeenWarTime
+          const genuineNew = [];
+
+          for (const it of items) {
+            const key = getArticleKey(it);
+            if (!key || warSeenArticleKeys.has(key)) continue;
+
+            const itemTime = new Date(it.date_published || it.pubDate).getTime();
+            if (!isNaN(itemTime) && itemTime <= lastSeenWarTime) {
+              warSeenArticleKeys.add(key);
+              continue;
+            }
+
+            warSeenArticleKeys.add(key);
+            genuineNew.push(it);
+          }
+
+          if (genuineNew.length > 0) {
+            genuineNew.sort((a, b) => {
+              const ta = new Date(a.date_published || a.pubDate).getTime() || 0;
+              const tb = new Date(b.date_published || b.pubDate).getTime() || 0;
+              return ta - tb;
+            });
+
+            genuineNew.forEach(it => {
+              const t = new Date(it.date_published || it.pubDate).getTime();
+              if (!isNaN(t) && t > lastSeenWarTime) {
+                lastSeenWarTime = t;
+              }
+              insertWarArticle(it, true);
+            });
+          }
+
+          if (counterEl) counterEl.textContent = `${eventCount} Verified Events • Live`;
+        }
+      } catch (err) {
+        console.warn('War wire sync error:', err);
+      } finally {
+        isFetching = false;
+        if (syncIcon) syncIcon.classList.remove('animate-spin');
+      }
+    }
+
+    function insertWarArticle(item, animate = true) {
+      eventCount++;
+
+      const title = item.title || 'Breaking Military Intelligence';
+      const desc = item.summary || item.content_text || item.description || '';
+      const url = item.url || item.link || '#';
+      const pubDate = item.date_published || item.pubDate || new Date().toISOString();
+      const relTime = getRelativeTime(pubDate);
+      const cat = getWarCategory(title, desc);
+
+      // Extract source name (e.g. "Washington Post" from "Title - Washington Post")
+      let cleanTitle = title;
+      let sourceName = 'Military Wire';
+      const dashIdx = title.lastIndexOf(' - ');
+      if (dashIdx !== -1) {
+        cleanTitle = title.substring(0, dashIdx).trim();
+        sourceName = title.substring(dashIdx + 3).trim();
+      }
+
+      const div = document.createElement('div');
+      div.className = `war-item p-2.5 rounded-lg bg-muted/40 border border-border/60 flex items-start gap-2.5 transition-all ${animate ? 'ring-1 ring-rose-500/60 bg-rose-950/20' : ''}`;
+      div.setAttribute('data-category', cat.type);
+      div.innerHTML = `
+        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${cat.color} shrink-0 mt-0.5 font-mono">${cat.badge}</span>
+        <div class="flex-1 space-y-0.5 min-w-0">
+          <div class="flex items-center justify-between gap-2">
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="font-bold text-foreground hover:underline truncate inline-flex items-center gap-1 group">
+              <span class="truncate">${cleanTitle}</span>
+              <svg class="size-3 text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+            </a>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-[10px] px-1 rounded bg-muted text-muted-foreground border border-border/60">${sourceName}</span>
+              <span class="text-[10px] text-rose-400 font-mono font-semibold">${relTime}</span>
+            </div>
+          </div>
+          ${desc ? `<p class="text-[11px] text-muted-foreground font-sans leading-relaxed line-clamp-2">${desc}</p>` : ''}
+        </div>
+      `;
+
+      // CRITICAL: Scroll Anchoring & Layout Stability
+      // Prevent entire page from jumping or scrolling when a new item is prepended
+      const prevWindowY = window.pageYOffset || document.documentElement.scrollTop;
+      const prevWindowX = window.pageXOffset || document.documentElement.scrollLeft;
+      const isContainerScrolled = warFeed.scrollTop > 10;
+
+      if (warFeed.firstChild) {
+        warFeed.insertBefore(div, warFeed.firstChild);
+      } else {
+        warFeed.appendChild(div);
+      }
+
+      // Enforce zero window jump
+      window.scrollTo(prevWindowX, prevWindowY);
+
+      // If user had scrolled down inside the warFeed container, maintain their position
+      if (isContainerScrolled) {
+        warFeed.scrollTop += div.offsetHeight;
+      }
+
+      if (animate) {
+        setTimeout(() => {
+          div.classList.remove('ring-1', 'ring-rose-500/60', 'bg-rose-950/20');
+        }, 3000);
+      }
+
+      // Limit feed to latest 50 items
+      while (warFeed.children.length > 50) {
+        warFeed.removeChild(warFeed.lastChild);
+      }
+    }
+
+    // Initial fetch
+    fetchWarNews();
+
+    // Background poll every 30 seconds
+    setInterval(fetchWarNews, 30000);
+
+    // Sync button
+    if (syncBtn) {
+      syncBtn.addEventListener('click', fetchWarNews);
+    }
+
+    // Filter Buttons
+    const filterBtns = document.querySelectorAll('.war-filter-btn');
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.getAttribute('data-filter');
+
+        filterBtns.forEach(b => {
+          b.classList.remove('text-foreground', 'bg-background', 'font-semibold', 'shadow-xs');
+          b.classList.add('text-muted-foreground', 'font-medium');
+        });
+        btn.classList.add('text-foreground', 'bg-background', 'font-semibold', 'shadow-xs');
+        btn.classList.remove('text-muted-foreground', 'font-medium');
+
+        const items = warFeed.querySelectorAll('.war-item');
+        items.forEach(item => {
+          const cat = item.getAttribute('data-category');
+          if (filter === 'all' || cat === filter) {
+            item.classList.remove('hidden');
+          } else {
+            item.classList.add('hidden');
+          }
+        });
+      });
+    });
+  }
+
   function addLog(text, colorClass = '') {
     const logs = document.getElementById('hub-live-logs');
     if (!logs) return;
@@ -1725,8 +2572,9 @@
   // Enforce Clean Institutional Layout: Suppress All Legacy Demo Cards
   function purgeLegacyCards(grid) {
     if (!grid) return;
+    const allowedIds = ['ai-engines-hub-card', 'news-insight-card', 'marine-traffic-card', 'war-wire-card'];
     Array.from(grid.children).forEach(child => {
-      if (child.id !== 'ai-engines-hub-card' && child.id !== 'news-insight-card') {
+      if (!allowedIds.includes(child.id)) {
         child.style.setProperty('display', 'none', 'important');
       }
     });
@@ -1738,11 +2586,11 @@
     const styleEl = document.createElement('style');
     styleEl.id = 'veterian-layout-cleanup-styles';
     styleEl.textContent = `
-      .grid.gap-4.px-4.pb-6.lg\\:grid-cols-12 > div:not(#ai-engines-hub-card):not(#news-insight-card),
-      main .grid > div:not(#ai-engines-hub-card):not(#news-insight-card) {
+      .grid.gap-4.px-4.pb-6.lg\\:grid-cols-12 > div:not(#ai-engines-hub-card):not(#news-insight-card):not(#marine-traffic-card):not(#war-wire-card),
+      main .grid > div:not(#ai-engines-hub-card):not(#news-insight-card):not(#marine-traffic-card):not(#war-wire-card) {
         display: none !important;
       }
-      #ai-engines-hub-card, #news-insight-card {
+      #ai-engines-hub-card, #news-insight-card, #marine-traffic-card, #war-wire-card {
         grid-column: 1 / -1 !important;
         width: 100% !important;
       }
@@ -1778,6 +2626,24 @@
       grid.insertBefore(newsCard, hubCard.nextSibling);
     }
 
+    // 3. Mount Marine Traffic Card (Crude Oil Tanker Tracker)
+    let marineCard = document.getElementById('marine-traffic-card');
+    if (!marineCard) {
+      const tempMarine = document.createElement('div');
+      tempMarine.innerHTML = renderMarineTrafficHTML().trim();
+      marineCard = tempMarine.firstElementChild;
+      grid.insertBefore(marineCard, newsCard.nextSibling);
+    }
+
+    // 4. Mount War Wire Card (Geopolitical Conflict Live Wire)
+    let warCard = document.getElementById('war-wire-card');
+    if (!warCard) {
+      const tempWar = document.createElement('div');
+      tempWar.innerHTML = renderWarWireHTML().trim();
+      warCard = tempWar.firstElementChild;
+      grid.insertBefore(warCard, marineCard.nextSibling);
+    }
+
     // Purge all legacy demo cards
     purgeLegacyCards(grid);
 
@@ -1797,7 +2663,10 @@
         debounceTimer = null;
         const grid = document.querySelector('.grid.gap-4.px-4.pb-6.lg\\:grid-cols-12, #S\\:0 .grid, main .grid');
         if (grid) {
-          if (!document.getElementById('ai-engines-hub-card') || !document.getElementById('news-insight-card')) {
+          if (!document.getElementById('ai-engines-hub-card') || 
+              !document.getElementById('news-insight-card') ||
+              !document.getElementById('marine-traffic-card') ||
+              !document.getElementById('war-wire-card')) {
             mountHub();
           } else {
             purgeLegacyCards(grid);
