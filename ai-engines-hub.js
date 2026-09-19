@@ -464,257 +464,197 @@
         </div>
       </div>
 
-      <!-- 3. EXECUTIVE SIGNAL & TRADE SETUP BANNER -->
+      <!-- 3. AI CHAT INTERFACE (EXACT REPLICA OF USER REFERENCE: DARK PURPLE, GLASSMORPHISM, 3D GLOWING ORB, CHAT PROMPT, ACTION PILLS & FEATURE CARDS) -->
       <div class="px-5">
-        <div class="rounded-xl border border-border bg-card p-4 space-y-4 ring-1 ring-foreground/5">
-          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-3 border-b border-border/60">
-            <div>
-              <div class="flex items-center gap-2">
-                <h4 id="hub-active-model-name" class="font-heading text-sm font-bold text-foreground">AETHER-9</h4>
-                <span id="hub-active-model-badge" class="inline-flex items-center rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500 dark:text-emerald-400">DEBATE PROTOCOL</span>
-              </div>
-              <p id="hub-active-model-subtitle" class="text-xs text-muted-foreground mt-0.5">Multi-Agent AI Debate System</p>
-            </div>
+        <div id="ai-chat-master-card" class="relative rounded-3xl overflow-hidden p-6 sm:p-8 transition-all" style="background: radial-gradient(circle at 50% 15%, rgba(147, 51, 234, 0.22) 0%, rgba(36, 12, 58, 0.85) 45%, rgba(13, 6, 25, 0.98) 100%), #0d0619; border: 1px solid rgba(192, 132, 252, 0.22); box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.1); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
+          
+          <!-- Subtle Top Ambient Glow -->
+          <div class="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
 
-            <div class="flex items-center gap-4">
-              <div class="text-right">
-                <span class="text-[10px] uppercase font-semibold text-muted-foreground block tracking-wider">Robot Signal</span>
-                <span id="hub-active-signal" class="text-sm font-bold text-emerald-500 dark:text-emerald-400">LONG (BUY)</span>
-              </div>
-              <div class="text-right border-l border-border pl-4">
-                <span class="text-[10px] uppercase font-semibold text-muted-foreground block tracking-wider">Weight / Conviction</span>
-                <span id="hub-active-conviction" class="text-xs font-semibold text-foreground font-mono">88% Debate Weight</span>
-              </div>
-            </div>
-          </div>
+          <!-- Top Controls Bar -->
+          <div class="relative z-10 flex items-center justify-between gap-3 pb-6">
+            <!-- Left: Model Selector Pill Dropdown -->
+            <div class="relative">
+              <button type="button" id="ai-chat-model-btn" class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur-md transition-all shadow-xs cursor-pointer">
+                <span id="ai-chat-model-label">ChatGPT v4.0</span>
+                <svg class="size-3.5 text-white/60 transition-transform duration-200" id="ai-chat-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
 
-          <!-- Dynamic Trade Plan Grid: Distinct Entry, TP, SL, and Order Type -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <!-- Box 1: Model Entry Price -->
-            <div class="rounded-lg border border-border/80 bg-muted/40 p-3 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">Calculated Entry</span>
-                  <span id="hub-trade-order-type" class="text-[9px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted border border-border text-foreground truncate max-w-[130px]">Limit Pullback</span>
-                </div>
-                <span id="hub-trade-entry" class="text-base font-bold font-mono text-foreground tabular-nums block mt-1">$80,733.80</span>
-              </div>
-              <span id="hub-trade-entry-offset" class="text-[10px] font-mono text-muted-foreground mt-1">-0.65% from current market</span>
-            </div>
-
-            <!-- Box 2: Take Profit Target -->
-            <div class="rounded-lg border border-border/80 bg-muted/40 p-3 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">Take Profit Target</span>
-                  <span id="hub-trade-tp-pct" class="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500">+3.60% Target</span>
-                </div>
-                <span id="hub-trade-tp" class="text-base font-bold font-mono text-emerald-500 dark:text-emerald-400 tabular-nums block mt-1">$84,187.40</span>
-              </div>
-              <span class="text-[10px] font-mono text-muted-foreground mt-1">Opposing Liquidity Wall</span>
-            </div>
-
-            <!-- Box 3: Invalidation Stop Loss -->
-            <div class="rounded-lg border border-border/80 bg-muted/40 p-3 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">Invalidation Stop</span>
-                  <span id="hub-trade-sl-pct" class="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-500">-1.65% Stop</span>
-                </div>
-                <span id="hub-trade-sl" class="text-base font-bold font-mono text-rose-500 dark:text-rose-400 tabular-nums block mt-1">$79,921.20</span>
-              </div>
-              <span class="text-[10px] font-mono text-muted-foreground mt-1">Demand Sweep Floor</span>
-            </div>
-
-            <!-- Box 4: Risk-to-Reward Ratio & Execution Horizon -->
-            <div class="rounded-lg border border-border/80 bg-muted/40 p-3 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">Risk : Reward</span>
-                  <span id="hub-trade-timeframe" class="text-[9px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted border border-border text-foreground">15m / 1H</span>
-                </div>
-                <span id="hub-trade-rr" class="text-base font-bold font-mono text-foreground block mt-1">1 : 2.68</span>
-              </div>
-              <span class="text-[10px] font-mono text-muted-foreground mt-1">Hurdle Met (> 1:2.0)</span>
-            </div>
-          </div>
-
-          <!-- 4. STAGE-BY-STAGE PROFIT BOOKING PROTOCOL -->
-          <div class="rounded-lg border border-border/80 bg-background p-3.5 space-y-2.5">
-            <div class="flex items-center justify-between pb-1.5 border-b border-border/60">
-              <span class="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up text-emerald-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                Stage-by-Stage Profit Booking & Scale-Out Protocol
-              </span>
-              <span class="text-[10px] font-mono text-muted-foreground">Capital Preservation Rule</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono">
-              <!-- Stage 1 -->
-              <div class="p-2.5 rounded-md bg-muted/40 border border-border/60 space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-emerald-500">STAGE 1: TP 1</span>
-                  <span id="stage-tp1-price" class="text-foreground font-semibold tabular-nums">$82,115.24</span>
-                </div>
-                <div class="text-[11px] text-foreground font-semibold">Book 40% Position Profit</div>
-                <p class="text-[10px] text-muted-foreground font-sans leading-tight">
-                  Action: Immediately move Stop Loss to <strong>Break-Even ($Entry)</strong>. The trade is now 100% risk-free.
-                </p>
-              </div>
-
-              <!-- Stage 2 -->
-              <div class="p-2.5 rounded-md bg-muted/40 border border-border/60 space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-emerald-500">STAGE 2: TP 2</span>
-                  <span id="stage-tp2-price" class="text-foreground font-semibold tabular-nums">$83,323.00</span>
-                </div>
-                <div class="text-[11px] text-foreground font-semibold">Book 35% Additional Profit</div>
-                <p class="text-[10px] text-muted-foreground font-sans leading-tight">
-                  Action: Trail Stop Loss to <strong>TP 1 Level</strong>. Locks in net positive gains on remaining units.
-                </p>
-              </div>
-
-              <!-- Stage 3 -->
-              <div class="p-2.5 rounded-md bg-muted/40 border border-border/60 space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-emerald-500">STAGE 3: TP 3 (Final)</span>
-                  <span id="stage-tp3-price" class="text-foreground font-semibold tabular-nums">$84,187.40</span>
-                </div>
-                <div class="text-[11px] text-foreground font-semibold">25% Runner Position</div>
-                <p class="text-[10px] text-muted-foreground font-sans leading-tight">
-                  Action: Trail SL with 15m swing lows to capture maximum trend expansion without premature exit.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 5. ACTIVE TRADE REAL-TIME MONITOR & DYNAMIC AI GUIDANCE -->
-          <div id="active-trade-monitor" class="rounded-lg border border-border/80 bg-background p-3.5 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/60">
-              <div class="flex items-center gap-2">
-                <span id="active-trade-pulse" class="size-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span class="text-xs font-bold text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
-                  ACTIVE TRADE #<span id="active-trade-id">1</span> MONITOR • <span id="active-trade-symbol">BTC/USDT</span>
-                </span>
-                <span id="active-trade-status-badge" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  TRADE RUNNING
-                </span>
-              </div>
-              <div class="flex items-center gap-2">
-                <button type="button" id="hub-analyze-next-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-all cursor-pointer shadow-xs">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></svg>
-                  <span>Analyze Next Trade</span>
+              <!-- Model Dropdown Menu -->
+              <div id="ai-chat-model-menu" class="hidden absolute left-0 mt-2 w-64 rounded-2xl border border-white/15 bg-[#140a28]/95 p-2 shadow-2xl backdrop-blur-2xl z-50 text-xs">
+                <div class="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-purple-300/60">Select Intelligence Engine</div>
+                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white hover:bg-white/10 transition-colors cursor-pointer" data-model="chatgpt">
+                  <span class="font-medium">ChatGPT v4.0</span>
+                  <span class="text-[10px] text-purple-300">Default</span>
+                </button>
+                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="aether9">
+                  <span>AETHER-9</span>
+                  <span class="text-[10px] text-emerald-400 font-mono">Debate Protocol</span>
+                </button>
+                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="evolvex">
+                  <span>EVOLVE-X</span>
+                  <span class="text-[10px] text-cyan-400 font-mono">Self-Evolving</span>
+                </button>
+                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="sentinel">
+                  <span>SENTINEL</span>
+                  <span class="text-[10px] text-amber-400 font-mono">Guard Brain</span>
+                </button>
+                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="unity">
+                  <span>UNITY</span>
+                  <span class="text-[10px] text-blue-400 font-mono">Cross-Risk</span>
+                </button>
+                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="orbit">
+                  <span>ORBIT</span>
+                  <span class="text-[10px] text-rose-400 font-mono">News Sentiment</span>
+                </button>
+                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="unified">
+                  <span>UNIFIED MODEL</span>
+                  <span class="text-[10px] text-emerald-400 font-mono">5-Engine Consensus</span>
                 </button>
               </div>
             </div>
 
-            <!-- Dynamic AI Guidance & Real-Time Alert Callout -->
-            <div id="active-trade-ai-alert" class="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 text-xs space-y-1.5">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-emerald-500 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                  Real-Time AI Trade Guidance & Booking Alert
-                </span>
-                <span id="active-trade-pnl" class="text-xs font-mono font-bold text-emerald-500">+1.12% PnL ($81,950.00)</span>
+            <!-- Right: Configuration & Export Pill Buttons -->
+            <div class="flex items-center gap-2">
+              <button type="button" id="ai-chat-config-btn" class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/80 backdrop-blur-md transition-all cursor-pointer shadow-xs">
+                <span>Configuration</span>
+                <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <button type="button" id="ai-chat-export-btn" class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/80 backdrop-blur-md transition-all cursor-pointer shadow-xs">
+                <span>Export</span>
+                <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Center Hero with 3D Glowing Orb & Headline -->
+          <div class="relative z-10 flex flex-col items-center justify-center pt-2 pb-6 text-center">
+            <div class="relative mb-4 flex items-center justify-center">
+              <div class="absolute size-28 rounded-full bg-purple-500/25 blur-2xl animate-pulse"></div>
+              <div class="relative size-20 sm:size-24 rounded-full overflow-hidden shadow-[0_0_50px_rgba(168,85,247,0.5)] ring-1 ring-purple-400/30">
+                <img src="/ai_glowing_orb.jpg" alt="AI Orb" class="size-full object-cover select-none pointer-events-none" />
               </div>
-              <p id="active-trade-alert-text" class="text-foreground/90 font-sans leading-relaxed text-xs">
-                <strong>Guidance:</strong> Price is +1.12% in profit approaching TP 1 ($82,115.24). As soon as TP 1 is tagged, <strong>immediately book 50% profit</strong> and trail your Stop Loss to Cost-to-Cost ($80,733.80) to eliminate all downside risk.
-              </p>
+            </div>
+            <h2 class="font-sans text-2xl sm:text-3xl font-normal text-white/95 tracking-tight">
+              Ready to Create Something New?
+            </h2>
+          </div>
+
+          <!-- Action Pills (Above Prompt Box) -->
+          <div class="relative z-10 flex items-center justify-center gap-2.5 pb-4 flex-wrap">
+            <button type="button" class="ai-prompt-pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-400/30 px-3.5 py-1.5 text-xs font-medium text-white/85 backdrop-blur-md transition-all cursor-pointer shadow-xs" data-prompt="Analyze current market liquidity and generate chart setup for BTC/USDT">
+              <span>Create Image</span>
+              <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            </button>
+            <button type="button" class="ai-prompt-pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-400/30 px-3.5 py-1.5 text-xs font-medium text-white/85 backdrop-blur-md transition-all cursor-pointer shadow-xs" data-prompt="Brainstorm high-probability trade setups with favorable risk-to-reward ratio">
+              <span>Brainstorm</span>
+              <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+            </button>
+            <button type="button" class="ai-prompt-pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-400/30 px-3.5 py-1.5 text-xs font-medium text-white/85 backdrop-blur-md transition-all cursor-pointer shadow-xs" data-prompt="Make a multi-stage profit booking and capital preservation plan for this trade">
+              <span>Make a plan</span>
+              <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            </button>
+          </div>
+
+          <!-- Main Floating Glassmorphic Prompt / Chat Input Box -->
+          <div class="relative z-10 max-w-3xl mx-auto rounded-2xl p-4 transition-all" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(192, 132, 252, 0.32); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px);">
+            <!-- Top Input Row -->
+            <div class="flex items-start gap-3">
+              <div class="pt-1.5 text-purple-400 shrink-0">
+                <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg>
+              </div>
+              <textarea id="ai-chat-input" rows="2" placeholder="Ask Anything..." class="w-full bg-transparent border-0 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-0 p-0 font-sans resize-none leading-relaxed"></textarea>
             </div>
 
-            <!-- Target Proximity Progress Bars -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
-              <div class="p-2 rounded bg-muted/30 border border-border/40 space-y-1">
-                <div class="flex justify-between text-[10px] text-muted-foreground">
-                  <span>ENTRY</span>
-                  <span id="trade-monitor-entry">$80,733.80</span>
+            <!-- Bottom Controls Row -->
+            <div class="flex items-center justify-between gap-3 pt-3 border-t border-white/5 mt-2">
+              <!-- Left Action Icons -->
+              <div class="flex items-center gap-3 text-xs text-white/60">
+                <button type="button" id="ai-chat-attach-btn" class="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
+                  <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                  <span>Attach</span>
+                </button>
+                <button type="button" id="ai-chat-settings-btn" class="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
+                  <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="1" x2="7" y1="14" y2="14"/><line x1="9" x2="15" y1="8" y2="8"/><line x1="17" x2="23" y1="16" y2="16"/></svg>
+                  <span>Settings</span>
+                </button>
+                <button type="button" id="ai-chat-options-btn" class="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
+                  <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                  <span>Options</span>
+                </button>
+              </div>
+
+              <!-- Right Buttons: Mic + Purple Send Arrow -->
+              <div class="flex items-center gap-2">
+                <button type="button" id="ai-chat-mic-btn" title="Voice Input" class="inline-flex size-8 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer">
+                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                </button>
+                <button type="button" id="ai-chat-send-btn" title="Send Query" class="inline-flex size-8 items-center justify-center rounded-full bg-purple-600 hover:bg-purple-500 text-white transition-all shadow-md shadow-purple-600/30 active:scale-95 cursor-pointer">
+                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamic AI Interactive Response Box (Expands when query sent) -->
+            <div id="ai-chat-response-container" class="hidden mt-4 pt-4 border-t border-purple-400/20 text-xs">
+              <div class="flex items-center justify-between pb-2">
+                <div class="flex items-center gap-2">
+                  <span class="size-2 rounded-full bg-purple-400 animate-ping"></span>
+                  <span id="ai-response-model-badge" class="font-mono font-bold text-purple-300">ChatGPT v4.0 • Response</span>
                 </div>
-                <div class="text-[11px] font-bold text-foreground">FILLED / ACTIVE</div>
-              </div>
-              <div class="p-2 rounded bg-muted/30 border border-border/40 space-y-1">
-                <div class="flex justify-between text-[10px] text-muted-foreground">
-                  <span>STAGE 1: TP 1 (50% Book)</span>
-                  <span id="trade-monitor-tp1">$82,115.24</span>
+                <div class="flex items-center gap-2 text-[11px]">
+                  <button type="button" id="ai-copy-response-btn" class="text-white/60 hover:text-white flex items-center gap-1 transition-colors cursor-pointer">
+                    <svg class="size-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <button type="button" id="ai-close-response-btn" class="text-white/60 hover:text-rose-400 transition-colors cursor-pointer ml-1">✕</button>
                 </div>
-                <div id="trade-monitor-tp1-status" class="text-[11px] font-bold text-emerald-500">Approaching (92% reached)</div>
               </div>
-              <div class="p-2 rounded bg-muted/30 border border-border/40 space-y-1">
-                <div class="flex justify-between text-[10px] text-muted-foreground">
-                  <span>STAGE 2: TP 2 (Target)</span>
-                  <span id="trade-monitor-tp2">$84,187.40</span>
+              <div id="ai-response-content" class="rounded-xl p-3 text-white/90 font-sans leading-relaxed text-xs" style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <!-- Live generated response injected here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom 3 Feature Cards -->
+          <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 max-w-4xl mx-auto">
+            <!-- Card 1: Image Generator -->
+            <div class="ai-feature-card group rounded-2xl p-4 transition-all cursor-pointer" data-feature="image" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px);">
+              <div class="flex items-center justify-between pb-3">
+                <div class="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/80 group-hover:text-purple-300 group-hover:border-purple-400/30 transition-all">
+                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                 </div>
-                <div id="trade-monitor-tp2-status" class="text-[11px] font-bold text-muted-foreground">Pending Expansion</div>
+                <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-medium text-white/70 group-hover:text-white group-hover:bg-white/10 transition-all">Create Image</span>
               </div>
+              <h3 class="font-sans text-sm font-medium text-white group-hover:text-purple-200 transition-colors">Image Generator</h3>
+              <p class="text-xs text-white/50 mt-1 leading-relaxed">Create high-quality images instantly from text.</p>
             </div>
-          </div>
 
-          <!-- 6. CRITICAL RISK & DRAWDOWN WARNING -->
-          <div class="rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 flex items-start gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert text-rose-500 shrink-0 mt-0.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
-            <div class="text-xs space-y-1">
-              <span class="font-bold text-rose-500 block uppercase tracking-wider text-[11px]">PropGuard Compliance & Drawdown Warning:</span>
-              <p class="text-foreground/90 font-sans leading-relaxed">
-                1. <strong>Risk Budget:</strong> Never risk more than <strong>0.5% - 1.0%</strong> of your funded account equity per trade.<br>
-                2. <strong>Hard Invalidation:</strong> If a 15-minute candle closes beyond the Stop Loss level, close the position immediately without manual holding.<br>
-                3. <strong>High-Impact News:</strong> Check the economic calendar; tighten trailing stops or flatten runner positions prior to red-folder releases.
-              </p>
-            </div>
-          </div>
-
-          <!-- 7. INTERACTIVE TRADE OUTCOME VERIFICATION & FEEDBACK -->
-          <div class="rounded-lg border border-border bg-muted/30 p-3.5 space-y-2.5">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-border/60">
-              <div>
-                <span class="text-xs font-bold text-foreground uppercase tracking-wider block">Trade Outcome Verification & Community Feedback</span>
-                <p class="text-[11px] text-muted-foreground">Did this trade setup hit your target or stop out? Submit your execution result to fine-tune consensus weights.</p>
+            <!-- Card 2: AI Presentation -->
+            <div class="ai-feature-card group rounded-2xl p-4 transition-all cursor-pointer" data-feature="presentation" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px);">
+              <div class="flex items-center justify-between pb-3">
+                <div class="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/80 group-hover:text-purple-300 group-hover:border-purple-400/30 transition-all">
+                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                </div>
+                <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-medium text-white/70 group-hover:text-white group-hover:bg-white/10 transition-all">Make Slides</span>
               </div>
-              <span class="text-[10px] font-mono text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded shrink-0">84.6% Verified Win Rate (1,420 Traders)</span>
+              <h3 class="font-sans text-sm font-medium text-white group-hover:text-purple-200 transition-colors">AI Presentation</h3>
+              <p class="text-xs text-white/50 mt-1 leading-relaxed">Turn ideas into engaging, professional presentations.</p>
             </div>
 
-            <div class="flex items-center gap-2 flex-wrap">
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-500 text-xs font-medium text-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="tp_hit">
-                <span class="size-1.5 rounded-full bg-emerald-500"></span>
-                <span>Hit Target (TP1 / TP2)</span>
-              </button>
-
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-500 text-xs font-medium text-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="booked_50_c2c">
-                <span class="size-1.5 rounded-full bg-emerald-400"></span>
-                <span>50% Booked + C2C</span>
-              </button>
-
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted hover:text-foreground text-xs font-medium text-muted-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="breakeven">
-                <span class="size-1.5 rounded-full bg-muted-foreground"></span>
-                <span>Exited at Break-Even</span>
-              </button>
-
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-rose-500/10 hover:border-rose-500/40 hover:text-rose-500 text-xs font-medium text-muted-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="stopped_out">
-                <span class="size-1.5 rounded-full bg-rose-500"></span>
-                <span>Stopped Out</span>
-              </button>
-
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-500 text-xs font-medium text-muted-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="running">
-                <span class="size-1.5 rounded-full bg-blue-500"></span>
-                <span>Trade Currently Running</span>
-              </button>
-            </div>
-
-            <div id="hub-feedback-status" class="hidden text-xs text-emerald-500 font-medium pt-1">
-              <!-- Confirmation text injected dynamically -->
+            <!-- Card 3: Dev Assistant -->
+            <div class="ai-feature-card group rounded-2xl p-4 transition-all cursor-pointer" data-feature="dev" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px);">
+              <div class="flex items-center justify-between pb-3">
+                <div class="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/80 group-hover:text-purple-300 group-hover:border-purple-400/30 transition-all">
+                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                </div>
+                <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-medium text-white/70 group-hover:text-white group-hover:bg-white/10 transition-all">Generate Code</span>
+              </div>
+              <h3 class="font-sans text-sm font-medium text-white group-hover:text-purple-200 transition-colors">Dev Assistant</h3>
+              <p class="text-xs text-white/50 mt-1 leading-relaxed">Generate clean, production ready code in seconds.</p>
             </div>
           </div>
 
-          <!-- Detailed Rationale & Logic -->
-          <div class="pt-1">
-            <span class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Execution Rationale & Quantitative Evidence:</span>
-            <p id="hub-active-rationale" class="text-xs text-foreground/90 leading-relaxed font-sans">
-              AETHER-9 Order Flow Specialist detected institutional liquidity absorption. The debate protocol concluded with 88% consensus to place a passive limit order waiting for demand sweep.
-            </p>
-          </div>
-
-          <!-- Key Metrics Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-border/60 text-xs" id="hub-active-metrics">
-            <!-- Populated dynamically -->
-          </div>
         </div>
       </div>
 
@@ -1825,6 +1765,308 @@
 
     // Geopolitical Conflict & War Wire Stream Setup
     setupWarWireStream();
+
+    // AI Chat Interface Interactivity (Look-alike of ChatGPT v4.0 UI)
+    setupAIChatInterface();
+  }
+
+  // AI Chat Interface Interactivity (Exact look-alike of user reference with full intelligence)
+  function setupAIChatInterface() {
+    const modelBtn = document.getElementById('ai-chat-model-btn');
+    const modelMenu = document.getElementById('ai-chat-model-menu');
+    const modelLabel = document.getElementById('ai-chat-model-label');
+    const chevron = document.getElementById('ai-chat-chevron');
+    const inputEl = document.getElementById('ai-chat-input');
+    const sendBtn = document.getElementById('ai-chat-send-btn');
+    const micBtn = document.getElementById('ai-chat-mic-btn');
+    const responseBox = document.getElementById('ai-chat-response-container');
+    const responseContent = document.getElementById('ai-chat-response-content');
+    const responseBadge = document.getElementById('ai-response-model-badge');
+    const closeBtn = document.getElementById('ai-close-response-btn');
+    const copyBtn = document.getElementById('ai-copy-response-btn');
+    const configBtn = document.getElementById('ai-chat-config-btn');
+    const exportBtn = document.getElementById('ai-chat-export-btn');
+
+    let activeChatModel = 'ChatGPT v4.0';
+
+    // Model Selector Toggle
+    if (modelBtn && modelMenu) {
+      modelBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = !modelMenu.classList.contains('hidden');
+        modelMenu.classList.toggle('hidden', isOpen);
+        if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!modelBtn.contains(e.target) && !modelMenu.contains(e.target)) {
+          modelMenu.classList.add('hidden');
+          if (chevron) chevron.style.transform = 'rotate(0deg)';
+        }
+      });
+
+      const modelOpts = modelMenu.querySelectorAll('.ai-model-opt');
+      modelOpts.forEach(opt => {
+        opt.addEventListener('click', () => {
+          const modelKey = opt.getAttribute('data-model');
+          const title = opt.querySelector('span:first-child').textContent;
+          activeChatModel = title;
+          if (modelLabel) modelLabel.textContent = title;
+          modelMenu.classList.add('hidden');
+          if (chevron) chevron.style.transform = 'rotate(0deg)';
+
+          // If it matches a proprietary robot, switch the hub model too
+          if (modelKey && modelKey !== 'chatgpt') {
+            currentModel = modelKey;
+            const dropdown = document.getElementById('hub-model-dropdown');
+            if (dropdown) dropdown.value = modelKey;
+            updateActiveModelView();
+            updateComparisonTable();
+          }
+        });
+      });
+    }
+
+    // Generate AI Response function
+    function triggerChatQuery(queryText, featureType = 'general') {
+      if (!queryText || !queryText.trim()) {
+        queryText = `Analyze current market structure, liquidity voids, and institutional trade setup for ${currentSymbol}`;
+      }
+
+      if (responseBox) responseBox.classList.remove('hidden');
+      if (responseBadge) responseBadge.textContent = `${activeChatModel} • Live Reasoning Engine`;
+      if (responseContent) {
+        responseContent.innerHTML = `
+          <div class="flex items-center gap-2 text-purple-300 py-3">
+            <span class="size-2 rounded-full bg-purple-400 animate-ping"></span>
+            <span class="font-mono text-xs animate-pulse">Synthesizing real-time order flow & multi-engine intelligence for ${currentSymbol}...</span>
+          </div>
+        `;
+      }
+
+      setTimeout(() => {
+        const modelData = getModelData(currentModel, currentSymbol);
+        const livePriceText = document.getElementById('hub-live-price')?.textContent || '$81,262.00';
+        
+        let responseHTML = '';
+
+        if (featureType === 'image') {
+          responseHTML = `
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <span class="font-mono font-bold text-purple-300">Generated Institutional Chart Analysis • ${currentSymbol}</span>
+                <span class="text-[10px] font-mono bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30">15m Candlestick Confluence</span>
+              </div>
+              <p class="text-xs text-white/85 leading-relaxed">
+                Liquidity map generated: High-volume absorption detected at <strong>${modelData.entry}</strong> with an unfilled Fair Value Gap (FVG) targeting <strong>${modelData.tp}</strong>. Stop loss is structurally anchored at <strong>${modelData.sl}</strong> below the prevailing demand wick.
+              </p>
+              <div class="grid grid-cols-3 gap-2 text-xs font-mono pt-1">
+                <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span class="text-[10px] text-white/50 block">CONVICTION</span>
+                  <span class="font-bold text-emerald-400">${modelData.conviction}</span>
+                </div>
+                <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span class="text-[10px] text-white/50 block">ORDER TYPE</span>
+                  <span class="font-bold text-white">${modelData.orderType}</span>
+                </div>
+                <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span class="text-[10px] text-white/50 block">R:R HURDLE</span>
+                  <span class="font-bold text-purple-300">${modelData.rr}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (featureType === 'presentation') {
+          responseHTML = `
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <span class="font-mono font-bold text-purple-300">AI Presentation • 5-Engine Consensus Slide</span>
+                <span class="text-[10px] font-mono bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded border border-purple-500/30">Executive Briefing</span>
+              </div>
+              <div class="space-y-1.5 text-xs text-white/85">
+                <div class="flex items-start gap-2">
+                  <span class="text-purple-400 font-bold">1.</span>
+                  <span><strong>Macro Bias:</strong> Bullish continuation on ${currentSymbol} validated by Order Flow & Sentiment engines.</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-purple-400 font-bold">2.</span>
+                  <span><strong>Optimal Execution:</strong> Limit order placed at <strong>${modelData.entry}</strong> (${modelData.entryOffset}).</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-purple-400 font-bold">3.</span>
+                  <span><strong>Risk & Drawdown Guard:</strong> Maximum 1.0% equity exposure with hard invalidation at <strong>${modelData.sl}</strong> (${modelData.slPct}).</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (featureType === 'dev') {
+          responseHTML = `
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <span class="font-mono font-bold text-purple-300">Dev Assistant • PineScript v5 Execution Code</span>
+                <span class="text-[10px] font-mono bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">Production Ready</span>
+              </div>
+              <pre class="bg-black/50 p-2.5 rounded-lg border border-white/10 font-mono text-[11px] text-purple-200 overflow-x-auto leading-relaxed">
+//@version=5
+strategy("Veterian-FX ${currentModel.toUpperCase()} Strategy", overlay=true, margin_long=100)
+entryPrice = ${parseFloat(modelData.entry.replace(/[^0-9.]/g, '')) || 80733.8}
+tpPrice    = ${parseFloat(modelData.tp.replace(/[^0-9.]/g, '')) || 84187.4}
+slPrice    = ${parseFloat(modelData.sl.replace(/[^0-9.]/g, '')) || 79921.2}
+
+if (close >= entryPrice and strategy.position_size == 0)
+    strategy.entry("Long", strategy.long, limit=entryPrice)
+    strategy.exit("Exit", "Long", limit=tpPrice, stop=slPrice)</pre>
+            </div>
+          `;
+        } else {
+          responseHTML = `
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <span class="font-mono font-bold text-purple-300">Analysis for "${queryText.length > 50 ? queryText.slice(0, 50) + '...' : queryText}"</span>
+                <span class="text-[10px] font-mono bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">Live Price: ${livePriceText}</span>
+              </div>
+              <p class="text-xs text-white/90 leading-relaxed">
+                ${modelData.rationale}
+              </p>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono pt-1">
+                <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span class="text-[10px] text-white/50 block">ENTRY</span>
+                  <span class="font-bold text-white">${modelData.entry}</span>
+                </div>
+                <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span class="text-[10px] text-white/50 block">TARGET (TP)</span>
+                  <span class="font-bold text-emerald-400">${modelData.tp}</span>
+                </div>
+                <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span class="text-[10px] text-white/50 block">STOP LOSS</span>
+                  <span class="font-bold text-rose-400">${modelData.sl}</span>
+                </div>
+                <div class="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span class="text-[10px] text-white/50 block">RISK : REWARD</span>
+                  <span class="font-bold text-purple-300">${modelData.rr}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        if (responseContent) responseContent.innerHTML = responseHTML;
+      }, 400);
+    }
+
+    // Send button click
+    if (sendBtn) {
+      sendBtn.addEventListener('click', () => {
+        const text = inputEl ? inputEl.value.trim() : '';
+        triggerChatQuery(text);
+        if (inputEl) inputEl.value = '';
+      });
+    }
+
+    // Input Enter key press
+    if (inputEl) {
+      inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          const text = inputEl.value.trim();
+          triggerChatQuery(text);
+          inputEl.value = '';
+        }
+      });
+    }
+
+    // Action Pills (Create Image, Brainstorm, Make a plan)
+    const promptPills = document.querySelectorAll('.ai-prompt-pill');
+    promptPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const promptText = pill.getAttribute('data-prompt') || pill.textContent.trim();
+        if (inputEl) inputEl.value = promptText;
+        triggerChatQuery(promptText);
+      });
+    });
+
+    // Bottom 3 Feature Cards
+    const featureCards = document.querySelectorAll('.ai-feature-card');
+    featureCards.forEach(card => {
+      card.addEventListener('click', () => {
+        const feature = card.getAttribute('data-feature');
+        if (feature === 'image') {
+          triggerChatQuery(`Generate high-resolution chart analysis for ${currentSymbol}`, 'image');
+        } else if (feature === 'presentation') {
+          triggerChatQuery(`Generate multi-engine presentation slide for ${currentSymbol}`, 'presentation');
+        } else if (feature === 'dev') {
+          triggerChatQuery(`Generate clean production-ready code for ${currentSymbol}`, 'dev');
+        }
+      });
+    });
+
+    // Close response box
+    if (closeBtn && responseBox) {
+      closeBtn.addEventListener('click', () => {
+        responseBox.classList.add('hidden');
+      });
+    }
+
+    // Copy response
+    if (copyBtn && responseContent) {
+      copyBtn.addEventListener('click', () => {
+        const text = responseContent.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+          copyBtn.innerHTML = `<span>Copied!</span>`;
+          setTimeout(() => {
+            copyBtn.innerHTML = `
+              <svg class="size-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span>Copy</span>
+            `;
+          }, 2000);
+        });
+      });
+    }
+
+    // Mic button
+    if (micBtn) {
+      let isListening = false;
+      micBtn.addEventListener('click', () => {
+        isListening = !isListening;
+        if (isListening) {
+          micBtn.classList.add('bg-purple-600', 'text-white', 'animate-pulse');
+          if (inputEl) inputEl.placeholder = 'Listening... (Speak your trade query)';
+        } else {
+          micBtn.classList.remove('bg-purple-600', 'text-white', 'animate-pulse');
+          if (inputEl) inputEl.placeholder = 'Ask Anything...';
+        }
+      });
+    }
+
+    // Config & Export buttons
+    if (configBtn) {
+      configBtn.addEventListener('click', () => {
+        triggerChatQuery(`Display system configuration and AI parameters for ${activeChatModel}`, 'general');
+      });
+    }
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        const modelData = getModelData(currentModel, currentSymbol);
+        const exportData = JSON.stringify({
+          symbol: currentSymbol,
+          model: activeChatModel,
+          signal: modelData.signal,
+          entry: modelData.entry,
+          tp: modelData.tp,
+          sl: modelData.sl,
+          rr: modelData.rr,
+          timestamp: new Date().toISOString()
+        }, null, 2);
+        
+        const blob = new Blob([exportData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `veterian_trade_plan_${currentSymbol.replace('/', '_')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
   }
 
   // Real Financial News & Macro Wire Engine (100% Real Live Feeds, Zero Dummy Data)
