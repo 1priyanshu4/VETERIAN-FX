@@ -400,449 +400,158 @@
           </div>
         </div>
       </div>
+    </div>
+    `;
+  }
 
-      <!-- 2. PROPRIETARY ROBOTS SWITCHER & DROPDOWN -->
-      <div class="px-5 space-y-2.5">
-        <div class="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-border/40">
-          <div class="flex items-center gap-2">
-            <label for="hub-model-dropdown" class="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono flex items-center gap-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-              <span>Select AI Engine:</span>
-            </label>
-            <select id="hub-model-dropdown" class="h-8 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-xs">
-              <option value="aether9" selected>AETHER-9 • Multi-Agent AI Debate System</option>
-              <option value="evolvex">EVOLVE-X • Self-Evolving Strategy Engine</option>
-              <option value="sentinel">SENTINEL • Behavior + Psychology Guard</option>
-              <option value="unity">UNITY • Cross-Account Risk Brain</option>
-              <option value="orbit">ORBIT • Live News + Order Flow + Sentiment</option>
-              <option value="unified">UNIFIED MODEL • 5-Engine Consensus Brain</option>
-            </select>
-          </div>
-
-          <div class="flex items-center gap-2 text-xs font-mono">
-            <span class="text-muted-foreground">Active Engine:</span>
-            <span id="hub-active-model-inline" class="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">AETHER-9 (Debate Protocol)</span>
-          </div>
+  // Render AI Chat Interface (EXACT 1:1 REPLICA of screenshot media_1789846759323.png)
+  function renderAIChatInterfaceHTML() {
+    return `
+    <div id="ai-chat-master-card" data-slot="card" class="col-span-12 group/card flex flex-col gap-6 overflow-hidden rounded-[24px] py-7 px-6 md:px-10 text-sm text-card-foreground mb-6 transition-all relative" style="grid-column: 1 / -1; width: 100%; background: radial-gradient(circle at 50% 15%, #2a1140 0%, #170b26 42%, #0c0814 100%), #0c0814; border: 1px solid rgba(168, 85, 247, 0.25); box-shadow: 0 20px 50px -10px rgba(0,0,0,0.8), 0 0 35px -5px rgba(147, 51, 234, 0.25);">
+      
+      <!-- Top Row: ChatGPT v4.0 on left | Configutation & Export on right -->
+      <div class="flex items-center justify-between w-full">
+        <!-- Model Pill -->
+        <div class="relative">
+          <button id="ai-chat-model-btn" type="button" class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-xs md:text-sm font-medium text-white transition-all cursor-pointer backdrop-blur-md">
+            <span>ChatGPT v4.0</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-300"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
         </div>
 
-        <div class="inline-flex h-10 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground w-full overflow-x-auto gap-1 border border-border/60 text-xs">
-          <!-- 1. AETHER-9 -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-foreground bg-background shadow-xs transition-all shrink-0 cursor-pointer" data-model="aether9">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-git-commit text-emerald-500"><circle cx="12" cy="12" r="3"></circle><line x1="3" x2="9" y1="12" y2="12"></line><line x1="15" x2="21" y1="12" y2="12"></line></svg>
-            <span>AETHER-9</span>
+        <!-- Action Pills: Configutation & Export -->
+        <div class="flex items-center gap-3">
+          <button type="button" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-xs md:text-sm font-medium text-white transition-all cursor-pointer backdrop-blur-md">
+            <span>Configutation</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-300"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
-
-          <!-- 2. EVOLVE-X -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="evolvex">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu"><rect width="16" height="16" x="4" y="4" rx="2"></rect><rect width="6" height="6" x="9" y="9" rx="1"></rect><path d="M15 2v2"></path><path d="M15 20v2"></path><path d="M2 15h2"></path><path d="M2 9h2"></path><path d="M20 15h2"></path><path d="M20 9h2"></path><path d="M9 2v2"></path><path d="M9 20v2"></path></svg>
-            <span>EVOLVE-X</span>
-          </button>
-
-          <!-- 3. SENTINEL -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="sentinel">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check text-emerald-500"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-            <span>SENTINEL</span>
-          </button>
-
-          <!-- 4. UNITY -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="unity">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>
-            <span>UNITY</span>
-          </button>
-
-          <!-- 5. ORBIT -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="orbit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
-            <span>ORBIT</span>
-          </button>
-
-          <!-- 6. UNIFIED MODEL -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="unified">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle text-emerald-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="m9 11 3 3L22 4"></path></svg>
-            <span>UNIFIED MODEL (Consensus)</span>
+          <button type="button" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 text-xs md:text-sm font-medium text-white transition-all cursor-pointer backdrop-blur-md">
+            <span>Export</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-300"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- 3. AI CHAT INTERFACE (EXACT REPLICA OF USER REFERENCE: DARK PURPLE, GLASSMORPHISM, 3D GLOWING ORB, CHAT PROMPT, ACTION PILLS & FEATURE CARDS) -->
-      <div class="px-5">
-        <div id="ai-chat-master-card" class="relative rounded-3xl overflow-hidden p-6 sm:p-8 transition-all" style="background: radial-gradient(circle at 50% 15%, rgba(147, 51, 234, 0.22) 0%, rgba(36, 12, 58, 0.85) 45%, rgba(13, 6, 25, 0.98) 100%), #0d0619; border: 1px solid rgba(192, 132, 252, 0.22); box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.1); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
-          
-          <!-- Subtle Top Ambient Glow -->
-          <div class="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
+      <!-- Center Hero: 3D Iridescent Orb + Title + 3 Pills -->
+      <div class="flex flex-col items-center justify-center my-3 w-full">
+        <!-- 3D Orb -->
+        <div class="relative flex items-center justify-center mb-5">
+          <div class="absolute -inset-4 rounded-full bg-gradient-to-r from-purple-600/35 to-fuchsia-600/35 blur-xl"></div>
+          <img src="/ai_glowing_orb.jpg" alt="AI Orb" class="relative size-20 md:size-24 rounded-full object-contain pointer-events-none select-none" style="mix-blend-mode: screen; filter: drop-shadow(0 0 16px rgba(192, 132, 252, 0.65));" />
+        </div>
 
-          <!-- Top Controls Bar -->
-          <div class="relative z-10 flex items-center justify-between gap-3 pb-6">
-            <!-- Left: Model Selector Pill Dropdown -->
-            <div class="relative">
-              <button type="button" id="ai-chat-model-btn" class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur-md transition-all shadow-xs cursor-pointer">
-                <span id="ai-chat-model-label">ChatGPT v4.0</span>
-                <svg class="size-3.5 text-white/60 transition-transform duration-200" id="ai-chat-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              </button>
+        <!-- Headline -->
+        <h2 class="text-2xl md:text-3xl lg:text-[32px] font-medium text-white text-center tracking-tight mb-6">
+          Ready to Create Something New?
+        </h2>
 
-              <!-- Model Dropdown Menu -->
-              <div id="ai-chat-model-menu" class="hidden absolute left-0 mt-2 w-64 rounded-2xl border border-white/15 bg-[#140a28]/95 p-2 shadow-2xl backdrop-blur-2xl z-50 text-xs">
-                <div class="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-purple-300/60">Select Intelligence Engine</div>
-                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white hover:bg-white/10 transition-colors cursor-pointer" data-model="chatgpt">
-                  <span class="font-medium">ChatGPT v4.0</span>
-                  <span class="text-[10px] text-purple-300">Default</span>
-                </button>
-                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="aether9">
-                  <span>AETHER-9</span>
-                  <span class="text-[10px] text-emerald-400 font-mono">Debate Protocol</span>
-                </button>
-                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="evolvex">
-                  <span>EVOLVE-X</span>
-                  <span class="text-[10px] text-cyan-400 font-mono">Self-Evolving</span>
-                </button>
-                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="sentinel">
-                  <span>SENTINEL</span>
-                  <span class="text-[10px] text-amber-400 font-mono">Guard Brain</span>
-                </button>
-                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="unity">
-                  <span>UNITY</span>
-                  <span class="text-[10px] text-blue-400 font-mono">Cross-Risk</span>
-                </button>
-                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="orbit">
-                  <span>ORBIT</span>
-                  <span class="text-[10px] text-rose-400 font-mono">News Sentiment</span>
-                </button>
-                <button type="button" class="ai-model-opt flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-white/80 hover:bg-white/10 transition-colors cursor-pointer" data-model="unified">
-                  <span>UNIFIED MODEL</span>
-                  <span class="text-[10px] text-emerald-400 font-mono">5-Engine Consensus</span>
-                </button>
-              </div>
-            </div>
+        <!-- Action Pills: Create Image, Brainstorm, Make a plan -->
+        <div class="flex flex-wrap items-center justify-center gap-3 mb-6">
+          <button type="button" class="ai-action-pill inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.07] hover:bg-white/[0.13] border border-white/10 text-xs md:text-sm text-gray-200 transition-all cursor-pointer hover:border-purple-400/50" data-prompt="Create Image">
+            <span>Create Image</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          </button>
+          <button type="button" class="ai-action-pill inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.07] hover:bg-white/[0.13] border border-white/10 text-xs md:text-sm text-gray-200 transition-all cursor-pointer hover:border-purple-400/50" data-prompt="Brainstorm">
+            <span>Brainstorm</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+          </button>
+          <button type="button" class="ai-action-pill inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/[0.07] hover:bg-white/[0.13] border border-white/10 text-xs md:text-sm text-gray-200 transition-all cursor-pointer hover:border-purple-400/50" data-prompt="Make a plan">
+            <span>Make a plan</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+          </button>
+        </div>
+      </div>
 
-            <!-- Right: Configuration & Export Pill Buttons -->
-            <div class="flex items-center gap-2">
-              <button type="button" id="ai-chat-config-btn" class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/80 backdrop-blur-md transition-all cursor-pointer shadow-xs">
-                <span>Configuration</span>
-                <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
-              <button type="button" id="ai-chat-export-btn" class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/80 backdrop-blur-md transition-all cursor-pointer shadow-xs">
-                <span>Export</span>
-                <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
-              </button>
-            </div>
-          </div>
+      <!-- Main Glowing Purple Prompt Box -->
+      <div class="w-full max-w-4xl mx-auto rounded-[22px] bg-[#160b24]/90 border border-[#a855f7]/45 p-4 md:p-5 shadow-[0_0_30px_rgba(168,85,247,0.18),inset_0_0_15px_rgba(168,85,247,0.06)] backdrop-blur-xl transition-all focus-within:border-[#c084fc] focus-within:shadow-[0_0_35px_rgba(192,132,252,0.3)]">
+        <!-- Top Input Row -->
+        <div class="flex items-start gap-3">
+          <!-- Magenta/purple sparkle icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#c084fc" class="shrink-0 mt-1 text-[#c084fc]">
+            <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
+          </svg>
+          <textarea id="ai-chat-prompt-input" rows="3" placeholder="Ask Anything..." class="w-full bg-transparent border-0 outline-none text-white placeholder:text-gray-400 text-sm md:text-base resize-none font-sans leading-relaxed"></textarea>
+        </div>
 
-          <!-- Center Hero with 3D Glowing Orb & Headline -->
-          <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 8px; padding-bottom: 24px; text-align: center;">
-            <div style="position: relative; margin-bottom: 18px; display: flex; align-items: center; justify-content: center; width: 100px; height: 100px;">
-              <div style="position: absolute; width: 120px; height: 120px; border-radius: 50%; background: rgba(168, 85, 247, 0.4); filter: blur(24px); pointer-events: none;"></div>
-              <div style="position: relative; width: 96px; height: 96px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 50px rgba(168, 85, 247, 0.55); border: 1px solid rgba(192, 132, 252, 0.35);">
-                <img src="/ai_glowing_orb.jpg" alt="AI Orb" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;" />
-              </div>
-            </div>
-            <h2 style="font-family: inherit; font-size: 28px; font-weight: 400; color: rgba(255, 255, 255, 0.95); letter-spacing: -0.02em; margin: 0;">
-              Ready to Create Something New?
-            </h2>
-          </div>
-
-          <!-- Action Pills (Above Prompt Box) -->
-          <div class="relative z-10 flex items-center justify-center gap-2.5 pb-4 flex-wrap">
-            <button type="button" class="ai-prompt-pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-400/30 px-3.5 py-1.5 text-xs font-medium text-white/85 backdrop-blur-md transition-all cursor-pointer shadow-xs" data-prompt="Analyze current market liquidity and generate chart setup for BTC/USDT">
-              <span>Create Image</span>
-              <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+        <!-- Bottom Controls Row -->
+        <div class="flex items-center justify-between pt-3 mt-2 border-t border-white/[0.06]">
+          <!-- Left: Attach, Settings, Options -->
+          <div class="flex items-center gap-4 md:gap-6">
+            <button type="button" class="inline-flex items-center gap-1.5 text-xs md:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              <span>Attach</span>
             </button>
-            <button type="button" class="ai-prompt-pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-400/30 px-3.5 py-1.5 text-xs font-medium text-white/85 backdrop-blur-md transition-all cursor-pointer shadow-xs" data-prompt="Brainstorm high-probability trade setups with favorable risk-to-reward ratio">
-              <span>Brainstorm</span>
-              <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+            <button type="button" class="inline-flex items-center gap-1.5 text-xs md:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="14" y2="14"/><line x1="4" x2="20" y1="7" y2="7"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="14" r="2"/><circle cx="10" cy="21" r="2"/></svg>
+              <span>Settings</span>
             </button>
-            <button type="button" class="ai-prompt-pill inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-purple-400/30 px-3.5 py-1.5 text-xs font-medium text-white/85 backdrop-blur-md transition-all cursor-pointer shadow-xs" data-prompt="Make a multi-stage profit booking and capital preservation plan for this trade">
-              <span>Make a plan</span>
-              <svg class="size-3.5 text-white/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            <button type="button" class="inline-flex items-center gap-1.5 text-xs md:text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+              <span>Options</span>
             </button>
           </div>
 
-          <!-- Main Floating Glassmorphic Prompt / Chat Input Box -->
-          <div style="position: relative; z-index: 10; max-width: 760px; width: 100%; margin: 0 auto; border-radius: 20px; padding: 16px 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(192, 132, 252, 0.32); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px);">
-            <!-- Top Input Row -->
-            <div class="flex items-start gap-3">
-              <div class="pt-1.5 text-purple-400 shrink-0">
-                <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg>
-              </div>
-              <textarea id="ai-chat-input" rows="2" placeholder="Ask Anything..." class="w-full bg-transparent border-0 text-sm text-white placeholder-white/40 focus:outline-none focus:ring-0 p-0 font-sans resize-none leading-relaxed"></textarea>
-            </div>
-
-            <!-- Bottom Controls Row -->
-            <div class="flex items-center justify-between gap-3 pt-3 border-t border-white/5 mt-2">
-              <!-- Left Action Icons -->
-              <div class="flex items-center gap-3 text-xs text-white/60">
-                <button type="button" id="ai-chat-attach-btn" class="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
-                  <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                  <span>Attach</span>
-                </button>
-                <button type="button" id="ai-chat-settings-btn" class="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
-                  <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="1" x2="7" y1="14" y2="14"/><line x1="9" x2="15" y1="8" y2="8"/><line x1="17" x2="23" y1="16" y2="16"/></svg>
-                  <span>Settings</span>
-                </button>
-                <button type="button" id="ai-chat-options-btn" class="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
-                  <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-                  <span>Options</span>
-                </button>
-              </div>
-
-              <!-- Right Buttons: Mic + Purple Send Arrow -->
-              <div class="flex items-center gap-2">
-                <button type="button" id="ai-chat-mic-btn" title="Voice Input" class="inline-flex size-8 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer">
-                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
-                </button>
-                <button type="button" id="ai-chat-send-btn" title="Send Query" class="inline-flex size-8 items-center justify-center rounded-full bg-purple-600 hover:bg-purple-500 text-white transition-all shadow-md shadow-purple-600/30 active:scale-95 cursor-pointer">
-                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Dynamic AI Interactive Response Box (Expands when query sent) -->
-            <div id="ai-chat-response-container" class="hidden mt-4 pt-4 border-t border-purple-400/20 text-xs">
-              <div class="flex items-center justify-between pb-2">
-                <div class="flex items-center gap-2">
-                  <span class="size-2 rounded-full bg-purple-400 animate-ping"></span>
-                  <span id="ai-response-model-badge" class="font-mono font-bold text-purple-300">ChatGPT v4.0 • Response</span>
-                </div>
-                <div class="flex items-center gap-2 text-[11px]">
-                  <button type="button" id="ai-copy-response-btn" class="text-white/60 hover:text-white flex items-center gap-1 transition-colors cursor-pointer">
-                    <svg class="size-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                    <span>Copy</span>
-                  </button>
-                  <button type="button" id="ai-close-response-btn" class="text-white/60 hover:text-rose-400 transition-colors cursor-pointer ml-1">✕</button>
-                </div>
-              </div>
-              <div id="ai-response-content" class="rounded-xl p-3 text-white/90 font-sans leading-relaxed text-xs" style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08);">
-                <!-- Live generated response injected here -->
-              </div>
-            </div>
-          </div>
-
-          <!-- Bottom 3 Feature Cards -->
-          <div style="position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 860px; width: 100%; margin: 24px auto 0;">
-            <!-- Card 1: Image Generator -->
-            <div class="ai-feature-card group rounded-2xl p-4 transition-all cursor-pointer" data-feature="image" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px);">
-              <div class="flex items-center justify-between pb-3">
-                <div class="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/80 group-hover:text-purple-300 group-hover:border-purple-400/30 transition-all">
-                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                </div>
-                <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-medium text-white/70 group-hover:text-white group-hover:bg-white/10 transition-all">Create Image</span>
-              </div>
-              <h3 class="font-sans text-sm font-medium text-white group-hover:text-purple-200 transition-colors">Image Generator</h3>
-              <p class="text-xs text-white/50 mt-1 leading-relaxed">Create high-quality images instantly from text.</p>
-            </div>
-
-            <!-- Card 2: AI Presentation -->
-            <div class="ai-feature-card group rounded-2xl p-4 transition-all cursor-pointer" data-feature="presentation" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px);">
-              <div class="flex items-center justify-between pb-3">
-                <div class="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/80 group-hover:text-purple-300 group-hover:border-purple-400/30 transition-all">
-                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-                </div>
-                <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-medium text-white/70 group-hover:text-white group-hover:bg-white/10 transition-all">Make Slides</span>
-              </div>
-              <h3 class="font-sans text-sm font-medium text-white group-hover:text-purple-200 transition-colors">AI Presentation</h3>
-              <p class="text-xs text-white/50 mt-1 leading-relaxed">Turn ideas into engaging, professional presentations.</p>
-            </div>
-
-            <!-- Card 3: Dev Assistant -->
-            <div class="ai-feature-card group rounded-2xl p-4 transition-all cursor-pointer" data-feature="dev" style="background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px);">
-              <div class="flex items-center justify-between pb-3">
-                <div class="size-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/80 group-hover:text-purple-300 group-hover:border-purple-400/30 transition-all">
-                  <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                </div>
-                <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] font-medium text-white/70 group-hover:text-white group-hover:bg-white/10 transition-all">Generate Code</span>
-              </div>
-              <h3 class="font-sans text-sm font-medium text-white group-hover:text-purple-200 transition-colors">Dev Assistant</h3>
-              <p class="text-xs text-white/50 mt-1 leading-relaxed">Generate clean, production ready code in seconds.</p>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- 7. SUB-TABS: EXECUTION TERMINAL FEED & COMPARISON MATRIX -->
-      <div class="px-5">
-        <div class="flex items-center gap-1 border-b border-border overflow-x-auto pb-1 text-xs">
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-foreground bg-muted transition-colors cursor-pointer" data-target="tab-live-stream">
-            Execution Terminal Feed
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-comparison">
-            All 5 Robots Comparison Matrix
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-debate">
-            AETHER-9 Debate Protocol
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-sentinel">
-            SENTINEL Psychology Guard
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-orbit">
-            ORBIT News Sentiment
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-unity-evolve">
-            UNITY & EVOLVE-X Quant Studio
-          </button>
-        </div>
-      </div>
-
-      <!-- Tab Panes -->
-      <div class="px-5">
-        <!-- 1. Live Terminal Stream Tab -->
-        <div id="tab-live-stream" class="hub-tab-pane space-y-2">
-          <div class="rounded-lg border border-border bg-background p-3 font-mono text-xs text-muted-foreground h-44 overflow-y-auto space-y-1.5" id="hub-live-logs">
-            <div class="text-emerald-500 font-semibold">[ORCHESTRATOR] Real-time market feed initialized. Connected to Binance WebSocket.</div>
-            <div id="log-market-status" class="text-foreground font-semibold">[FEED] BTC/USDT Live: $81,262.00 | 24h: +2.85%</div>
-            <div>[AETHER-9] Calculated Order Block limit entry: $80,733.80 (-0.65% pullback).</div>
-            <div>[EVOLVE-X] Calculated PPO adaptive Best Bid slice: $81,196.99 (-0.08%).</div>
-            <div>[SENTINEL] Calculated Risk-weighted scale-in limit entry: $80,920.70 (-0.42%).</div>
-            <div>[UNITY] Calculated Alpha Matrix predicted Bar VWAP: $81,099.48 (-0.20%).</div>
-            <div>[ORBIT] Calculated News momentum breakout trigger: $81,465.15 (+0.25%).</div>
-            <div class="text-muted-foreground">[READY] Select any robot from the switcher above to inspect its distinct algorithmic trade plan.</div>
+          <!-- Right: Mic & Send Arrow -->
+          <div class="flex items-center gap-2.5">
+            <button type="button" id="ai-chat-mic-btn" class="size-9 rounded-full bg-white/[0.08] hover:bg-white/[0.14] flex items-center justify-center text-gray-300 hover:text-white transition-all cursor-pointer" title="Voice Input">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            </button>
+            <button type="button" id="ai-chat-send-btn" class="size-9 rounded-full bg-[#9333ea] hover:bg-[#a855f7] flex items-center justify-center text-white shadow-[0_2px_12px_rgba(147,51,234,0.45)] transition-all cursor-pointer" title="Send Prompt">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+            </button>
           </div>
         </div>
 
-        <!-- 2. All 5 Robots Comparison Matrix Tab -->
-        <div id="tab-comparison" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3 overflow-x-auto">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">5-Engine Algorithmic Comparison Matrix (Live Pricing)</span>
-              <span class="text-[10px] font-mono text-muted-foreground">Updated in Real-Time</span>
-            </div>
-            <table class="w-full text-left text-xs font-mono">
-              <thead>
-                <tr class="border-b border-border/60 text-muted-foreground text-[10px] uppercase">
-                  <th class="py-2 pr-3">Robot / Algorithm</th>
-                  <th class="py-2 px-3">Order Type</th>
-                  <th class="py-2 px-3">Live Entry</th>
-                  <th class="py-2 px-3">Take Profit (TP)</th>
-                  <th class="py-2 px-3">Stop Loss (SL)</th>
-                  <th class="py-2 px-3">R:R</th>
-                  <th class="py-2 pl-3">Timeframe</th>
-                </tr>
-              </thead>
-              <tbody id="hub-comparison-tbody" class="divide-y divide-border/40">
-                <!-- Populated dynamically with distinct prices -->
-              </tbody>
-            </table>
+        <!-- Dynamic Output Container -->
+        <div id="ai-chat-output-container" class="hidden mt-4 pt-4 border-t border-purple-500/20 text-xs md:text-sm text-gray-200">
+          <div class="flex items-center gap-2 text-[11px] font-mono text-purple-400 mb-2">
+            <span class="size-2 rounded-full bg-purple-400 animate-pulse"></span>
+            <span id="ai-chat-status">Response generated</span>
           </div>
-        </div>
-
-        <!-- 3. AETHER-9 Debate Tab -->
-        <div id="tab-debate" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">AETHER-9 • Multi-Agent AI Debate Arena</span>
-              <span class="inline-flex items-center rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500 dark:text-emerald-400">Order Flow Dominated</span>
-            </div>
-            <div class="space-y-2 text-xs">
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60">
-                <div class="flex items-center gap-1.5 font-semibold text-emerald-500 dark:text-emerald-400 mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                  <span>Order Flow & Liquidity Specialist:</span>
-                </div>
-                <p class="text-foreground/90 leading-relaxed">
-                  "Institutional limit orders absorbed sell-side volume at the lower range boundary. Cumulative Volume Delta (CVD) shows positive divergence while open interest expanded."
-                </p>
-              </div>
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60">
-                <div class="flex items-center gap-1.5 font-semibold text-rose-500 dark:text-rose-400 mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
-                  <span>Market Structure & Resistance Analyst:</span>
-                </div>
-                <p class="text-foreground/90 leading-relaxed">
-                  "Resistance cluster situated 3.2% above market price. Caution advised on chasing high-volume breakout candles without prior pullback."
-                </p>
-              </div>
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60">
-                <div class="flex items-center gap-1.5 font-semibold text-foreground mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check text-emerald-500"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-                  <span>Quantitative Risk & Portfolio Controller:</span>
-                </div>
-                <p class="text-foreground/90 leading-relaxed">
-                  "Order flow divergence outweighs overhead liquidity risk. Position approved at 1.25R allocation with hard invalidation at the support floor."
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. SENTINEL Psychology Guard Tab -->
-        <div id="tab-sentinel" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">SENTINEL • Behavioral & Psychology Guard</span>
-              <span class="inline-flex items-center rounded border border-border bg-muted/60 px-2 py-0.5 text-[10px] font-semibold text-foreground">Tilt Prevention Active</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60 text-xs">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="font-semibold text-foreground">Quantitative Momentum Vector</span>
-                  <span class="inline-flex items-center rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.2 text-[9px] font-semibold text-emerald-500">STRONG BUY</span>
-                </div>
-                <p class="text-muted-foreground leading-relaxed">Momentum z-score is +2.1σ with mean reversion confirmed across high-frequency order books.</p>
-              </div>
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60 text-xs">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="font-semibold text-foreground">Drawdown Capital Armor</span>
-                  <span class="inline-flex items-center rounded border border-border bg-muted px-1.5 py-0.2 text-[9px] font-semibold text-foreground">PROTECTION READY</span>
-                </div>
-                <p class="text-muted-foreground leading-relaxed">Maximum permissible account risk strictly clamped at 1.0% per trade to guarantee prop compliance.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 5. ORBIT News Sentiment Tab -->
-        <div id="tab-orbit" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">ORBIT • Real-Time News & Order Flow Engine</span>
-              <span class="inline-flex items-center rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">Sentiment +0.78</span>
-            </div>
-            <div class="space-y-2 text-xs font-mono">
-              <div class="p-2.5 rounded bg-muted/40 border border-border/60 flex items-center justify-between">
-                <span class="text-foreground">Global Macro Sentiment Polarity</span>
-                <span class="text-emerald-500 font-bold">+78% Bullish Bias</span>
-              </div>
-              <div class="p-2.5 rounded bg-muted/40 border border-border/60 flex items-center justify-between">
-                <span class="text-foreground">Institutional Order Absorption Speed</span>
-                <span class="text-foreground font-semibold">1,480 Units / Minute</span>
-              </div>
-              <div class="p-2.5 rounded bg-muted/40 border border-border/60 flex items-center justify-between">
-                <span class="text-foreground">Breakout Stop-Buy Trigger Price</span>
-                <span class="text-emerald-500 font-bold" id="orbit-trigger-preview">$81,465.15</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 6. UNITY & EVOLVE-X Quant Studio Tab -->
-        <div id="tab-unity-evolve" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">UNITY & EVOLVE-X • Quantitative Factor & Policy Studio</span>
-              <span class="text-[10px] font-mono text-muted-foreground">Self-Evolving Multi-Factor</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60 space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold text-foreground">EVOLVE-X Deep RL Policy</span>
-                  <span class="text-[10px] font-mono text-emerald-500 font-semibold">PPO Online</span>
-                </div>
-                <p class="text-muted-foreground text-[11px] leading-relaxed">
-                  Continuous execution policy adapts to bid-ask spread depth, routing TWAP slices to capture spread rebates without market impact.
-                </p>
-              </div>
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60 space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold text-foreground">UNITY Cross-Account Factor Matrix</span>
-                  <span class="text-[10px] font-mono text-emerald-500 font-semibold">158 Factors</span>
-                </div>
-                <p class="text-muted-foreground text-[11px] leading-relaxed">
-                  Calculates rolling 15m Bar VWAP benchmark across all broker connections, maintaining zero inter-account correlation violations.
-                </p>
-              </div>
-            </div>
+          <div id="ai-chat-response-text" class="prose prose-invert max-w-none text-gray-300 leading-relaxed font-sans">
           </div>
         </div>
       </div>
+
+      <!-- Bottom 3 Feature Cards: Image Generator, AI Presentation, Dev Assistant -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl mx-auto">
+        <!-- Card 1: Image Generator -->
+        <div class="ai-feature-card rounded-[18px] bg-[#140c20]/80 border border-white/[0.08] hover:border-purple-500/30 p-4 md:p-5 backdrop-blur-md transition-all cursor-pointer group" data-feature="image">
+          <div class="flex items-center justify-between mb-4">
+            <div class="size-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-gray-300 group-hover:text-purple-300 group-hover:border-purple-500/30 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-white/[0.07] group-hover:bg-purple-600/20 text-[11px] font-medium text-gray-300 group-hover:text-purple-200 border border-white/10 group-hover:border-purple-500/30 transition-all">Create Image</span>
+          </div>
+          <h4 class="text-sm font-semibold text-white mb-1.5">Image Generator</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">Create high-quality images instantly from text.</p>
+        </div>
+
+        <!-- Card 2: AI Presentation -->
+        <div class="ai-feature-card rounded-[18px] bg-[#140c20]/80 border border-white/[0.08] hover:border-purple-500/30 p-4 md:p-5 backdrop-blur-md transition-all cursor-pointer group" data-feature="presentation">
+          <div class="flex items-center justify-between mb-4">
+            <div class="size-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-gray-300 group-hover:text-purple-300 group-hover:border-purple-500/30 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-white/[0.07] group-hover:bg-purple-600/20 text-[11px] font-medium text-gray-300 group-hover:text-purple-200 border border-white/10 group-hover:border-purple-500/30 transition-all">Make Slides</span>
+          </div>
+          <h4 class="text-sm font-semibold text-white mb-1.5">AI Presentation</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">Turn ideas into engaging, professional presentations.</p>
+        </div>
+
+        <!-- Card 3: Dev Assistant -->
+        <div class="ai-feature-card rounded-[18px] bg-[#140c20]/80 border border-white/[0.08] hover:border-purple-500/30 p-4 md:p-5 backdrop-blur-md transition-all cursor-pointer group" data-feature="dev">
+          <div class="flex items-center justify-between mb-4">
+            <div class="size-9 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-gray-300 group-hover:text-purple-300 group-hover:border-purple-500/30 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-white/[0.07] group-hover:bg-purple-600/20 text-[11px] font-medium text-gray-300 group-hover:text-purple-200 border border-white/10 group-hover:border-purple-500/30 transition-all">Generate Code</span>
+          </div>
+          <h4 class="text-sm font-semibold text-white mb-1.5">Dev Assistant</h4>
+          <p class="text-xs text-gray-400 leading-relaxed">Generate clean, production ready code in seconds.</p>
+        </div>
+      </div>
+
     </div>
     `;
   }
@@ -1773,57 +1482,22 @@
   // AI Chat Interface Interactivity (Exact look-alike of user reference with full intelligence)
   function setupAIChatInterface() {
     const modelBtn = document.getElementById('ai-chat-model-btn');
-    const modelMenu = document.getElementById('ai-chat-model-menu');
-    const modelLabel = document.getElementById('ai-chat-model-label');
-    const chevron = document.getElementById('ai-chat-chevron');
-    const inputEl = document.getElementById('ai-chat-input');
+    const inputEl = document.getElementById('ai-chat-prompt-input') || document.getElementById('ai-chat-input');
     const sendBtn = document.getElementById('ai-chat-send-btn');
     const micBtn = document.getElementById('ai-chat-mic-btn');
-    const responseBox = document.getElementById('ai-chat-response-container');
-    const responseContent = document.getElementById('ai-chat-response-content');
-    const responseBadge = document.getElementById('ai-response-model-badge');
+    const responseBox = document.getElementById('ai-chat-output-container') || document.getElementById('ai-chat-response-container');
+    const responseContent = document.getElementById('ai-chat-response-text') || document.getElementById('ai-chat-response-content');
+    const responseBadge = document.getElementById('ai-chat-status') || document.getElementById('ai-response-model-badge');
     const closeBtn = document.getElementById('ai-close-response-btn');
     const copyBtn = document.getElementById('ai-copy-response-btn');
-    const configBtn = document.getElementById('ai-chat-config-btn');
-    const exportBtn = document.getElementById('ai-chat-export-btn');
 
     let activeChatModel = 'ChatGPT v4.0';
 
-    // Model Selector Toggle
-    if (modelBtn && modelMenu) {
-      modelBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = !modelMenu.classList.contains('hidden');
-        modelMenu.classList.toggle('hidden', isOpen);
-        if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!modelBtn.contains(e.target) && !modelMenu.contains(e.target)) {
-          modelMenu.classList.add('hidden');
-          if (chevron) chevron.style.transform = 'rotate(0deg)';
-        }
-      });
-
-      const modelOpts = modelMenu.querySelectorAll('.ai-model-opt');
-      modelOpts.forEach(opt => {
-        opt.addEventListener('click', () => {
-          const modelKey = opt.getAttribute('data-model');
-          const title = opt.querySelector('span:first-child').textContent;
-          activeChatModel = title;
-          if (modelLabel) modelLabel.textContent = title;
-          modelMenu.classList.add('hidden');
-          if (chevron) chevron.style.transform = 'rotate(0deg)';
-
-          // If it matches a proprietary robot, switch the hub model too
-          if (modelKey && modelKey !== 'chatgpt') {
-            currentModel = modelKey;
-            const dropdown = document.getElementById('hub-model-dropdown');
-            if (dropdown) dropdown.value = modelKey;
-            updateActiveModelView();
-            updateComparisonTable();
-          }
-        });
+    // Model Selector
+    if (modelBtn) {
+      modelBtn.addEventListener('click', () => {
+        modelBtn.classList.add('ring-2', 'ring-purple-400');
+        setTimeout(() => modelBtn.classList.remove('ring-2', 'ring-purple-400'), 1000);
       });
     }
 
@@ -1834,12 +1508,12 @@
       }
 
       if (responseBox) responseBox.classList.remove('hidden');
-      if (responseBadge) responseBadge.textContent = `${activeChatModel} • Live Reasoning Engine`;
+      if (responseBadge) responseBadge.textContent = `${activeChatModel} • Live Reasoning`;
       if (responseContent) {
         responseContent.innerHTML = `
           <div class="flex items-center gap-2 text-purple-300 py-3">
             <span class="size-2 rounded-full bg-purple-400 animate-ping"></span>
-            <span class="font-mono text-xs animate-pulse">Synthesizing real-time order flow & multi-engine intelligence for ${currentSymbol}...</span>
+            <span class="font-mono text-xs animate-pulse">Generating response for: "${queryText.length > 60 ? queryText.slice(0, 60) + '...' : queryText}"...</span>
           </div>
         `;
       }
@@ -1976,7 +1650,7 @@ if (close >= entryPrice and strategy.position_size == 0)
     }
 
     // Action Pills (Create Image, Brainstorm, Make a plan)
-    const promptPills = document.querySelectorAll('.ai-prompt-pill');
+    const promptPills = document.querySelectorAll('.ai-action-pill, .ai-prompt-pill');
     promptPills.forEach(pill => {
       pill.addEventListener('click', () => {
         const promptText = pill.getAttribute('data-prompt') || pill.textContent.trim();
@@ -2766,7 +2440,7 @@ if (close >= entryPrice and strategy.position_size == 0)
   // Enforce Clean Institutional Layout: Suppress All Legacy Demo Cards
   function purgeLegacyCards(grid) {
     if (!grid) return;
-    const allowedIds = ['ai-engines-hub-card', 'news-insight-card', 'marine-traffic-card'];
+    const allowedIds = ['ai-engines-hub-card', 'ai-chat-master-card', 'news-insight-card', 'marine-traffic-card'];
     Array.from(grid.children).forEach(child => {
       if (!allowedIds.includes(child.id)) {
         child.style.setProperty('display', 'none', 'important');
@@ -2780,11 +2454,11 @@ if (close >= entryPrice and strategy.position_size == 0)
     const styleEl = document.createElement('style');
     styleEl.id = 'veterian-layout-cleanup-styles';
     styleEl.textContent = `
-      .grid.gap-4.px-4.pb-6.lg\\:grid-cols-12 > div:not(#ai-engines-hub-card):not(#news-insight-card):not(#marine-traffic-card),
-      main .grid > div:not(#ai-engines-hub-card):not(#news-insight-card):not(#marine-traffic-card) {
+      .grid.gap-4.px-4.pb-6.lg\\:grid-cols-12 > div:not(#ai-engines-hub-card):not(#ai-chat-master-card):not(#news-insight-card):not(#marine-traffic-card),
+      main .grid > div:not(#ai-engines-hub-card):not(#ai-chat-master-card):not(#news-insight-card):not(#marine-traffic-card) {
         display: none !important;
       }
-      #ai-engines-hub-card, #news-insight-card, #marine-traffic-card {
+      #ai-engines-hub-card, #ai-chat-master-card, #news-insight-card, #marine-traffic-card {
         grid-column: 1 / -1 !important;
         width: 100% !important;
       }
@@ -2814,16 +2488,25 @@ if (close >= entryPrice and strategy.position_size == 0)
       grid.insertBefore(hubCard, grid.firstChild);
     }
 
-    // 2. Mount News Insight Card (Replaces legacy Bitcoin Insight)
+    // 2. Mount AI Chat Master Card (EXACT 1:1 Replica of Screenshot)
+    let chatCard = document.getElementById('ai-chat-master-card');
+    if (!chatCard) {
+      const tempChat = document.createElement('div');
+      tempChat.innerHTML = renderAIChatInterfaceHTML().trim();
+      chatCard = tempChat.firstElementChild;
+      grid.insertBefore(chatCard, hubCard.nextSibling);
+    }
+
+    // 3. Mount News Insight Card (Replaces legacy Bitcoin Insight)
     let newsCard = document.getElementById('news-insight-card');
     if (!newsCard) {
       const tempNews = document.createElement('div');
       tempNews.innerHTML = renderNewsInsightHTML().trim();
       newsCard = tempNews.firstElementChild;
-      grid.insertBefore(newsCard, hubCard.nextSibling);
+      grid.insertBefore(newsCard, chatCard.nextSibling);
     }
 
-    // 3. Mount Marine Traffic Card (Crude Oil Logistics & War Wire)
+    // 4. Mount Marine Traffic Card (Crude Oil Logistics & War Wire)
     let marineCard = document.getElementById('marine-traffic-card');
     if (!marineCard) {
       const tempMarine = document.createElement('div');
@@ -2852,6 +2535,7 @@ if (close >= entryPrice and strategy.position_size == 0)
         const grid = document.querySelector('.grid.gap-4.px-4.pb-6.lg\\:grid-cols-12, #S\\:0 .grid, main .grid');
         if (grid) {
           if (!document.getElementById('ai-engines-hub-card') || 
+              !document.getElementById('ai-chat-master-card') ||
               !document.getElementById('news-insight-card') ||
               !document.getElementById('marine-traffic-card')) {
             mountHub();
