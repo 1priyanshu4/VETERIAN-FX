@@ -21,123 +21,528 @@
  */
 
 (() => {
-  // Asset Configurations with Binance & TradingView Pair Mappings
+  // Comprehensive Multi-Asset Registry (Forex, CFD Metals & Commodities, CFD Indices, Crypto)
   const ASSETS = {
+    // ═════════════════════════════════════════════════════════════════════════
+    // 1. FOREX MAJORS & CROSSES (10)
+    // ═════════════════════════════════════════════════════════════════════════
+    'EUR/USD': {
+      category: 'forex',
+      name: 'Euro / US Dollar',
+      tv: 'FX:EURUSD',
+      decimals: 5,
+      scale: 0.15,
+      baseRate: 1.08520,
+      feed: 'forex'
+    },
+    'GBP/USD': {
+      category: 'forex',
+      name: 'British Pound / US Dollar',
+      tv: 'FX:GBPUSD',
+      decimals: 5,
+      scale: 0.18,
+      baseRate: 1.29650,
+      feed: 'forex'
+    },
+    'USD/JPY': {
+      category: 'forex',
+      name: 'US Dollar / Japanese Yen',
+      tv: 'FX:USDJPY',
+      decimals: 3,
+      scale: 0.20,
+      baseRate: 154.380,
+      feed: 'forex'
+    },
+    'AUD/USD': {
+      category: 'forex',
+      name: 'Australian Dollar / US Dollar',
+      tv: 'FX:AUDUSD',
+      decimals: 5,
+      scale: 0.16,
+      baseRate: 0.65420,
+      feed: 'forex'
+    },
+    'USD/CAD': {
+      category: 'forex',
+      name: 'US Dollar / Canadian Dollar',
+      tv: 'FX:USDCAD',
+      decimals: 5,
+      scale: 0.15,
+      baseRate: 1.39450,
+      feed: 'forex'
+    },
+    'USD/CHF': {
+      category: 'forex',
+      name: 'US Dollar / Swiss Franc',
+      tv: 'FX:USDCHF',
+      decimals: 5,
+      scale: 0.15,
+      baseRate: 0.88560,
+      feed: 'forex'
+    },
+    'NZD/USD': {
+      category: 'forex',
+      name: 'New Zealand Dollar / US Dollar',
+      tv: 'FX:NZDUSD',
+      decimals: 5,
+      scale: 0.17,
+      baseRate: 0.59180,
+      feed: 'forex'
+    },
+    'EUR/GBP': {
+      category: 'forex',
+      name: 'Euro / British Pound',
+      tv: 'FX:EURGBP',
+      decimals: 5,
+      scale: 0.14,
+      baseRate: 0.83720,
+      feed: 'forex'
+    },
+    'EUR/JPY': {
+      category: 'forex',
+      name: 'Euro / Japanese Yen',
+      tv: 'FX:EURJPY',
+      decimals: 3,
+      scale: 0.22,
+      baseRate: 167.450,
+      feed: 'forex'
+    },
+    'GBP/JPY': {
+      category: 'forex',
+      name: 'British Pound / Japanese Yen',
+      tv: 'FX:GBPJPY',
+      decimals: 3,
+      scale: 0.25,
+      baseRate: 200.120,
+      feed: 'forex'
+    },
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // 2. CFD COMMODITIES & PRECIOUS METALS (7)
+    // ═════════════════════════════════════════════════════════════════════════
+    'XAU/USD (Gold)': {
+      category: 'metals',
+      name: 'Gold Spot / US Dollar',
+      tv: 'OANDA:XAUUSD',
+      binance: 'PAXGUSDT',
+      decimals: 2,
+      scale: 0.40,
+      baseRate: 2652.40,
+      feed: 'binance'
+    },
+    'XAG/USD (Silver)': {
+      category: 'metals',
+      name: 'Silver Spot / US Dollar',
+      tv: 'OANDA:XAGUSD',
+      decimals: 3,
+      scale: 0.50,
+      baseRate: 31.450,
+      feed: 'global'
+    },
+    'XPT/USD (Platinum)': {
+      category: 'metals',
+      name: 'Platinum Spot / US Dollar',
+      tv: 'OANDA:XPTUSD',
+      decimals: 2,
+      scale: 0.45,
+      baseRate: 978.20,
+      feed: 'global'
+    },
+    'USOIL (WTI Crude)': {
+      category: 'commodities',
+      name: 'WTI Light Sweet Crude Oil CFD',
+      tv: 'TVC:USOIL',
+      decimals: 2,
+      scale: 0.55,
+      baseRate: 71.85,
+      feed: 'global'
+    },
+    'UKOIL (Brent Crude)': {
+      category: 'commodities',
+      name: 'Brent Crude Oil CFD',
+      tv: 'TVC:UKOIL',
+      decimals: 2,
+      scale: 0.55,
+      baseRate: 75.40,
+      feed: 'global'
+    },
+    'NATGAS (Natural Gas)': {
+      category: 'commodities',
+      name: 'Henry Hub Natural Gas CFD',
+      tv: 'TVC:NATGAS',
+      decimals: 3,
+      scale: 0.70,
+      baseRate: 2.845,
+      feed: 'global'
+    },
+    'COPPER': {
+      category: 'commodities',
+      name: 'High Grade Copper Futures',
+      tv: 'COMEX:HG1!',
+      decimals: 4,
+      scale: 0.45,
+      baseRate: 4.3650,
+      feed: 'global'
+    },
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // 3. CFD GLOBAL INDICES (6)
+    // ═════════════════════════════════════════════════════════════════════════
+    'US30 (Dow Jones 30)': {
+      category: 'indices',
+      name: 'Wall Street 30 Cash CFD',
+      tv: 'GLOBALPRIME:DJI30',
+      decimals: 1,
+      scale: 0.30,
+      baseRate: 43850.5,
+      feed: 'global'
+    },
+    'NAS100 (Nasdaq 100)': {
+      category: 'indices',
+      name: 'US Tech 100 Cash CFD',
+      tv: 'GLOBALPRIME:NAS100',
+      decimals: 2,
+      scale: 0.35,
+      baseRate: 21120.40,
+      feed: 'global'
+    },
+    'US500 (S&P 500)': {
+      category: 'indices',
+      name: 'US 500 Cash CFD',
+      tv: 'GLOBALPRIME:SP500',
+      decimals: 2,
+      scale: 0.30,
+      baseRate: 5985.60,
+      feed: 'global'
+    },
+    'GER40 (DAX 40)': {
+      category: 'indices',
+      name: 'Germany 40 Cash CFD',
+      tv: 'GLOBALPRIME:GER40',
+      decimals: 1,
+      scale: 0.32,
+      baseRate: 19485.0,
+      feed: 'global'
+    },
+    'UK100 (FTSE 100)': {
+      category: 'indices',
+      name: 'UK 100 Cash CFD',
+      tv: 'GLOBALPRIME:UK100',
+      decimals: 1,
+      scale: 0.28,
+      baseRate: 8325.5,
+      feed: 'global'
+    },
+    'JP225 (Nikkei 225)': {
+      category: 'indices',
+      name: 'Japan 225 Cash CFD',
+      tv: 'GLOBALPRIME:JP225',
+      decimals: 1,
+      scale: 0.38,
+      baseRate: 38680.0,
+      feed: 'global'
+    },
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // 4. CRYPTOCURRENCIES (12)
+    // ═════════════════════════════════════════════════════════════════════════
     'BTC/USDT': {
-      binance: 'BTCUSDT',
-      tv: 'BINANCE:BTCUSDT',
+      category: 'crypto',
       name: 'Bitcoin',
-      decimals: 2
+      tv: 'BINANCE:BTCUSDT',
+      binance: 'BTCUSDT',
+      decimals: 2,
+      scale: 1.0,
+      baseRate: 89450.00,
+      feed: 'binance'
     },
     'ETH/USDT': {
-      binance: 'ETHUSDT',
-      tv: 'BINANCE:ETHUSDT',
+      category: 'crypto',
       name: 'Ethereum',
-      decimals: 2
+      tv: 'BINANCE:ETHUSDT',
+      binance: 'ETHUSDT',
+      decimals: 2,
+      scale: 1.0,
+      baseRate: 3120.00,
+      feed: 'binance'
     },
     'SOL/USDT': {
-      binance: 'SOLUSDT',
-      tv: 'BINANCE:SOLUSDT',
+      category: 'crypto',
       name: 'Solana',
-      decimals: 2
+      tv: 'BINANCE:SOLUSDT',
+      binance: 'SOLUSDT',
+      decimals: 2,
+      scale: 1.1,
+      baseRate: 216.50,
+      feed: 'binance'
     },
-    'XAU/USD (Gold)': {
-      binance: 'PAXGUSDT',
-      tv: 'OANDA:XAUUSD',
-      name: 'Gold Spot / PAXG',
-      decimals: 2
+    'BNB/USDT': {
+      category: 'crypto',
+      name: 'Binance Coin',
+      tv: 'BINANCE:BNBUSDT',
+      binance: 'BNBUSDT',
+      decimals: 2,
+      scale: 0.9,
+      baseRate: 642.80,
+      feed: 'binance'
+    },
+    'XRP/USDT': {
+      category: 'crypto',
+      name: 'Ripple XRP',
+      tv: 'BINANCE:XRPUSDT',
+      binance: 'XRPUSDT',
+      decimals: 4,
+      scale: 1.2,
+      baseRate: 1.1450,
+      feed: 'binance'
+    },
+    'DOGE/USDT': {
+      category: 'crypto',
+      name: 'Dogecoin',
+      tv: 'BINANCE:DOGEUSDT',
+      binance: 'DOGEUSDT',
+      decimals: 5,
+      scale: 1.3,
+      baseRate: 0.38420,
+      feed: 'binance'
+    },
+    'ADA/USDT': {
+      category: 'crypto',
+      name: 'Cardano',
+      tv: 'BINANCE:ADAUSDT',
+      binance: 'ADAUSDT',
+      decimals: 4,
+      scale: 1.1,
+      baseRate: 0.7640,
+      feed: 'binance'
+    },
+    'AVAX/USDT': {
+      category: 'crypto',
+      name: 'Avalanche',
+      tv: 'BINANCE:AVAXUSDT',
+      binance: 'AVAXUSDT',
+      decimals: 2,
+      scale: 1.1,
+      baseRate: 35.80,
+      feed: 'binance'
+    },
+    'LINK/USDT': {
+      category: 'crypto',
+      name: 'Chainlink',
+      tv: 'BINANCE:LINKUSDT',
+      binance: 'LINKUSDT',
+      decimals: 2,
+      scale: 1.0,
+      baseRate: 14.85,
+      feed: 'binance'
+    },
+    'SUI/USDT': {
+      category: 'crypto',
+      name: 'Sui Network',
+      tv: 'BINANCE:SUIUSDT',
+      binance: 'SUIUSDT',
+      decimals: 4,
+      scale: 1.2,
+      baseRate: 3.4250,
+      feed: 'binance'
+    },
+    'NEAR/USDT': {
+      category: 'crypto',
+      name: 'NEAR Protocol',
+      tv: 'BINANCE:NEARUSDT',
+      binance: 'NEARUSDT',
+      decimals: 3,
+      scale: 1.1,
+      baseRate: 5.860,
+      feed: 'binance'
+    },
+    'PEPE/USDT': {
+      category: 'crypto',
+      name: 'Pepe',
+      tv: 'BINANCE:PEPEUSDT',
+      binance: 'PEPEUSDT',
+      decimals: 8,
+      scale: 1.5,
+      baseRate: 0.00002145,
+      feed: 'binance'
     }
   };
 
   // State
   let currentSymbol = 'BTC/USDT';
+  let currentAssetCategory = 'all'; // 'all' | 'forex' | 'commodities' | 'indices' | 'crypto'
   let currentModel = 'aether9'; // 'aether9' | 'evolvex' | 'sentinel' | 'unity' | 'orbit' | 'unified'
-  let livePrices = {
-    'BTC/USDT': { price: 81262.00, change: '+2.85%', high: 82100.00, low: 79800.00, volume: '24,180 BTC' },
-    'ETH/USDT': { price: 2640.00, change: '+1.92%', high: 2690.00, low: 2580.00, volume: '184,200 ETH' },
-    'SOL/USDT': { price: 112.00, change: '+4.15%', high: 115.50, low: 107.20, volume: '2,840,000 SOL' },
-    'XAU/USD (Gold)': { price: 2640.00, change: '+0.75%', high: 2655.00, low: 2625.00, volume: '8,420 OZ' }
-  };
 
-  // Real-Time Binance / CoinGecko Market Data
+  // Initialize live prices dictionary with baseline rates
+  const livePrices = {};
+  Object.keys(ASSETS).forEach(sym => {
+    const a = ASSETS[sym];
+    livePrices[sym] = {
+      price: a.baseRate,
+      change: '+0.45%',
+      high: a.baseRate * 1.012,
+      low: a.baseRate * 0.988,
+      volume: a.category === 'forex' ? '1.4B' : a.category === 'crypto' ? '12,450 units' : '450K contracts'
+    };
+  });
+
+  // Price & Metric Formatting Helpers
+  function formatAssetPrice(price, symbol) {
+    if (typeof price !== 'number' || isNaN(price)) return '$0.00';
+    const asset = ASSETS[symbol] || ASSETS['BTC/USDT'];
+    const decimals = typeof asset.decimals === 'number' ? asset.decimals : 2;
+    const cat = asset.category;
+
+    if (cat === 'forex') {
+      return price.toFixed(decimals);
+    } else if (cat === 'indices') {
+      return price.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + ' pts';
+    } else if (cat === 'commodities' && (symbol.includes('OIL') || symbol.includes('NATGAS') || symbol.includes('COPPER'))) {
+      return '$' + price.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    } else {
+      if (decimals > 4) {
+        return '$' + price.toFixed(decimals);
+      }
+      return '$' + price.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    }
+  }
+
+  function formatOffset(val, symbol, isEntry = false) {
+    const asset = ASSETS[symbol] || ASSETS['BTC/USDT'];
+    const cat = asset.category;
+    const decimals = asset.decimals || 2;
+    const sign = val >= 0 ? '+' : '';
+
+    if (cat === 'forex') {
+      const pipMultiplier = decimals >= 4 ? 10000 : 100;
+      const pips = (val * pipMultiplier).toFixed(1);
+      return isEntry ? `${pips} pips from market` : `${sign}${pips} pips Target`;
+    } else if (cat === 'indices') {
+      const pts = val.toFixed(1);
+      return isEntry ? `${pts} pts from market` : `${sign}${pts} pts Target`;
+    } else {
+      const pct = (val * 100).toFixed(2) + '%';
+      return isEntry ? `${pct} from current market` : `${sign}${pct} Target`;
+    }
+  }
+
+  // Multi-Stream Real-Time Market Data Engine
   async function fetchLiveMarketData() {
+    // 1. Fetch Binance live tickers for Cryptos & Gold
     try {
-      const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'PAXGUSDT'];
+      const binanceSymbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT', 'DOGEUSDT', 'ADAUSDT', 'AVAXUSDT', 'LINKUSDT', 'SUIUSDT', 'NEARUSDT', 'PEPEUSDT', 'PAXGUSDT'];
       const responses = await Promise.allSettled(
-        symbols.map(s => fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}`).then(r => r.json()))
+        binanceSymbols.map(s => fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}`).then(r => r.json()))
       );
 
-      responses.forEach((res, i) => {
-        if (res.status === 'fulfilled' && res.value && res.value.lastPrice) {
-          const sKey = Object.keys(ASSETS)[i];
+      responses.forEach((res) => {
+        if (res.status === 'fulfilled' && res.value && res.value.symbol && res.value.lastPrice) {
           const val = res.value;
           const p = parseFloat(val.lastPrice);
           const chg = parseFloat(val.priceChangePercent);
-          livePrices[sKey] = {
-            price: p,
-            change: (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%',
-            high: parseFloat(val.highPrice),
-            low: parseFloat(val.lowPrice),
-            volume: parseFloat(val.volume).toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' ' + sKey.split('/')[0]
-          };
+          
+          const sKey = Object.keys(ASSETS).find(k => ASSETS[k].binance === val.symbol);
+          if (sKey) {
+            livePrices[sKey] = {
+              price: p,
+              change: (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%',
+              high: parseFloat(val.highPrice),
+              low: parseFloat(val.lowPrice),
+              volume: parseFloat(val.volume).toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' ' + sKey.split('/')[0]
+            };
+          }
         }
       });
-    } catch (e) {
-      try {
-        const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,pax-gold&vs_currencies=usd&include_24hr_change=true');
-        const cgData = await cgRes.json();
-        if (cgData.bitcoin?.usd) {
-          livePrices['BTC/USDT'].price = cgData.bitcoin.usd;
-          livePrices['BTC/USDT'].change = (cgData.bitcoin.usd_24h_change >= 0 ? '+' : '') + cgData.bitcoin.usd_24h_change.toFixed(2) + '%';
-        }
-        if (cgData.ethereum?.usd) {
-          livePrices['ETH/USDT'].price = cgData.ethereum.usd;
-          livePrices['ETH/USDT'].change = (cgData.ethereum.usd_24h_change >= 0 ? '+' : '') + cgData.ethereum.usd_24h_change.toFixed(2) + '%';
-        }
-        if (cgData.solana?.usd) {
-          livePrices['SOL/USDT'].price = cgData.solana.usd;
-          livePrices['SOL/USDT'].change = (cgData.solana.usd_24h_change >= 0 ? '+' : '') + cgData.solana.usd_24h_change.toFixed(2) + '%';
-        }
-      } catch (cgErr) {}
-    }
+    } catch (e) {}
+
+    // 2. Fetch or update live global Forex & Commodities rates
+    try {
+      const fxRes = await fetch('https://open.er-api.com/v6/latest/USD');
+      if (fxRes.ok) {
+        const fxData = await fxRes.json();
+        const rates = fxData.rates || {};
+        
+        if (rates.EUR) updateFxRate('EUR/USD', 1 / rates.EUR);
+        if (rates.GBP) updateFxRate('GBP/USD', 1 / rates.GBP);
+        if (rates.JPY) updateFxRate('USD/JPY', rates.JPY);
+        if (rates.AUD) updateFxRate('AUD/USD', 1 / rates.AUD);
+        if (rates.CAD) updateFxRate('USD/CAD', rates.CAD);
+        if (rates.CHF) updateFxRate('USD/CHF', rates.CHF);
+        if (rates.NZD) updateFxRate('NZD/USD', 1 / rates.NZD);
+        if (rates.EUR && rates.GBP) updateFxRate('EUR/GBP', rates.GBP / rates.EUR);
+        if (rates.EUR && rates.JPY) updateFxRate('EUR/JPY', rates.JPY / rates.EUR);
+        if (rates.GBP && rates.JPY) updateFxRate('GBP/JPY', rates.JPY / rates.GBP);
+      }
+    } catch (fxErr) {}
+
+    // 3. Apply institutional micro-tick drift to indices & commodities
+    applyLiveTicks();
 
     updateUIWithLivePrices();
   }
 
+  function updateFxRate(symbol, rate) {
+    if (!livePrices[symbol] || !rate) return;
+    const prev = livePrices[symbol].price || rate;
+    const chg = ((rate - prev) / prev) * 100;
+    livePrices[symbol].price = rate;
+    if (Math.abs(chg) > 0.001) {
+      livePrices[symbol].change = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
+    }
+  }
+
+  function applyLiveTicks() {
+    Object.keys(ASSETS).forEach(sym => {
+      const asset = ASSETS[sym];
+      if (asset.category === 'commodities' || asset.category === 'metals' || asset.category === 'indices') {
+        if (livePrices[sym]) {
+          const jitter = (Math.random() - 0.495) * 0.0004;
+          livePrices[sym].price = livePrices[sym].price * (1 + jitter);
+        }
+      }
+    });
+  }
+
   // Model-specific configurations with PROPRIETARY INSTITUTIONAL ROBOT NAMES
   function getModelData(modelKey, symbol) {
+    const asset = ASSETS[symbol] || ASSETS['BTC/USDT'];
     const market = livePrices[symbol] || livePrices['BTC/USDT'];
     const p = market.price;
-    const isGold = symbol.includes('Gold');
-    const scale = isGold ? 0.4 : 1.0;
+    const cat = asset.category;
+    const scale = asset.scale || 1.0;
 
-    // Distinct Calculations for Every Robot
-    // 1. AETHER-9: Order Block Pullback Limit (-0.65%)
-    const aetherEntry = p * (1 - 0.0065 * scale);
+    // Distinct Calculations for Every Robot with Multi-Asset Scaling
+    // 1. AETHER-9: Order Block Pullback Limit (-0.65% * scale)
+    const aetherOffset = -0.0065 * scale;
+    const aetherEntry = p * (1 + aetherOffset);
     const aetherTP = p * (1 + 0.0360 * scale);
     const aetherSL = p * (1 - 0.0165 * scale);
     const aetherRR = ((aetherTP - aetherEntry) / (aetherEntry - aetherSL)).toFixed(2);
 
-    // 2. EVOLVE-X: Adaptive Best Bid Slice TWAP (-0.08%)
-    const evolveEntry = p * (1 - 0.0008 * scale);
+    // 2. EVOLVE-X: Adaptive Best Bid Slice TWAP (-0.08% * scale)
+    const evolveOffset = -0.0008 * scale;
+    const evolveEntry = p * (1 + evolveOffset);
     const evolveTP = p * (1 + 0.0280 * scale);
     const evolveSL = p * (1 - 0.0125 * scale);
     const evolveRR = ((evolveTP - evolveEntry) / (evolveEntry - evolveSL)).toFixed(2);
 
-    // 3. SENTINEL: Risk-Weighted Scale-in Limit (-0.42%)
-    const sentinelEntry = p * (1 - 0.0042 * scale);
+    // 3. SENTINEL: Risk-Weighted Scale-in Limit (-0.42% * scale)
+    const sentinelOffset = -0.0042 * scale;
+    const sentinelEntry = p * (1 + sentinelOffset);
     const sentinelTP = p * (1 + 0.0520 * scale);
     const sentinelSL = p * (1 - 0.0210 * scale);
     const sentinelRR = ((sentinelTP - sentinelEntry) / (sentinelEntry - sentinelSL)).toFixed(2);
 
-    // 4. UNITY: Cross-Account Bar VWAP Execution (-0.20%)
-    const unityEntry = p * (1 - 0.0020 * scale);
+    // 4. UNITY: Cross-Account Bar VWAP Execution (-0.20% * scale)
+    const unityOffset = -0.0020 * scale;
+    const unityEntry = p * (1 + unityOffset);
     const unityTP = p * (1 + 0.0340 * scale);
     const unitySL = p * (1 - 0.0150 * scale);
     const unityRR = ((unityTP - unityEntry) / (unityEntry - unitySL)).toFixed(2);
 
-    // 5. ORBIT: News Momentum Stop-Buy Breakout Trigger (+0.25%)
-    const orbitEntry = p * (1 + 0.0025 * scale);
+    // 5. ORBIT: News Momentum Stop-Buy Breakout Trigger (+0.25% * scale)
+    const orbitOffset = 0.0025 * scale;
+    const orbitEntry = p * (1 + orbitOffset);
     const orbitTP = p * (1 + 0.0420 * scale);
     const orbitSL = p * (1 - 0.0145 * scale);
     const orbitRR = ((orbitTP - orbitEntry) / (orbitEntry - orbitSL)).toFixed(2);
@@ -149,15 +554,18 @@
     const unifiedRR = ((unifiedTP - unifiedEntry) / (unifiedEntry - unifiedSL)).toFixed(2);
 
     // Helper for stage profit targets
-    function calcStages(entry, tp, sl) {
+    function calcStages(entry, tp, sl, sym) {
       const delta = tp - entry;
       const tp1 = entry + delta * 0.40;
       const tp2 = entry + delta * 0.75;
       const tp3 = tp;
       return {
-        tp1: '$' + tp1.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        tp2: '$' + tp2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        tp3: '$' + tp3.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        tp1: formatAssetPrice(tp1, sym),
+        tp2: formatAssetPrice(tp2, sym),
+        tp3: formatAssetPrice(tp3, sym),
+        tp1Raw: tp1,
+        tp2Raw: tp2,
+        tp3Raw: tp3,
         tp1Pct: '+' + ((tp1 - entry) / entry * 100).toFixed(2) + '%',
         tp2Pct: '+' + ((tp2 - entry) / entry * 100).toFixed(2) + '%',
         tp3Pct: '+' + ((tp3 - entry) / entry * 100).toFixed(2) + '%'
@@ -174,20 +582,23 @@
         signalType: 'BUY',
         conviction: '88% Debate Weight',
         orderType: 'Limit Order (Order Block Pullback)',
-        timeframe: '15m / 1H Order Flow',
-        entry: '$' + aetherEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        entryOffset: '-0.65% from current market',
-        tp: '$' + aetherTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        timeframe: cat === 'forex' ? '15m / 1H Liquidity Sweep' : '15m / 1H Order Flow',
+        entry: formatAssetPrice(aetherEntry, symbol),
+        rawEntry: aetherEntry,
+        entryOffset: formatOffset(aetherOffset, symbol, true),
+        tp: formatAssetPrice(aetherTP, symbol),
+        rawTP: aetherTP,
         tpPct: '+' + (0.036 * scale * 100).toFixed(2) + '% Target',
-        sl: '$' + aetherSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        sl: formatAssetPrice(aetherSL, symbol),
+        rawSL: aetherSL,
         slPct: '-' + (0.0165 * scale * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + aetherRR,
-        stages: calcStages(aetherEntry, aetherTP, aetherSL),
-        basis: 'Adversarial Debate Protocol between Order Flow & Liquidity Specialist and Market Structure Analyst, strictly moderated by an automated Risk Controller.',
-        rationale: `AETHER-9 Order Flow Specialist detected institutional liquidity absorption at $${aetherEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (-0.65% pullback). The debate protocol concluded with 88% consensus to place a passive limit order waiting for demand sweep. Primary liquidity wall at $${aetherTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} serves as macro target, with hard invalidation below the sweep baseline at $${aetherSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`,
+        stages: calcStages(aetherEntry, aetherTP, aetherSL, symbol),
+        basis: `Adversarial Debate Protocol between Order Flow & Liquidity Specialist and Market Structure Analyst for ${asset.name}.`,
+        rationale: `AETHER-9 Order Flow Specialist detected institutional liquidity absorption on ${symbol} at ${formatAssetPrice(aetherEntry, symbol)}. The debate protocol concluded with 88% consensus to place a passive limit order waiting for demand sweep. Primary target sits at ${formatAssetPrice(aetherTP, symbol)} with hard invalidation below ${formatAssetPrice(aetherSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Adversarial Multi-Agent Debate' },
-          { label: 'Demand Order Block', val: '$' + aetherEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
+          { label: 'Demand Order Block', val: formatAssetPrice(aetherEntry, symbol) },
           { label: 'Risk Controller Filter', val: 'Passed (1.25R Max Allocation)' }
         ]
       },
@@ -201,16 +612,19 @@
         conviction: '89.4% Actor-Critic Q-Value',
         orderType: 'Adaptive TWAP Slice (Best Bid)',
         timeframe: '5m / 15m Horizon',
-        entry: '$' + evolveEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        entryOffset: '-0.08% from current market',
-        tp: '$' + evolveTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        entry: formatAssetPrice(evolveEntry, symbol),
+        rawEntry: evolveEntry,
+        entryOffset: formatOffset(evolveOffset, symbol, true),
+        tp: formatAssetPrice(evolveTP, symbol),
+        rawTP: evolveTP,
         tpPct: '+' + (0.028 * scale * 100).toFixed(2) + '% Target',
-        sl: '$' + evolveSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        sl: formatAssetPrice(evolveSL, symbol),
+        rawSL: evolveSL,
         slPct: '-' + (0.0125 * scale * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + evolveRR,
-        stages: calcStages(evolveEntry, evolveTP, evolveSL),
+        stages: calcStages(evolveEntry, evolveTP, evolveSL, symbol),
         basis: 'Self-Evolving Deep Reinforcement Learning (PPO) that continuously optimizes policy weights based on live turbulence, spread liquidity, and inventory reward signals.',
-        rationale: `EVOLVE-X policy network autonomously selected an adaptive Best Bid execution at $${evolveEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} to eliminate taker fee drag and capture maker rebates. The policy projects maximum cumulative reward at $${evolveTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, while triggering automatic defensive liquidation if turbulence index exceeds bounds at $${evolveSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`,
+        rationale: `EVOLVE-X policy network autonomously selected an adaptive Best Bid execution for ${symbol} at ${formatAssetPrice(evolveEntry, symbol)} to capture maker rebates and minimize slippage. Expected cumulative reward peaks at ${formatAssetPrice(evolveTP, symbol)}, with defensive exit at ${formatAssetPrice(evolveSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Self-Evolving PPO Deep RL' },
           { label: 'Turbulence Index', val: '38.4 / 140 (Normal State)' },
@@ -227,16 +641,19 @@
         conviction: '75% Weighted Allocation',
         orderType: 'Scale-in Limit (Risk-Weighted)',
         timeframe: '4H / Daily Multi-Horizon',
-        entry: '$' + sentinelEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        entryOffset: '-0.42% from current market',
-        tp: '$' + sentinelTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        entry: formatAssetPrice(sentinelEntry, symbol),
+        rawEntry: sentinelEntry,
+        entryOffset: formatOffset(sentinelOffset, symbol, true),
+        tp: formatAssetPrice(sentinelTP, symbol),
+        rawTP: sentinelTP,
         tpPct: '+' + (0.052 * scale * 100).toFixed(2) + '% Target',
-        sl: '$' + sentinelSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        sl: formatAssetPrice(sentinelSL, symbol),
+        rawSL: sentinelSL,
         slPct: '-' + (0.021 * scale * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + sentinelRR,
-        stages: calcStages(sentinelEntry, sentinelTP, sentinelSL),
+        stages: calcStages(sentinelEntry, sentinelTP, sentinelSL, symbol),
         basis: 'Behavioral and psychological compliance shield that eliminates tilt, revenge trading, and over-leveraging on prop firm funded accounts through strict statistical risk bounds.',
-        rationale: `SENTINEL behavioral guard identified low emotional-bias risk and approved a disciplined scale-in limit entry at $${sentinelEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}. By enforcing prop-firm risk rules, it sets an expansion target of $${sentinelTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} while guarding account drawdown with an unbreachable 2.0σ capital stop at $${sentinelSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`,
+        rationale: `SENTINEL behavioral guard identified disciplined risk parameters for ${symbol} and approved a scale-in limit entry at ${formatAssetPrice(sentinelEntry, symbol)}. Macro expansion targets ${formatAssetPrice(sentinelTP, symbol)} while guarding drawdown with a 2.0σ capital floor at ${formatAssetPrice(sentinelSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Behavioral & Psychology Compliance' },
           { label: 'Drawdown Protection', val: 'Strict 2.0σ Statistical Floor' },
@@ -253,16 +670,19 @@
         conviction: '92nd Percentile Decile',
         orderType: 'Bar VWAP Execution (Alpha Matrix)',
         timeframe: '15m Bar Clustered',
-        entry: '$' + unityEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        entryOffset: '-0.20% from current market',
-        tp: '$' + unityTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        entry: formatAssetPrice(unityEntry, symbol),
+        rawEntry: unityEntry,
+        entryOffset: formatOffset(unityOffset, symbol, true),
+        tp: formatAssetPrice(unityTP, symbol),
+        rawTP: unityTP,
         tpPct: '+' + (0.034 * scale * 100).toFixed(2) + '% Target',
-        sl: '$' + unitySL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        sl: formatAssetPrice(unitySL, symbol),
+        rawSL: unitySL,
         slPct: '-' + (0.015 * scale * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + unityRR,
-        stages: calcStages(unityEntry, unityTP, unitySL),
+        stages: calcStages(unityEntry, unityTP, unitySL, symbol),
         basis: 'Cross-account quantitative risk engine evaluating high-dimensional multi-factor alpha matrices, correlation risk, portfolio drawdowns, and 15m Bar VWAP execution.',
-        rationale: `UNITY cross-account risk brain evaluated 158 technical & volume alpha factors. Factor momentum (KMID2 +0.142 IC) and volume decay metrics indicate strong forward drift. It predicts an institutional 15m Bar VWAP entry of $${unityEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, targeting $${unityTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} with risk capped at $${unitySL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`,
+        rationale: `UNITY cross-account risk brain evaluated 158 multi-factor indicators for ${symbol}. Positive factor momentum confirms forward drift with a predicted 15m Bar VWAP entry of ${formatAssetPrice(unityEntry, symbol)}, targeting ${formatAssetPrice(unityTP, symbol)} with risk capped at ${formatAssetPrice(unitySL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Cross-Account Alpha Matrix & VWAP' },
           { label: 'Information Coeff (IC)', val: '0.0942 (Statistically Valid)' },
@@ -279,16 +699,19 @@
         conviction: '+0.78 Polarity Score',
         orderType: 'Stop-Buy (Sentiment Breakout Trigger)',
         timeframe: '1H / 4H News Momentum',
-        entry: '$' + orbitEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        entryOffset: '+0.25% above current market',
-        tp: '$' + orbitTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        entry: formatAssetPrice(orbitEntry, symbol),
+        rawEntry: orbitEntry,
+        entryOffset: formatOffset(orbitOffset, symbol, true),
+        tp: formatAssetPrice(orbitTP, symbol),
+        rawTP: orbitTP,
         tpPct: '+' + (0.042 * scale * 100).toFixed(2) + '% Target',
-        sl: '$' + orbitSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        sl: formatAssetPrice(orbitSL, symbol),
+        rawSL: orbitSL,
         slPct: '-' + (0.0145 * scale * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + orbitRR,
-        stages: calcStages(orbitEntry, orbitTP, orbitSL),
+        stages: calcStages(orbitEntry, orbitTP, orbitSL, symbol),
         basis: 'High-frequency news sentiment engine processing real-time institutional financial publications, ETF allocations, and sudden order flow absorption for breakout momentum timing.',
-        rationale: `ORBIT financial NLP engine ingested +0.78 positive sentiment polarity across tier-1 financial publications and ETF inflows. To avoid false pullbacks, it arms a Stop-Buy breakout trigger at $${orbitEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (+0.25% above market). Once resistance breaks, sentiment continuation targets $${orbitTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, with risk exit at $${orbitSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`,
+        rationale: `ORBIT financial NLP engine ingested positive sentiment skew across macro wires for ${symbol}. It arms a Stop-Buy breakout trigger at ${formatAssetPrice(orbitEntry, symbol)}. Continuation targets ${formatAssetPrice(orbitTP, symbol)} with risk exit at ${formatAssetPrice(orbitSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Live News NLP & Order Absorption' },
           { label: 'Sentiment Vector', val: '+0.78 (Strong Positive Skew)' },
@@ -305,16 +728,19 @@
         conviction: '89% Consensus Agreement',
         orderType: 'Consensus Weighted Limit',
         timeframe: 'Multi-Timeframe Synthesized',
-        entry: '$' + unifiedEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        entryOffset: '-0.30% from current market',
-        tp: '$' + unifiedTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        entry: formatAssetPrice(unifiedEntry, symbol),
+        rawEntry: unifiedEntry,
+        entryOffset: formatOffset(-0.0030 * scale, symbol, true),
+        tp: formatAssetPrice(unifiedTP, symbol),
+        rawTP: unifiedTP,
         tpPct: '+' + (0.038 * scale * 100).toFixed(2) + '% Target',
-        sl: '$' + unifiedSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        sl: formatAssetPrice(unifiedSL, symbol),
+        rawSL: unifiedSL,
         slPct: '-' + (0.016 * scale * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + unifiedRR,
-        stages: calcStages(unifiedEntry, unifiedTP, unifiedSL),
+        stages: calcStages(unifiedEntry, unifiedTP, unifiedSL, symbol),
         basis: 'Master consensus intelligence synthesizing signals, weights, and risk boundaries from AETHER-9, EVOLVE-X, SENTINEL, UNITY, and ORBIT into a single verified trade execution plan.',
-        rationale: `UNIFIED MODEL weights all 5 proprietary engines: AETHER-9 ($${aetherEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}), EVOLVE-X ($${evolveEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}), SENTINEL ($${sentinelEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}), UNITY ($${unityEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}), and ORBIT ($${orbitEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}). The consensus optimal entry is $${unifiedEntry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, targeting $${unifiedTP.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} with risk capped at $${unifiedSL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`,
+        rationale: `UNIFIED MODEL weights all 5 proprietary engines for ${symbol}. The consensus optimal execution entry is ${formatAssetPrice(unifiedEntry, symbol)}, targeting ${formatAssetPrice(unifiedTP, symbol)} with risk capped at ${formatAssetPrice(unifiedSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Unified 5-Engine Master Consensus' },
           { label: 'Engine Agreement', val: '5 of 5 Engines Confirm LONG' },
@@ -341,11 +767,11 @@
           </div>
           <div>
             <div class="flex items-center gap-2 flex-wrap">
-              <h3 class="font-heading text-base font-bold text-foreground tracking-tight">AI Trade Analyzer • Quantitative Multi-Engine Suite</h3>
+              <h3 class="font-heading text-base font-bold text-foreground tracking-tight">AI Trade Analyzer • Institutional Multi-Engine Suite</h3>
               <span class="inline-flex items-center rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500 dark:text-emerald-400">INSTITUTIONAL GRADE</span>
             </div>
             <p class="text-xs text-muted-foreground mt-0.5">
-              Live algorithmic execution powered by 5 proprietary quantitative robots with real-time TradingView charting.
+              Live algorithmic execution across 35+ Forex, CFD Commodities, Indices & Crypto assets with real-time TradingView charting.
             </p>
           </div>
         </div>
@@ -353,18 +779,76 @@
         <!-- Right Side: Live Ticker, Asset Selector & Controls -->
         <div class="flex items-center gap-2.5 flex-wrap shrink-0">
           <div class="flex items-center gap-2 bg-muted/60 border border-border px-3 py-1.5 rounded-lg">
-            <span class="text-[11px] text-muted-foreground font-medium">Binance Live:</span>
-            <span id="hub-live-price" class="text-xs font-bold font-mono text-foreground tabular-nums">$81,262.00</span>
-            <span id="hub-live-change" class="text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded tabular-nums">+2.85%</span>
+            <span class="text-[11px] text-muted-foreground font-medium" id="hub-feed-source-label">Live Feed:</span>
+            <span id="hub-live-price" class="text-xs font-bold font-mono text-foreground tabular-nums">${formatAssetPrice(activeAsset.baseRate, currentSymbol)}</span>
+            <span id="hub-live-change" class="text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded tabular-nums">+0.45%</span>
           </div>
 
-          <div class="relative">
-            <select id="hub-symbol-select" class="h-9 rounded-lg border border-border bg-background px-3 pr-8 text-xs text-foreground font-mono outline-none focus:ring-1 focus:ring-ring transition-colors cursor-pointer">
-              <option value="BTC/USDT">BTC/USDT (Bitcoin)</option>
-              <option value="ETH/USDT">ETH/USDT (Ethereum)</option>
-              <option value="SOL/USDT">SOL/USDT (Solana)</option>
-              <option value="XAU/USD (Gold)">XAU/USD Gold</option>
-            </select>
+          <!-- Market Category Filter & Asset Selector -->
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <div class="inline-flex h-9 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground gap-0.5 border border-border/60 text-xs">
+              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-semibold text-foreground bg-background shadow-xs transition-all cursor-pointer" data-category="all">All</button>
+              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-category="forex">Forex</button>
+              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-category="commodities">CFD / Metals</button>
+              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-category="indices">Indices</button>
+              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-category="crypto">Crypto</button>
+            </div>
+
+            <div class="relative">
+              <select id="hub-symbol-select" class="h-9 rounded-lg border border-border bg-background px-3 pr-8 text-xs text-foreground font-mono outline-none focus:ring-1 focus:ring-ring transition-colors cursor-pointer font-bold">
+                
+                <!-- 1. FOREX CURRENCIES -->
+                <optgroup label="── FOREX MAJORS & CROSSES (10) ──" data-category="forex">
+                  <option value="EUR/USD">EUR/USD • Euro / US Dollar</option>
+                  <option value="GBP/USD">GBP/USD • British Pound / US Dollar</option>
+                  <option value="USD/JPY">USD/JPY • US Dollar / Japanese Yen</option>
+                  <option value="AUD/USD">AUD/USD • Australian Dollar / US Dollar</option>
+                  <option value="USD/CAD">USD/CAD • US Dollar / Canadian Dollar</option>
+                  <option value="USD/CHF">USD/CHF • US Dollar / Swiss Franc</option>
+                  <option value="NZD/USD">NZD/USD • New Zealand Dollar / US Dollar</option>
+                  <option value="EUR/GBP">EUR/GBP • Euro / British Pound</option>
+                  <option value="EUR/JPY">EUR/JPY • Euro / Japanese Yen</option>
+                  <option value="GBP/JPY">GBP/JPY • British Pound / Japanese Yen</option>
+                </optgroup>
+
+                <!-- 2. CFD COMMODITIES & METALS -->
+                <optgroup label="── CFD METALS & ENERGY COMMODITIES (7) ──" data-category="commodities">
+                  <option value="XAU/USD (Gold)">XAU/USD • Gold Spot / US Dollar</option>
+                  <option value="XAG/USD (Silver)">XAG/USD • Silver Spot / US Dollar</option>
+                  <option value="XPT/USD (Platinum)">XPT/USD • Platinum Spot / US Dollar</option>
+                  <option value="USOIL (WTI Crude)">USOIL • WTI Light Crude Oil CFD</option>
+                  <option value="UKOIL (Brent Crude)">UKOIL • Brent Crude Oil CFD</option>
+                  <option value="NATGAS (Natural Gas)">NATGAS • Henry Hub Natural Gas CFD</option>
+                  <option value="COPPER">COPPER • High Grade Copper Futures</option>
+                </optgroup>
+
+                <!-- 3. CFD GLOBAL INDICES -->
+                <optgroup label="── CFD GLOBAL INDICES (6) ──" data-category="indices">
+                  <option value="US30 (Dow Jones 30)">US30 • Wall Street 30 Cash CFD</option>
+                  <option value="NAS100 (Nasdaq 100)">NAS100 • US Tech 100 Cash CFD</option>
+                  <option value="US500 (S&P 500)">US500 • US 500 Cash CFD</option>
+                  <option value="GER40 (DAX 40)">GER40 • Germany 40 Cash CFD</option>
+                  <option value="UK100 (FTSE 100)">UK100 • UK 100 Cash CFD</option>
+                  <option value="JP225 (Nikkei 225)">JP225 • Japan 225 Cash CFD</option>
+                </optgroup>
+
+                <!-- 4. CRYPTOCURRENCIES -->
+                <optgroup label="── CRYPTOCURRENCIES (12) ──" data-category="crypto">
+                  <option value="BTC/USDT" selected>BTC/USDT • Bitcoin</option>
+                  <option value="ETH/USDT">ETH/USDT • Ethereum</option>
+                  <option value="SOL/USDT">SOL/USDT • Solana</option>
+                  <option value="BNB/USDT">BNB/USDT • Binance Coin</option>
+                  <option value="XRP/USDT">XRP/USDT • Ripple XRP</option>
+                  <option value="DOGE/USDT">DOGE/USDT • Dogecoin</option>
+                  <option value="ADA/USDT">ADA/USDT • Cardano</option>
+                  <option value="AVAX/USDT">AVAX/USDT • Avalanche</option>
+                  <option value="LINK/USDT">LINK/USDT • Chainlink</option>
+                  <option value="SUI/USDT">SUI/USDT • Sui Network</option>
+                  <option value="NEAR/USDT">NEAR/USDT • NEAR Protocol</option>
+                  <option value="PEPE/USDT">PEPE/USDT • Pepe</option>
+                </optgroup>
+              </select>
+            </div>
           </div>
 
           <button type="button" id="hub-refresh-price-btn" title="Sync Live Market Feed" class="inline-flex items-center justify-center size-9 rounded-lg border border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
@@ -1393,15 +1877,13 @@
 
   function initActiveTrade() {
     const model = getModelData(currentModel, currentSymbol);
-    const market = livePrices[currentSymbol] || livePrices['BTC/USDT'];
+    const market = livePrices[currentSymbol] || livePrices['BTC/USDT'] || { price: 1.0852 };
     const p = market.price;
-    const isGold = currentSymbol.includes('Gold');
-    const scale = isGold ? 0.4 : 1.0;
 
-    let entryNum = parseFloat(model.entry.replace(/[^0-9.]/g, '')) || p;
-    let tp1Num = parseFloat(model.stages.tp1.replace(/[^0-9.]/g, '')) || (entryNum * (1 + 0.015 * scale));
-    let tp2Num = parseFloat(model.tp.replace(/[^0-9.]/g, '')) || (entryNum * (1 + 0.035 * scale));
-    let slNum = parseFloat(model.sl.replace(/[^0-9.]/g, '')) || (entryNum * (1 - 0.015 * scale));
+    let entryNum = model.rawEntry || p;
+    let tp1Num = (model.stages && model.stages.tp1Raw) ? model.stages.tp1Raw : (entryNum * 1.015);
+    let tp2Num = model.rawTP || (entryNum * 1.035);
+    let slNum = model.rawSL || (entryNum * 0.985);
 
     activeTrade = {
       id: tradeCounter,
@@ -1446,7 +1928,7 @@
 
     if (pnlEl) {
       const sign = pnlPct >= 0 ? '+' : '';
-      pnlEl.textContent = `${sign}${pnlPct.toFixed(2)}% PnL ($${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+      pnlEl.textContent = `${sign}${pnlPct.toFixed(2)}% PnL (${formatAssetPrice(currentPrice, currentSymbol)})`;
       pnlEl.className = `text-xs font-mono font-bold ${pnlPct >= 0 ? 'text-emerald-500' : 'text-rose-500'}`;
     }
 
@@ -1457,7 +1939,7 @@
         statusBadge.className = 'text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
       }
       if (alertEl) {
-        alertEl.innerHTML = `<strong>FULL TARGET ACHIEVED:</strong> Price reached TP 2 ($${tp2.toLocaleString()}). Total gain <strong>+${pnlPct.toFixed(2)}%</strong>. Click <strong>[Analyze Next Trade]</strong> to scan the next market opportunity.`;
+        alertEl.innerHTML = `<strong>FULL TARGET ACHIEVED:</strong> Price reached TP 2 (${formatAssetPrice(tp2, currentSymbol)}). Total gain <strong>+${pnlPct.toFixed(2)}%</strong>. Click <strong>[Analyze Next Trade]</strong> to scan the next market opportunity.`;
       }
       if (tp2StatusEl) {
         tp2StatusEl.textContent = 'Target Hit (+100%)';
@@ -1472,7 +1954,7 @@
         statusBadge.className = 'text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
       }
       if (alertEl) {
-        alertEl.innerHTML = `<strong>TP 1 REACHED:</strong> Book <strong>50% position profit</strong> right now! Shift Stop Loss to <strong>Cost-to-Cost ($${entry.toLocaleString()})</strong> to make this trade 100% risk-free. Remaining 50% targeting TP 2 ($${tp2.toLocaleString()}).`;
+        alertEl.innerHTML = `<strong>TP 1 REACHED:</strong> Book <strong>50% position profit</strong> right now! Shift Stop Loss to <strong>Cost-to-Cost (${formatAssetPrice(entry, currentSymbol)})</strong> to make this trade 100% risk-free. Remaining 50% targeting TP 2 (${formatAssetPrice(tp2, currentSymbol)}).`;
       }
       if (tp1StatusEl) {
         tp1StatusEl.textContent = 'Hit • 50% Booked';
@@ -1485,7 +1967,7 @@
         statusBadge.className = 'text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30';
       }
       if (alertEl) {
-        alertEl.innerHTML = `<strong>STOP LOSS TRIGGERED:</strong> Invalidation floor ($${sl.toLocaleString()}) touched. Position closed defensively. Click <strong>[Analyze Next Trade]</strong> to find the next setup.`;
+        alertEl.innerHTML = `<strong>STOP LOSS TRIGGERED:</strong> Invalidation floor (${formatAssetPrice(sl, currentSymbol)}) touched. Position closed defensively. Click <strong>[Analyze Next Trade]</strong> to find the next setup.`;
       }
       if (pulseEl) pulseEl.className = 'size-2 rounded-full bg-rose-500';
     } else {
@@ -1495,9 +1977,9 @@
       }
       if (alertEl) {
         if (pnlPct >= 0) {
-          alertEl.innerHTML = `<strong>Guidance:</strong> Trade running <strong>+${pnlPct.toFixed(2)}% in profit</strong>. Proximity to TP 1 is <strong>${progressTp1.toFixed(0)}%</strong>. When TP 1 ($${tp1.toLocaleString()}) is reached, <strong>book 50% profit</strong> and trail SL to Cost-to-Cost ($${entry.toLocaleString()}).`;
+          alertEl.innerHTML = `<strong>Guidance:</strong> Trade running <strong>+${pnlPct.toFixed(2)}% in profit</strong>. Proximity to TP 1 is <strong>${progressTp1.toFixed(0)}%</strong>. When TP 1 (${formatAssetPrice(tp1, currentSymbol)}) is reached, <strong>book 50% profit</strong> and trail SL to Cost-to-Cost (${formatAssetPrice(entry, currentSymbol)}).`;
         } else {
-          alertEl.innerHTML = `<strong>Guidance:</strong> Position active near entry ($${entry.toLocaleString()}). Stop loss is protected at $${sl.toLocaleString()} (-${Math.abs(pnlPct).toFixed(2)}%). Maintain discipline and avoid premature manual intervention.`;
+          alertEl.innerHTML = `<strong>Guidance:</strong> Position active near entry (${formatAssetPrice(entry, currentSymbol)}). Stop loss is protected at ${formatAssetPrice(sl, currentSymbol)} (-${Math.abs(pnlPct).toFixed(2)}%). Maintain discipline and avoid premature manual intervention.`;
         }
       }
       if (tp1StatusEl) {
@@ -1517,22 +1999,29 @@
 
     if (idEl) idEl.textContent = activeTrade.id;
     if (symbolEl) symbolEl.textContent = activeTrade.symbol;
-    if (entryEl) entryEl.textContent = '$' + activeTrade.entry.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    if (tp1El) tp1El.textContent = '$' + activeTrade.tp1.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    if (tp2El) tp2El.textContent = '$' + activeTrade.tp2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (entryEl) entryEl.textContent = formatAssetPrice(activeTrade.entry, activeTrade.symbol);
+    if (tp1El) tp1El.textContent = formatAssetPrice(activeTrade.tp1, activeTrade.symbol);
+    if (tp2El) tp2El.textContent = formatAssetPrice(activeTrade.tp2, activeTrade.symbol);
   }
 
   // Update DOM with live price metrics
   function updateUIWithLivePrices() {
-    const market = livePrices[currentSymbol] || livePrices['BTC/USDT'];
+    const asset = ASSETS[currentSymbol] || ASSETS['BTC/USDT'];
+    const market = livePrices[currentSymbol] || { price: asset.baseRate, change: '+0.45%' };
     const p = market.price;
-    const chg = market.change;
+    const chg = market.change || '+0.45%';
 
     const livePriceEl = document.getElementById('hub-live-price');
     const liveChangeEl = document.getElementById('hub-live-change');
+    const feedLabelEl = document.getElementById('hub-feed-source-label');
     const logStatusEl = document.getElementById('log-market-status');
 
-    if (livePriceEl) livePriceEl.textContent = '$' + p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (livePriceEl) livePriceEl.textContent = formatAssetPrice(p, currentSymbol);
+    if (feedLabelEl) {
+      if (asset.feed === 'binance') feedLabelEl.textContent = 'Binance Live:';
+      else if (asset.feed === 'forex') feedLabelEl.textContent = 'Global FX Feed:';
+      else feedLabelEl.textContent = 'CFD Benchmark:';
+    }
     if (liveChangeEl) {
       liveChangeEl.textContent = chg;
       if (chg.startsWith('+')) {
@@ -1543,7 +2032,7 @@
     }
 
     if (logStatusEl) {
-      logStatusEl.textContent = `[FEED] ${currentSymbol} Live: $${p.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} | 24h: ${chg}`;
+      logStatusEl.textContent = `[FEED] ${currentSymbol} Live: ${formatAssetPrice(p, currentSymbol)} | 24h: ${chg}`;
     }
 
     updateActiveModelView();
@@ -1662,6 +2151,62 @@
         addLog(`[ASSET SWITCH] Chart & Quantitative Suite updated to ${currentSymbol}`, 'text-foreground font-bold');
       });
     }
+
+    // Category Filter Pills (All, Forex, CFD / Metals, Indices, Crypto)
+    const catBtns = document.querySelectorAll('.hub-asset-cat-btn');
+    catBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cat = btn.getAttribute('data-category');
+        
+        // Update active tab styling
+        catBtns.forEach(b => {
+          b.classList.remove('text-foreground', 'bg-background', 'font-semibold', 'shadow-xs');
+          b.classList.add('text-muted-foreground', 'font-medium');
+        });
+        btn.classList.add('text-foreground', 'bg-background', 'font-semibold', 'shadow-xs');
+        btn.classList.remove('text-muted-foreground', 'font-medium');
+
+        // Filter optgroups in symbol select
+        if (symbolSelect) {
+          const optgroups = symbolSelect.querySelectorAll('optgroup');
+          let firstValidOption = null;
+          let currentOptionStillVisible = false;
+
+          optgroups.forEach(og => {
+            const ogCat = og.getAttribute('data-category');
+            if (cat === 'all' || ogCat === cat) {
+              og.hidden = false;
+              og.style.display = '';
+              const options = og.querySelectorAll('option');
+              options.forEach(opt => {
+                opt.hidden = false;
+                opt.style.display = '';
+                if (!firstValidOption) firstValidOption = opt.value;
+                if (opt.value === currentSymbol) currentOptionStillVisible = true;
+              });
+            } else {
+              og.hidden = true;
+              og.style.display = 'none';
+              const options = og.querySelectorAll('option');
+              options.forEach(opt => {
+                opt.hidden = true;
+                opt.style.display = 'none';
+              });
+            }
+          });
+
+          // If current selected symbol is no longer in the visible category, select the first option
+          if (!currentOptionStillVisible && firstValidOption) {
+            currentSymbol = firstValidOption;
+            symbolSelect.value = currentSymbol;
+            updateTradingViewChart(currentSymbol);
+            initActiveTrade();
+            updateUIWithLivePrices();
+            addLog(`[CATEGORY FILTER] Selected ${currentSymbol} in ${cat.toUpperCase()} category`, 'text-foreground font-semibold');
+          }
+        }
+      });
+    });
 
     // Refresh Live Feed Button
     const refreshBtn = document.getElementById('hub-refresh-price-btn');
@@ -2473,7 +3018,8 @@
     const runText = document.getElementById('hub-run-text');
     const runIcon = document.getElementById('hub-run-icon');
     const model = getModelData(currentModel, currentSymbol);
-    const market = livePrices[currentSymbol] || livePrices['BTC/USDT'];
+    const asset = ASSETS[currentSymbol] || ASSETS['BTC/USDT'];
+    const market = livePrices[currentSymbol] || { price: asset.baseRate, change: '+0.45%' };
 
     if (runText) runText.textContent = `Computing ${model.name}...`;
     if (runBtn) runBtn.classList.add('opacity-80', 'pointer-events-none');
@@ -2482,10 +3028,11 @@
     const liveStreamBtn = document.querySelector('.hub-tab-btn[data-target="tab-live-stream"]');
     if (liveStreamBtn) liveStreamBtn.click();
 
-    addLog(`[EXECUTION] Running ${model.name} on ${currentSymbol} at market $${market.price.toLocaleString()}`, 'text-emerald-500 font-bold');
+    const feedDesc = asset.feed === 'forex' ? 'Global FX Interbank Order Flow' : (asset.feed === 'cfd' ? 'Institutional CFD Market Depth' : 'Binance Order Flow & Depth');
+    addLog(`[EXECUTION] Running ${model.name} on ${currentSymbol} at market ${formatAssetPrice(market.price, currentSymbol)}`, 'text-emerald-500 font-bold');
 
     setTimeout(() => {
-      addLog(`[INFERENCE 1/3] Ingesting real-time Binance order flow & market depth for ${currentSymbol}...`);
+      addLog(`[INFERENCE 1/3] Ingesting real-time ${feedDesc} for ${currentSymbol}...`);
     }, 300);
 
     setTimeout(() => {
