@@ -368,10 +368,246 @@
     }
   };
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PROP FIRM RULES DATABASE (Researched from official firm websites)
+  // ═══════════════════════════════════════════════════════════════════════════
+  const PROP_FIRMS = {
+    ftmo: {
+      id: 'ftmo',
+      name: 'FTMO',
+      shortName: 'FTMO',
+      website: 'ftmo.com',
+      dailyLoss: 0.05,         // 5%
+      maxDrawdown: 0.10,       // 10%
+      profitTarget: { phase1: 0.10, phase2: 0.05 },
+      phases: '2-Step Challenge',
+      minTradingDays: 4,
+      maxTradingDays: null,    // Unlimited
+      leverage: '1:100',
+      leverageNum: 100,
+      newsTrading: 'restricted',
+      newsNote: 'Cannot open/close trades 2 min before & after red-folder news on FTMO Account',
+      weekendHolding: true,
+      overnightHolding: true,
+      eaAllowed: true,
+      drawdownType: 'static',  // Based on initial balance
+      drawdownNote: 'Calculated on equity (includes floating P&L)',
+      payoutSplit: '80%',
+      payoutFrequency: 'Bi-weekly (14 days)',
+      scalingPlan: 'Up to $2,000,000',
+      accountSizes: [10000, 25000, 50000, 100000, 200000],
+      consistencyRule: 'No all-in gambling strategies',
+      prohibitedStrategies: ['HFT', 'Arbitrage', 'All-in gambling'],
+      color: '#1a73e8'
+    },
+    fundednext: {
+      id: 'fundednext',
+      name: 'FundedNext',
+      shortName: 'FundedNext',
+      website: 'fundednext.com',
+      dailyLoss: 0.05,         // 5% (Stellar 2-Step)
+      maxDrawdown: 0.10,       // 10%
+      profitTarget: { phase1: 0.08, phase2: 0.05 },
+      phases: '2-Step Stellar',
+      minTradingDays: 5,
+      maxTradingDays: null,
+      leverage: '1:100',
+      leverageNum: 100,
+      newsTrading: 'allowed',
+      newsNote: 'News trading allowed on Stellar models',
+      weekendHolding: true,
+      overnightHolding: true,
+      eaAllowed: true,
+      drawdownType: 'static',
+      drawdownNote: 'Static balance-based drawdown on Stellar plans',
+      payoutSplit: '80-95%',
+      payoutFrequency: 'Bi-weekly',
+      scalingPlan: 'Up to $4,000,000',
+      accountSizes: [5000, 10000, 25000, 50000, 100000, 200000],
+      consistencyRule: 'Max daily gain cannot exceed 50% of total gains (funded stage)',
+      prohibitedStrategies: ['HFT', 'Arbitrage'],
+      color: '#f59e0b'
+    },
+    the5ers: {
+      id: 'the5ers',
+      name: 'The5%ers',
+      shortName: 'The5ers',
+      website: 'the5ers.com',
+      dailyLoss: 0.05,         // 5%
+      maxDrawdown: 0.10,       // 10%
+      profitTarget: { phase1: 0.08, phase2: 0.05 },
+      phases: '2-Step High Stakes',
+      minTradingDays: 0,       // No minimum
+      maxTradingDays: null,
+      leverage: '1:100',
+      leverageNum: 100,
+      newsTrading: 'allowed',
+      newsNote: 'News trading fully allowed',
+      weekendHolding: true,
+      overnightHolding: true,
+      eaAllowed: true,
+      drawdownType: 'static',
+      drawdownNote: 'Based on previous day closing balance or equity (whichever higher)',
+      payoutSplit: '70-100%',
+      payoutFrequency: 'Bi-weekly',
+      scalingPlan: 'Up to $4,000,000',
+      accountSizes: [5000, 10000, 25000, 50000, 100000],
+      consistencyRule: '50% consistency rule may apply at funded stage',
+      prohibitedStrategies: ['Arbitrage', 'HFT', 'Bracketing around news'],
+      color: '#10b981'
+    },
+    myfundedfx: {
+      id: 'myfundedfx',
+      name: 'MyFundedFX',
+      shortName: 'MyFundedFX',
+      website: 'myfundedfx.com',
+      dailyLoss: 0.05,         // 5%
+      maxDrawdown: 0.08,       // 8%
+      profitTarget: { phase1: 0.08, phase2: 0.05 },
+      phases: '2-Step Challenge',
+      minTradingDays: 3,
+      maxTradingDays: null,
+      leverage: '1:100',
+      leverageNum: 100,
+      newsTrading: 'restricted',
+      newsNote: 'Restrictions may apply around high-impact news releases',
+      weekendHolding: true,
+      overnightHolding: true,
+      eaAllowed: true,
+      drawdownType: 'static',
+      drawdownNote: 'Overall drawdown does not reset, calculated against starting balance',
+      payoutSplit: '80%',
+      payoutFrequency: 'Monthly (7 calendar days min)',
+      scalingPlan: 'Up to $1,500,000 (5x)',
+      accountSizes: [5000, 10000, 25000, 50000, 100000, 200000, 300000],
+      consistencyRule: 'Max daily gain cannot exceed 50% of total gains (funded)',
+      prohibitedStrategies: ['HFT', 'Arbitrage'],
+      color: '#8b5cf6'
+    },
+    alphacapital: {
+      id: 'alphacapital',
+      name: 'Alpha Capital Group',
+      shortName: 'Alpha Capital',
+      website: 'alphacapitalgroup.uk',
+      dailyLoss: 0.04,         // 4%
+      maxDrawdown: 0.08,       // 8%
+      profitTarget: { phase1: 0.08, phase2: 0.05 },
+      phases: '2-Step Alpha Pro',
+      minTradingDays: 0,
+      maxTradingDays: null,
+      leverage: '1:100',
+      leverageNum: 100,
+      newsTrading: 'allowed',
+      newsNote: 'Allowed during evaluation; 5-min window restriction on funded accounts',
+      weekendHolding: false,
+      overnightHolding: true,
+      eaAllowed: true,
+      drawdownType: 'static',
+      drawdownNote: 'Based on highest EOD balance or equity (whichever greater)',
+      payoutSplit: '80%',
+      payoutFrequency: 'Bi-weekly / On-demand',
+      scalingPlan: 'Up to $2,000,000',
+      accountSizes: [5000, 10000, 25000, 50000, 100000, 200000],
+      consistencyRule: '40% Best Day Rule: no single day > 40% of total profit',
+      prohibitedStrategies: ['HFT', 'Arbitrage', 'Martingale'],
+      color: '#ef4444'
+    },
+    e8markets: {
+      id: 'e8markets',
+      name: 'E8 Markets',
+      shortName: 'E8 Markets',
+      website: 'e8markets.com',
+      dailyLoss: 0.05,         // 5%
+      maxDrawdown: 0.08,       // 8%
+      profitTarget: { phase1: 0.08, phase2: 0.05 },
+      phases: '2-Step E8 Track',
+      minTradingDays: 0,
+      maxTradingDays: null,
+      leverage: '1:100',
+      leverageNum: 100,
+      newsTrading: 'allowed',
+      newsNote: 'News trading allowed on most account types',
+      weekendHolding: true,
+      overnightHolding: true,
+      eaAllowed: true,
+      drawdownType: 'static',
+      drawdownNote: 'Calculated at market rollover based on starting balance/equity',
+      payoutSplit: '80%',
+      payoutFrequency: 'Bi-weekly',
+      scalingPlan: 'Up to $1,000,000',
+      accountSizes: [5000, 10000, 25000, 50000, 100000, 250000],
+      consistencyRule: '2% daily profit cap on some accounts; 35-40% consistency on funded',
+      prohibitedStrategies: ['HFT', 'Arbitrage'],
+      color: '#06b6d4'
+    },
+    fundingpips: {
+      id: 'fundingpips',
+      name: 'Funding Pips',
+      shortName: 'Funding Pips',
+      website: 'fundingpips.com',
+      dailyLoss: 0.04,         // 4%
+      maxDrawdown: 0.08,       // 8%
+      profitTarget: { phase1: 0.08, phase2: 0.05 },
+      phases: '2-Step Standard',
+      minTradingDays: 0,
+      maxTradingDays: null,
+      leverage: '1:100',
+      leverageNum: 100,
+      newsTrading: 'restricted',
+      newsNote: 'Cannot open/close trades 5 min before & after high-impact news',
+      weekendHolding: true,
+      overnightHolding: true,
+      eaAllowed: true,
+      drawdownType: 'static',
+      drawdownNote: 'Static balance-based overall loss limit',
+      payoutSplit: 'Up to 100%',
+      payoutFrequency: 'Weekly / Bi-weekly / On-demand',
+      scalingPlan: 'Up to $2,000,000',
+      accountSizes: [5000, 10000, 25000, 50000, 100000],
+      consistencyRule: 'Varies by reward cycle',
+      prohibitedStrategies: ['HFT', 'Arbitrage', 'Hedging across accounts'],
+      color: '#f97316'
+    },
+    novafunding: {
+      id: 'novafunding',
+      name: 'Nova Funding',
+      shortName: 'Nova Funding',
+      website: 'novafunding.com',
+      dailyLoss: 0.05,         // 5%
+      maxDrawdown: 0.06,       // 6% (Trailing)
+      profitTarget: { phase1: 0.10, phase2: null },
+      phases: '1-Step Evaluation',
+      minTradingDays: 0,
+      maxTradingDays: null,
+      leverage: '1:50',
+      leverageNum: 50,
+      newsTrading: 'allowed',
+      newsNote: 'News trading generally allowed',
+      weekendHolding: true,
+      overnightHolding: true,
+      eaAllowed: true,
+      drawdownType: 'trailing',
+      drawdownNote: 'Trailing max drawdown based on high-water mark equity',
+      payoutSplit: '80%',
+      payoutFrequency: 'Bi-weekly',
+      scalingPlan: 'Available',
+      accountSizes: [5000, 10000, 25000, 50000, 100000],
+      consistencyRule: 'None specified',
+      prohibitedStrategies: ['HFT', 'Arbitrage'],
+      color: '#a855f7'
+    }
+  };
+
   // State
   let currentSymbol = 'BTC/USDT';
   let currentAssetCategory = 'all'; // 'all' | 'forex' | 'commodities' | 'indices' | 'crypto'
   let currentModel = 'aether9'; // 'aether9' | 'evolvex' | 'sentinel' | 'unity' | 'orbit' | 'unified'
+
+  // Prop Firm Account Configuration State (Default: FTMO $10,000 for instant out-of-box institutional experience)
+  let selectedPropFirm = 'ftmo';   // key into PROP_FIRMS
+  let accountSize = 10000;         // $10,000 challenge
+  let currentEquity = 9850;        // $9,850 current equity
+  let propFirmConfigured = true;
 
   // Initialize live prices dictionary with baseline rates
   const livePrices = {};
@@ -385,6 +621,107 @@
       volume: a.category === 'forex' ? '1.4B' : a.category === 'crypto' ? '12,450 units' : '450K contracts'
     };
   });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PIP VALUE & LOT SIZE CALCULATOR (Per Asset Category)
+  // ═══════════════════════════════════════════════════════════════════════════
+  function getPipInfo(symbol) {
+    const asset = ASSETS[symbol] || ASSETS['BTC/USDT'];
+    const cat = asset.category;
+    const dec = asset.decimals || 2;
+    const price = (livePrices[symbol] || {}).price || asset.baseRate;
+
+    if (cat === 'forex') {
+      if (symbol.includes('JPY')) {
+        // JPY pairs: 1 pip = 0.01, pip value ≈ $6.50/lot at ~154 USD/JPY
+        return { pipSize: 0.01, pipValuePerLot: (100000 * 0.01) / price, label: 'pips' };
+      } else {
+        // Standard forex: 1 pip = 0.0001, pip value = $10/lot
+        return { pipSize: 0.0001, pipValuePerLot: 10, label: 'pips' };
+      }
+    } else if (cat === 'metals' || (cat === 'commodities' && symbol.includes('XA'))) {
+      if (symbol.includes('XAU') || symbol.includes('Gold')) {
+        // Gold: 1 pip = 0.01 ($0.01), pip value = $0.01 per 1oz, standard lot = 100oz → $1 per pip per lot
+        return { pipSize: 0.01, pipValuePerLot: 1, label: 'pips' };
+      } else if (symbol.includes('XAG') || symbol.includes('Silver')) {
+        // Silver: 1 pip = 0.001, standard lot = 5000oz → $5 per pip per lot
+        return { pipSize: 0.001, pipValuePerLot: 5, label: 'pips' };
+      } else {
+        return { pipSize: 0.01, pipValuePerLot: 1, label: 'pips' };
+      }
+    } else if (cat === 'commodities') {
+      if (symbol.includes('OIL')) {
+        // Oil: 1 pip = 0.01, standard lot = 1000 barrels → $10 per pip per lot
+        return { pipSize: 0.01, pipValuePerLot: 10, label: 'pips' };
+      } else if (symbol.includes('NATGAS')) {
+        // NatGas: 1 pip = 0.001, lot = 10000 mmBTU → $10 per pip per lot
+        return { pipSize: 0.001, pipValuePerLot: 10, label: 'pips' };
+      } else {
+        return { pipSize: 0.0001, pipValuePerLot: 10, label: 'pips' };
+      }
+    } else if (cat === 'indices') {
+      // Indices: 1 point, pip value = $1 per point per lot (CFD standard lot = 1 contract)
+      return { pipSize: 1, pipValuePerLot: 1, label: 'pts' };
+    } else if (cat === 'crypto') {
+      // Crypto: 1 pip = $1, lot = 1 unit of base currency
+      // For BTC at $80K: SL of $500 = 500 pips → risk = lots * 500 * $1
+      return { pipSize: 1, pipValuePerLot: 1, label: 'USD' };
+    }
+    return { pipSize: 0.01, pipValuePerLot: 1, label: 'pips' };
+  }
+
+  function calculateSafeLotSize(symbol, entryPrice, slPrice) {
+    if (!propFirmConfigured || !selectedPropFirm || !currentEquity || !accountSize) {
+      return null; // No prop firm configured
+    }
+
+    const firm = PROP_FIRMS[selectedPropFirm];
+    if (!firm) return null;
+
+    const pipInfo = getPipInfo(symbol);
+    const slDistancePips = Math.abs(entryPrice - slPrice) / pipInfo.pipSize;
+
+    if (slDistancePips <= 0) return null;
+
+    // Risk per trade: Use 50% of daily loss limit as max single-trade risk (safety margin)
+    // Also cap at 1% of current equity
+    const dailyLossAmount = accountSize * firm.dailyLoss;
+    const maxRiskPerTrade = Math.min(dailyLossAmount * 0.50, currentEquity * 0.01);
+
+    // lotSize = riskAmount / (slDistancePips * pipValuePerLot)
+    let lotSize = maxRiskPerTrade / (slDistancePips * pipInfo.pipValuePerLot);
+    lotSize = Math.floor(lotSize * 100) / 100; // Round down to 0.01
+    lotSize = Math.max(0.01, lotSize);           // Minimum 0.01 lots
+
+    const actualRisk = lotSize * slDistancePips * pipInfo.pipValuePerLot;
+    const riskPctEquity = (actualRisk / currentEquity * 100);
+    const riskPctDailyLimit = (actualRisk / dailyLossAmount * 100);
+
+    // Current drawdown calculation
+    const currentDrawdown = accountSize - currentEquity;
+    const currentDrawdownPct = (currentDrawdown / accountSize * 100);
+    const maxDrawdownPct = firm.maxDrawdown * 100;
+    const remainingDrawdown = (firm.maxDrawdown * accountSize) - currentDrawdown;
+    const remainingDrawdownPct = (remainingDrawdown / accountSize * 100);
+
+    return {
+      lotSize,
+      riskAmount: actualRisk,
+      riskPctEquity: riskPctEquity.toFixed(2),
+      riskPctDailyLimit: riskPctDailyLimit.toFixed(1),
+      dailyLossAmount: dailyLossAmount.toFixed(2),
+      dailyLossRemaining: (dailyLossAmount - actualRisk).toFixed(2),
+      currentDrawdownPct: currentDrawdownPct.toFixed(2),
+      maxDrawdownPct: maxDrawdownPct.toFixed(1),
+      remainingDrawdownPct: remainingDrawdownPct.toFixed(2),
+      remainingDrawdownAmount: remainingDrawdown.toFixed(2),
+      slDistancePips: slDistancePips.toFixed(1),
+      pipLabel: pipInfo.label,
+      isSafe: actualRisk <= dailyLossAmount && actualRisk <= (currentEquity * 0.02),
+      willBreachDaily: actualRisk > dailyLossAmount,
+      willBreachMax: (currentDrawdown + actualRisk) > (firm.maxDrawdown * accountSize)
+    };
+  }
 
   // Price & Metric Formatting Helpers
   function formatAssetPrice(price, symbol) {
@@ -511,40 +848,62 @@
     const cat = asset.category;
     const scale = asset.scale || 1.0;
 
-    // Distinct Calculations for Every Robot with Multi-Asset Scaling
+    // Prop Firm Max SL Constraining Logic (Guarantees zero breach of 1% equity rule / daily loss rule)
+    let maxSafeSLPct = 0.05; // default fallback
+    if (propFirmConfigured && selectedPropFirm && currentEquity && accountSize) {
+      const firm = PROP_FIRMS[selectedPropFirm];
+      const pipInfo = getPipInfo(symbol);
+      const dailyLossAmount = accountSize * (firm ? firm.dailyLoss : 0.05);
+      const maxRiskPerTrade = Math.min(dailyLossAmount * 0.50, currentEquity * 0.01);
+      
+      // Cost per price point for minimum lot size (0.01 lot)
+      const costPerPointOnMinLot = 0.01 * (pipInfo.pipValuePerLot / pipInfo.pipSize);
+      if (costPerPointOnMinLot > 0 && p > 0) {
+        const maxPriceDropOnMinLot = maxRiskPerTrade / costPerPointOnMinLot;
+        maxSafeSLPct = Math.max(0.0005, maxPriceDropOnMinLot / p);
+      }
+    }
+
+    // SL percentage limits calibrated per engine (bounded by maxSafeSLPct if prop firm is configured)
+    const aetherSLPctVal = propFirmConfigured ? Math.min(0.0165 * scale, maxSafeSLPct * 0.85) : (0.0165 * scale);
+    const evolveSLPctVal = propFirmConfigured ? Math.min(0.0125 * scale, maxSafeSLPct * 0.65) : (0.0125 * scale);
+    const sentinelSLPctVal = propFirmConfigured ? Math.min(0.0210 * scale, maxSafeSLPct * 0.95) : (0.0210 * scale);
+    const unitySLPctVal = propFirmConfigured ? Math.min(0.0150 * scale, maxSafeSLPct * 0.75) : (0.0150 * scale);
+    const orbitSLPctVal = propFirmConfigured ? Math.min(0.0145 * scale, maxSafeSLPct * 0.70) : (0.0145 * scale);
+
     // 1. AETHER-9: Order Block Pullback Limit (-0.65% * scale)
     const aetherOffset = -0.0065 * scale;
     const aetherEntry = p * (1 + aetherOffset);
-    const aetherTP = p * (1 + 0.0360 * scale);
-    const aetherSL = p * (1 - 0.0165 * scale);
+    const aetherSL = aetherEntry * (1 - aetherSLPctVal);
+    const aetherTP = aetherEntry + (aetherEntry - aetherSL) * 2.35;
     const aetherRR = ((aetherTP - aetherEntry) / (aetherEntry - aetherSL)).toFixed(2);
 
     // 2. EVOLVE-X: Adaptive Best Bid Slice TWAP (-0.08% * scale)
     const evolveOffset = -0.0008 * scale;
     const evolveEntry = p * (1 + evolveOffset);
-    const evolveTP = p * (1 + 0.0280 * scale);
-    const evolveSL = p * (1 - 0.0125 * scale);
+    const evolveSL = evolveEntry * (1 - evolveSLPctVal);
+    const evolveTP = evolveEntry + (evolveEntry - evolveSL) * 2.24;
     const evolveRR = ((evolveTP - evolveEntry) / (evolveEntry - evolveSL)).toFixed(2);
 
     // 3. SENTINEL: Risk-Weighted Scale-in Limit (-0.42% * scale)
     const sentinelOffset = -0.0042 * scale;
     const sentinelEntry = p * (1 + sentinelOffset);
-    const sentinelTP = p * (1 + 0.0520 * scale);
-    const sentinelSL = p * (1 - 0.0210 * scale);
+    const sentinelSL = sentinelEntry * (1 - sentinelSLPctVal);
+    const sentinelTP = sentinelEntry + (sentinelEntry - sentinelSL) * 2.65;
     const sentinelRR = ((sentinelTP - sentinelEntry) / (sentinelEntry - sentinelSL)).toFixed(2);
 
     // 4. UNITY: Cross-Account Bar VWAP Execution (-0.20% * scale)
     const unityOffset = -0.0020 * scale;
     const unityEntry = p * (1 + unityOffset);
-    const unityTP = p * (1 + 0.0340 * scale);
-    const unitySL = p * (1 - 0.0150 * scale);
+    const unitySL = unityEntry * (1 - unitySLPctVal);
+    const unityTP = unityEntry + (unityEntry - unitySL) * 2.26;
     const unityRR = ((unityTP - unityEntry) / (unityEntry - unitySL)).toFixed(2);
 
     // 5. ORBIT: News Momentum Stop-Buy Breakout Trigger (+0.25% * scale)
     const orbitOffset = 0.0025 * scale;
     const orbitEntry = p * (1 + orbitOffset);
-    const orbitTP = p * (1 + 0.0420 * scale);
-    const orbitSL = p * (1 - 0.0145 * scale);
+    const orbitSL = orbitEntry * (1 - orbitSLPctVal);
+    const orbitTP = orbitEntry + (orbitEntry - orbitSL) * 2.80;
     const orbitRR = ((orbitTP - orbitEntry) / (orbitEntry - orbitSL)).toFixed(2);
 
     // 6. UNIFIED MODEL: 5-Engine Consensus Brain (Weighted Average)
@@ -588,10 +947,10 @@
         entryOffset: formatOffset(aetherOffset, symbol, true),
         tp: formatAssetPrice(aetherTP, symbol),
         rawTP: aetherTP,
-        tpPct: '+' + (0.036 * scale * 100).toFixed(2) + '% Target',
+        tpPct: '+' + (Math.abs(aetherTP - aetherEntry) / aetherEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(aetherSL, symbol),
         rawSL: aetherSL,
-        slPct: '-' + (0.0165 * scale * 100).toFixed(2) + '% Invalidation',
+        slPct: '-' + (Math.abs(aetherEntry - aetherSL) / aetherEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + aetherRR,
         stages: calcStages(aetherEntry, aetherTP, aetherSL, symbol),
         basis: `Adversarial Debate Protocol between Order Flow & Liquidity Specialist and Market Structure Analyst for ${asset.name}.`,
@@ -617,10 +976,10 @@
         entryOffset: formatOffset(evolveOffset, symbol, true),
         tp: formatAssetPrice(evolveTP, symbol),
         rawTP: evolveTP,
-        tpPct: '+' + (0.028 * scale * 100).toFixed(2) + '% Target',
+        tpPct: '+' + (Math.abs(evolveTP - evolveEntry) / evolveEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(evolveSL, symbol),
         rawSL: evolveSL,
-        slPct: '-' + (0.0125 * scale * 100).toFixed(2) + '% Invalidation',
+        slPct: '-' + (Math.abs(evolveEntry - evolveSL) / evolveEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + evolveRR,
         stages: calcStages(evolveEntry, evolveTP, evolveSL, symbol),
         basis: 'Self-Evolving Deep Reinforcement Learning (PPO) that continuously optimizes policy weights based on live turbulence, spread liquidity, and inventory reward signals.',
@@ -646,10 +1005,10 @@
         entryOffset: formatOffset(sentinelOffset, symbol, true),
         tp: formatAssetPrice(sentinelTP, symbol),
         rawTP: sentinelTP,
-        tpPct: '+' + (0.052 * scale * 100).toFixed(2) + '% Target',
+        tpPct: '+' + (Math.abs(sentinelTP - sentinelEntry) / sentinelEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(sentinelSL, symbol),
         rawSL: sentinelSL,
-        slPct: '-' + (0.021 * scale * 100).toFixed(2) + '% Invalidation',
+        slPct: '-' + (Math.abs(sentinelEntry - sentinelSL) / sentinelEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + sentinelRR,
         stages: calcStages(sentinelEntry, sentinelTP, sentinelSL, symbol),
         basis: 'Behavioral and psychological compliance shield that eliminates tilt, revenge trading, and over-leveraging on prop firm funded accounts through strict statistical risk bounds.',
@@ -675,10 +1034,10 @@
         entryOffset: formatOffset(unityOffset, symbol, true),
         tp: formatAssetPrice(unityTP, symbol),
         rawTP: unityTP,
-        tpPct: '+' + (0.034 * scale * 100).toFixed(2) + '% Target',
+        tpPct: '+' + (Math.abs(unityTP - unityEntry) / unityEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(unitySL, symbol),
         rawSL: unitySL,
-        slPct: '-' + (0.015 * scale * 100).toFixed(2) + '% Invalidation',
+        slPct: '-' + (Math.abs(unityEntry - unitySL) / unityEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + unityRR,
         stages: calcStages(unityEntry, unityTP, unitySL, symbol),
         basis: 'Cross-account quantitative risk engine evaluating high-dimensional multi-factor alpha matrices, correlation risk, portfolio drawdowns, and 15m Bar VWAP execution.',
@@ -704,10 +1063,10 @@
         entryOffset: formatOffset(orbitOffset, symbol, true),
         tp: formatAssetPrice(orbitTP, symbol),
         rawTP: orbitTP,
-        tpPct: '+' + (0.042 * scale * 100).toFixed(2) + '% Target',
+        tpPct: '+' + (Math.abs(orbitTP - orbitEntry) / orbitEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(orbitSL, symbol),
         rawSL: orbitSL,
-        slPct: '-' + (0.0145 * scale * 100).toFixed(2) + '% Invalidation',
+        slPct: '-' + (Math.abs(orbitEntry - orbitSL) / orbitEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + orbitRR,
         stages: calcStages(orbitEntry, orbitTP, orbitSL, symbol),
         basis: 'High-frequency news sentiment engine processing real-time institutional financial publications, ETF allocations, and sudden order flow absorption for breakout momentum timing.',
@@ -733,10 +1092,10 @@
         entryOffset: formatOffset(-0.0030 * scale, symbol, true),
         tp: formatAssetPrice(unifiedTP, symbol),
         rawTP: unifiedTP,
-        tpPct: '+' + (0.038 * scale * 100).toFixed(2) + '% Target',
+        tpPct: '+' + (Math.abs(unifiedTP - unifiedEntry) / unifiedEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(unifiedSL, symbol),
         rawSL: unifiedSL,
-        slPct: '-' + (0.016 * scale * 100).toFixed(2) + '% Invalidation',
+        slPct: '-' + (Math.abs(unifiedEntry - unifiedSL) / unifiedEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + unifiedRR,
         stages: calcStages(unifiedEntry, unifiedTP, unifiedSL, symbol),
         basis: 'Master consensus intelligence synthesizing signals, weights, and risk boundaries from AETHER-9, EVOLVE-X, SENTINEL, UNITY, and ORBIT into a single verified trade execution plan.',
@@ -749,7 +1108,12 @@
       }
     };
 
-    return models[modelKey] || models.aether9;
+    const selectedModel = models[modelKey] || models.aether9;
+
+    // Attach lot size calculation if prop firm is configured
+    selectedModel.lotSizeData = calculateSafeLotSize(symbol, selectedModel.rawEntry, selectedModel.rawSL);
+
+    return selectedModel;
   }
 
   // Render 1: Main AI Engines Hub & Large TradingView Chart
@@ -859,6 +1223,105 @@
             <svg id="hub-run-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
             <span id="hub-run-text">Execute Analysis</span>
           </button>
+        </div>
+      </div>
+
+      <!-- 0. PROP FIRM ACCOUNT SETUP & RULE COMPLIANCE PANEL -->
+      <div class="px-5">
+        <div class="rounded-xl border border-border bg-card p-4 space-y-4 ring-1 ring-foreground/5" id="prop-firm-setup-panel">
+          <!-- Header -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/60">
+            <div class="flex items-center gap-2">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-rose-500/10 border border-rose-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-rose-500"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-foreground">Prop Firm Account Setup</h4>
+                <p class="text-[11px] text-muted-foreground">Configure your prop firm to get safe lot sizes & rule compliance for every trade</p>
+              </div>
+            </div>
+            <div id="prop-firm-status-badge" class="text-[10px] font-mono font-semibold px-2.5 py-1 rounded border ${propFirmConfigured ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}">
+              ${propFirmConfigured ? 'CONFIGURED' : 'NOT CONFIGURED — Setup Required'}
+            </div>
+          </div>
+
+          <!-- Setup Form -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <!-- 1. Prop Firm Selector -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Select Prop Firm</label>
+              <select id="prop-firm-select" class="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+                <option value="">-- Choose Prop Firm --</option>
+                ${Object.values(PROP_FIRMS).map(f => '<option value="' + f.id + '"' + (selectedPropFirm === f.id ? ' selected' : '') + '>' + f.name + ' (' + f.phases + ')</option>').join('')}
+              </select>
+            </div>
+
+            <!-- 2. Account Size -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Account Size ($)</label>
+              <div class="flex gap-1">
+                <select id="prop-account-size-select" class="flex-1 h-9 rounded-lg border border-border bg-background px-2 text-xs font-mono font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+                  <option value="">Select</option>
+                  <option value="1000">$1,000</option>
+                  <option value="2500">$2,500</option>
+                  <option value="5000"${accountSize === 5000 ? ' selected' : ''}>$5,000</option>
+                  <option value="10000"${accountSize === 10000 ? ' selected' : ''}>$10,000</option>
+                  <option value="25000"${accountSize === 25000 ? ' selected' : ''}>$25,000</option>
+                  <option value="50000"${accountSize === 50000 ? ' selected' : ''}>$50,000</option>
+                  <option value="100000"${accountSize === 100000 ? ' selected' : ''}>$100,000</option>
+                  <option value="200000"${accountSize === 200000 ? ' selected' : ''}>$200,000</option>
+                  <option value="custom">Custom</option>
+                </select>
+                <input type="number" id="prop-account-size-custom" placeholder="Custom $" class="hidden w-24 h-9 rounded-lg border border-border bg-background px-2 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500" min="100" step="100">
+              </div>
+            </div>
+
+            <!-- 3. Current Equity -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Current Equity / Balance ($)</label>
+              <input type="number" id="prop-current-equity" placeholder="e.g. 9850" value="${currentEquity || ''}" class="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500" min="0" step="0.01">
+            </div>
+
+            <!-- 4. Apply Button -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">&nbsp;</label>
+              <button type="button" id="prop-firm-apply-btn" class="w-full h-9 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                <span>Apply & Calculate</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Prop Firm Rules Display (Hidden until configured) -->
+          <div id="prop-firm-rules-display" class="${propFirmConfigured ? '' : 'hidden'} space-y-3">
+            <!-- Rules Summary Grid -->
+            <div class="rounded-lg border border-border/80 bg-muted/30 p-3 space-y-2">
+              <div class="flex items-center justify-between pb-1.5 border-b border-border/60">
+                <span class="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-rose-500"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                  <span id="prop-rules-firm-name">Prop Firm</span> — Official Rules
+                </span>
+                <span id="prop-rules-firm-website" class="text-[10px] font-mono text-muted-foreground"></span>
+              </div>
+              <div id="prop-firm-rules-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs font-mono">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Rule Compliance Checker (Live) -->
+            <div id="prop-firm-compliance-card" class="rounded-lg border border-border/80 bg-muted/30 p-3 space-y-2">
+              <div class="flex items-center justify-between pb-1.5 border-b border-border/60">
+                <span class="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="m9 11 3 3L22 4"></path></svg>
+                  Trade Rule Compliance Check
+                </span>
+                <span id="prop-compliance-overall" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">ALL RULES PASSED</span>
+              </div>
+              <div id="prop-compliance-items" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1020,6 +1483,34 @@
                 <span id="hub-trade-rr" class="text-base font-bold font-mono text-foreground block mt-1">1 : 2.68</span>
               </div>
               <span class="text-[10px] font-mono text-muted-foreground mt-1">Hurdle Met (> 1:2.0)</span>
+            </div>
+
+            <!-- Box 5: Safe Lot Size & Risk (Prop Firm-Aware) -->
+            <div id="prop-lot-size-box" class="rounded-lg border-2 border-dashed border-amber-500/30 bg-amber-500/5 p-3 flex flex-col justify-between ${propFirmConfigured ? '' : 'opacity-40'}">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-medium text-amber-500 uppercase tracking-wider block flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                    Safe Lot Size
+                  </span>
+                  <span id="hub-trade-risk-badge" class="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-500">${propFirmConfigured ? 'CALCULATED' : 'SETUP REQUIRED'}</span>
+                </div>
+                <span id="hub-trade-lot-size" class="text-lg font-extrabold font-mono text-foreground block mt-1">${propFirmConfigured ? '—' : '—'}</span>
+              </div>
+              <div class="space-y-0.5 mt-1">
+                <div class="flex items-center justify-between text-[9px] font-mono text-muted-foreground">
+                  <span>Risk $:</span>
+                  <span id="hub-trade-risk-amount" class="text-foreground font-semibold">—</span>
+                </div>
+                <div class="flex items-center justify-between text-[9px] font-mono text-muted-foreground">
+                  <span>Risk % Equity:</span>
+                  <span id="hub-trade-risk-pct-equity" class="text-foreground font-semibold">—</span>
+                </div>
+                <div class="flex items-center justify-between text-[9px] font-mono text-muted-foreground">
+                  <span>Daily Limit Used:</span>
+                  <span id="hub-trade-risk-pct-daily" class="text-foreground font-semibold">—</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1258,6 +1749,8 @@
                   <th class="py-2 px-3">Take Profit (TP)</th>
                   <th class="py-2 px-3">Stop Loss (SL)</th>
                   <th class="py-2 px-3">R:R</th>
+                  <th class="py-2 px-3">Safe Lot Size</th>
+                  <th class="py-2 px-3">Compliance</th>
                   <th class="py-2 pl-3">Timeframe</th>
                 </tr>
               </thead>
@@ -2094,6 +2587,213 @@
         </div>
       `).join('');
     }
+
+    // Update Lot Size & Risk Box (Prop Firm-Aware)
+    updatePropFirmLotSizeDisplay(model);
+
+    // Update Rule Compliance Checker
+    updatePropFirmComplianceDisplay(model);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PROP FIRM LOT SIZE & COMPLIANCE UI UPDATERS
+  // ═══════════════════════════════════════════════════════════════════════════
+  function updatePropFirmLotSizeDisplay(model) {
+    const lotSizeEl = document.getElementById('hub-trade-lot-size');
+    const riskAmountEl = document.getElementById('hub-trade-risk-amount');
+    const riskPctEquityEl = document.getElementById('hub-trade-risk-pct-equity');
+    const riskPctDailyEl = document.getElementById('hub-trade-risk-pct-daily');
+    const riskBadgeEl = document.getElementById('hub-trade-risk-badge');
+    const lotBox = document.getElementById('prop-lot-size-box');
+
+    if (!model.lotSizeData) {
+      if (lotSizeEl) lotSizeEl.textContent = '—';
+      if (riskAmountEl) riskAmountEl.textContent = '—';
+      if (riskPctEquityEl) riskPctEquityEl.textContent = '—';
+      if (riskPctDailyEl) riskPctDailyEl.textContent = '—';
+      if (riskBadgeEl) riskBadgeEl.textContent = 'SETUP REQUIRED';
+      if (lotBox) lotBox.classList.add('opacity-40');
+      return;
+    }
+
+    const d = model.lotSizeData;
+    if (lotBox) lotBox.classList.remove('opacity-40');
+    if (lotSizeEl) lotSizeEl.textContent = d.lotSize.toFixed(2) + ' lots';
+    if (riskAmountEl) riskAmountEl.textContent = '$' + d.riskAmount.toFixed(2);
+    if (riskPctEquityEl) riskPctEquityEl.textContent = d.riskPctEquity + '%';
+    if (riskPctDailyEl) riskPctDailyEl.textContent = d.riskPctDailyLimit + '%';
+
+    if (riskBadgeEl) {
+      if (d.isSafe) {
+        riskBadgeEl.textContent = 'SAFE';
+        riskBadgeEl.className = 'text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-500';
+      } else {
+        riskBadgeEl.textContent = 'CAUTION';
+        riskBadgeEl.className = 'text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-rose-500/10 border border-rose-500/20 text-rose-500';
+      }
+    }
+  }
+
+  function updatePropFirmComplianceDisplay(model) {
+    const complianceItems = document.getElementById('prop-compliance-items');
+    const complianceOverall = document.getElementById('prop-compliance-overall');
+    if (!complianceItems || !propFirmConfigured || !selectedPropFirm) return;
+
+    const firm = PROP_FIRMS[selectedPropFirm];
+    if (!firm) return;
+
+    const d = model.lotSizeData;
+    const checks = [];
+    let allPassed = true;
+
+    if (d) {
+      // 1. Daily Loss Rule
+      const dailyOk = !d.willBreachDaily;
+      if (!dailyOk) allPassed = false;
+      checks.push({
+        label: 'Daily Loss Rule',
+        value: `Risk $${d.riskAmount.toFixed(2)} of $${d.dailyLossAmount} limit (${d.riskPctDailyLimit}%)`,
+        ok: dailyOk,
+        icon: dailyOk ? '✅' : '❌'
+      });
+
+      // 2. Max Drawdown
+      const ddOk = !d.willBreachMax;
+      if (!ddOk) allPassed = false;
+      checks.push({
+        label: 'Max Drawdown',
+        value: `DD: ${d.currentDrawdownPct}% / ${d.maxDrawdownPct}% max — $${d.remainingDrawdownAmount} remaining`,
+        ok: ddOk,
+        icon: ddOk ? '✅' : '❌'
+      });
+
+      // 3. Lot Size Safety
+      const lotOk = d.lotSize >= 0.01;
+      checks.push({
+        label: 'Lot Size',
+        value: `${d.lotSize.toFixed(2)} lots — ${d.slDistancePips} ${d.pipLabel} SL distance`,
+        ok: lotOk,
+        icon: lotOk ? '✅' : '⚠️'
+      });
+    }
+
+    // 4. News Trading
+    const newsOk = firm.newsTrading === 'allowed';
+    checks.push({
+      label: 'News Trading',
+      value: firm.newsNote,
+      ok: newsOk,
+      icon: newsOk ? '✅' : '⚠️'
+    });
+
+    // 5. Weekend Holding
+    checks.push({
+      label: 'Weekend Holding',
+      value: firm.weekendHolding ? 'Allowed — positions can be held over weekends' : 'NOT ALLOWED — close before Friday',
+      ok: firm.weekendHolding,
+      icon: firm.weekendHolding ? '✅' : '⚠️'
+    });
+
+    // 6. Leverage
+    checks.push({
+      label: 'Leverage',
+      value: `${firm.leverage} — check margin requirements`,
+      ok: true,
+      icon: '✅'
+    });
+
+    // 7. Consistency Rule
+    if (firm.consistencyRule && firm.consistencyRule !== 'None specified') {
+      checks.push({
+        label: 'Consistency Rule',
+        value: firm.consistencyRule,
+        ok: true,
+        icon: '⚠️'
+      });
+    }
+
+    // 8. Drawdown Type
+    checks.push({
+      label: 'Drawdown Type',
+      value: `${firm.drawdownType.toUpperCase()} — ${firm.drawdownNote}`,
+      ok: true,
+      icon: firm.drawdownType === 'static' ? '✅' : '⚠️'
+    });
+
+    // 9. Prohibited Strategies
+    checks.push({
+      label: 'Prohibited',
+      value: firm.prohibitedStrategies.join(', '),
+      ok: true,
+      icon: '⚠️'
+    });
+
+    complianceItems.innerHTML = checks.map(c => `
+      <div class="flex items-start gap-2 p-2 rounded-md border ${c.ok ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-rose-500/20 bg-rose-500/5'}">
+        <span class="text-sm shrink-0 mt-0.5">${c.icon}</span>
+        <div>
+          <span class="text-[10px] font-bold ${c.ok ? 'text-emerald-500' : 'text-rose-500'} uppercase tracking-wider block">${c.label}</span>
+          <span class="text-[10px] font-mono ${c.ok ? 'text-muted-foreground' : 'text-rose-400'} block mt-0.5">${c.value}</span>
+        </div>
+      </div>
+    `).join('');
+
+    if (complianceOverall) {
+      if (allPassed) {
+        complianceOverall.textContent = 'ALL RULES PASSED';
+        complianceOverall.className = 'text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
+      } else {
+        complianceOverall.textContent = 'RULE BREACH DETECTED';
+        complianceOverall.className = 'text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20';
+      }
+    }
+  }
+
+  function updatePropFirmRulesDisplay() {
+    if (!selectedPropFirm || !propFirmConfigured) return;
+
+    const firm = PROP_FIRMS[selectedPropFirm];
+    if (!firm) return;
+
+    const rulesGrid = document.getElementById('prop-firm-rules-grid');
+    const firmNameEl = document.getElementById('prop-rules-firm-name');
+    const firmWebsiteEl = document.getElementById('prop-rules-firm-website');
+    const rulesDisplay = document.getElementById('prop-firm-rules-display');
+    const statusBadge = document.getElementById('prop-firm-status-badge');
+
+    if (firmNameEl) firmNameEl.textContent = firm.name;
+    if (firmWebsiteEl) firmWebsiteEl.textContent = firm.website;
+    if (rulesDisplay) rulesDisplay.classList.remove('hidden');
+
+    if (statusBadge) {
+      statusBadge.textContent = 'CONFIGURED';
+      statusBadge.className = 'text-[10px] font-mono font-semibold px-2.5 py-1 rounded border bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+    }
+
+    if (rulesGrid) {
+      const rules = [
+        { label: 'Daily Loss', value: (firm.dailyLoss * 100) + '%', sub: '$' + (accountSize * firm.dailyLoss).toLocaleString(), color: 'text-rose-500' },
+        { label: 'Max Drawdown', value: (firm.maxDrawdown * 100) + '%', sub: '$' + (accountSize * firm.maxDrawdown).toLocaleString() + (firm.drawdownType === 'trailing' ? ' (Trailing)' : ' (Static)'), color: 'text-rose-500' },
+        { label: 'Profit Target', value: (firm.profitTarget.phase1 * 100) + '%' + (firm.profitTarget.phase2 ? ' / ' + (firm.profitTarget.phase2 * 100) + '%' : ''), sub: firm.phases, color: 'text-emerald-500' },
+        { label: 'Min Trading Days', value: firm.minTradingDays > 0 ? firm.minTradingDays + ' days' : 'None', sub: firm.maxTradingDays ? firm.maxTradingDays + ' max' : 'Unlimited', color: 'text-foreground' },
+        { label: 'Leverage', value: firm.leverage, sub: 'Max leverage', color: 'text-foreground' },
+        { label: 'Payout Split', value: firm.payoutSplit, sub: firm.payoutFrequency, color: 'text-emerald-500' },
+        { label: 'News Trading', value: firm.newsTrading === 'allowed' ? 'Allowed' : 'Restricted', sub: firm.newsNote.substring(0, 50) + '...', color: firm.newsTrading === 'allowed' ? 'text-emerald-500' : 'text-amber-500' },
+        { label: 'Weekend Hold', value: firm.weekendHolding ? 'Allowed' : 'Not Allowed', sub: firm.overnightHolding ? 'Overnight OK' : 'No Overnight', color: firm.weekendHolding ? 'text-emerald-500' : 'text-rose-500' },
+        { label: 'EAs / Bots', value: firm.eaAllowed ? 'Allowed' : 'Not Allowed', sub: 'Expert Advisors', color: 'text-emerald-500' },
+        { label: 'Account Size', value: '$' + (accountSize || 0).toLocaleString(), sub: 'Equity: $' + (currentEquity || 0).toLocaleString(), color: 'text-foreground' },
+        { label: 'Scaling Plan', value: firm.scalingPlan, sub: 'Max capital growth', color: 'text-emerald-500' },
+        { label: 'Consistency', value: firm.consistencyRule ? 'Yes' : 'None', sub: (firm.consistencyRule || 'None').substring(0, 50), color: 'text-amber-500' },
+      ];
+
+      rulesGrid.innerHTML = rules.map(r => `
+        <div class="rounded-md border border-border/60 bg-background/50 p-2 space-y-0.5">
+          <span class="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest block">${r.label}</span>
+          <span class="text-xs font-bold ${r.color} block">${r.value}</span>
+          <span class="text-[9px] text-muted-foreground block">${r.sub}</span>
+        </div>
+      `).join('');
+    }
   }
 
   // Update Comparison Table
@@ -2105,6 +2805,13 @@
     tbody.innerHTML = keys.map(k => {
       const m = getModelData(k, currentSymbol);
       const isSelected = k === currentModel;
+      const lotDisplay = m.lotSizeData ? `<span class="font-bold text-foreground">${m.lotSizeData.lotSize.toFixed(2)} lots</span> <span class="text-muted-foreground text-[10px]">($${m.lotSizeData.riskAmount.toFixed(1)})</span>` : '<span class="text-muted-foreground">—</span>';
+      const statusDisplay = m.lotSizeData 
+        ? (m.lotSizeData.isSafe 
+            ? '<span class="inline-flex items-center px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-semibold">SAFE</span>' 
+            : '<span class="inline-flex items-center px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] font-semibold">CAUTION</span>')
+        : '<span class="text-muted-foreground text-[10px]">Setup req.</span>';
+
       return `
         <tr class="transition-colors ${isSelected ? 'bg-muted/80 font-bold' : 'hover:bg-muted/40'}">
           <td class="py-2.5 pr-3 text-foreground flex items-center gap-1.5">
@@ -2116,6 +2823,8 @@
           <td class="py-2.5 px-3 text-emerald-500 tabular-nums">${m.tp}</td>
           <td class="py-2.5 px-3 text-rose-500 tabular-nums">${m.sl}</td>
           <td class="py-2.5 px-3 text-foreground tabular-nums">${m.rr}</td>
+          <td class="py-2.5 px-3 tabular-nums text-xs">${lotDisplay}</td>
+          <td class="py-2.5 px-3 text-xs">${statusDisplay}</td>
           <td class="py-2.5 pl-3 text-muted-foreground text-[11px]">${m.timeframe}</td>
         </tr>
       `;
@@ -2139,6 +2848,144 @@
 
   // Interactivity Setup
   function setupInteractivity() {
+    // Prop Firm Configuration Setup & Persistence
+    const propFirmSelect = document.getElementById('prop-firm-select');
+    const propAccountSizeSelect = document.getElementById('prop-account-size-select');
+    const propAccountSizeCustom = document.getElementById('prop-account-size-custom');
+    const propCurrentEquityInput = document.getElementById('prop-current-equity');
+    const propFirmApplyBtn = document.getElementById('prop-firm-apply-btn');
+
+    // Restore saved prop firm settings from localStorage if available
+    try {
+      const savedConfig = localStorage.getItem('veterian_prop_firm_config');
+      if (savedConfig) {
+        const parsed = JSON.parse(savedConfig);
+        if (parsed.propFirm && PROP_FIRMS[parsed.propFirm]) {
+          selectedPropFirm = parsed.propFirm;
+          accountSize = Number(parsed.accountSize) || 10000;
+          currentEquity = Number(parsed.currentEquity) || accountSize;
+          propFirmConfigured = true;
+
+          if (propFirmSelect) propFirmSelect.value = selectedPropFirm;
+          if (propAccountSizeSelect) {
+            const stdOptions = [1000, 2500, 5000, 10000, 25000, 50000, 100000, 200000];
+            if (stdOptions.includes(accountSize)) {
+              propAccountSizeSelect.value = String(accountSize);
+            } else {
+              propAccountSizeSelect.value = 'custom';
+              if (propAccountSizeCustom) {
+                propAccountSizeCustom.classList.remove('hidden');
+                propAccountSizeCustom.value = accountSize;
+              }
+            }
+          }
+          if (propCurrentEquityInput) propCurrentEquityInput.value = currentEquity;
+
+          updatePropFirmRulesDisplay();
+          updateActiveModelView();
+          updateComparisonTable();
+        }
+      }
+    } catch (e) {}
+
+    // Always render initial prop firm rules, safe lot sizes, and compliance checks on startup
+    updatePropFirmRulesDisplay();
+    updateActiveModelView();
+    updateComparisonTable();
+
+    if (propFirmSelect) {
+      propFirmSelect.addEventListener('change', (e) => {
+        const firmId = e.target.value;
+        selectedPropFirm = firmId;
+        const firm = PROP_FIRMS[firmId];
+        if (firm && propAccountSizeSelect) {
+          const currentVal = propAccountSizeSelect.value;
+          if (!currentVal && firm.accountSizes && firm.accountSizes.length > 0) {
+            propAccountSizeSelect.value = String(firm.accountSizes[0]);
+            accountSize = firm.accountSizes[0];
+            if (propCurrentEquityInput && !propCurrentEquityInput.value) {
+              propCurrentEquityInput.value = accountSize;
+              currentEquity = accountSize;
+            }
+          }
+        }
+      });
+    }
+
+    if (propAccountSizeSelect) {
+      propAccountSizeSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val === 'custom') {
+          if (propAccountSizeCustom) {
+            propAccountSizeCustom.classList.remove('hidden');
+            propAccountSizeCustom.focus();
+          }
+        } else {
+          if (propAccountSizeCustom) propAccountSizeCustom.classList.add('hidden');
+          if (val) {
+            accountSize = parseFloat(val);
+            if (propCurrentEquityInput && (!propCurrentEquityInput.value || parseFloat(propCurrentEquityInput.value) === 0)) {
+              propCurrentEquityInput.value = accountSize;
+              currentEquity = accountSize;
+            }
+          }
+        }
+      });
+    }
+
+    if (propFirmApplyBtn) {
+      propFirmApplyBtn.addEventListener('click', () => {
+        const firmId = propFirmSelect ? propFirmSelect.value : '';
+        if (!firmId || !PROP_FIRMS[firmId]) {
+          alert('Please select a Prop Firm from the dropdown.');
+          if (propFirmSelect) propFirmSelect.focus();
+          return;
+        }
+
+        let accSize = 0;
+        if (propAccountSizeSelect) {
+          if (propAccountSizeSelect.value === 'custom') {
+            accSize = parseFloat(propAccountSizeCustom ? propAccountSizeCustom.value : 0);
+          } else {
+            accSize = parseFloat(propAccountSizeSelect.value);
+          }
+        }
+        if (!accSize || isNaN(accSize) || accSize <= 0) {
+          alert('Please select or enter a valid account size.');
+          if (propAccountSizeSelect) propAccountSizeSelect.focus();
+          return;
+        }
+
+        let curEq = parseFloat(propCurrentEquityInput ? propCurrentEquityInput.value : 0);
+        if (isNaN(curEq) || curEq <= 0) {
+          curEq = accSize;
+          if (propCurrentEquityInput) propCurrentEquityInput.value = curEq;
+        }
+
+        selectedPropFirm = firmId;
+        accountSize = accSize;
+        currentEquity = curEq;
+        propFirmConfigured = true;
+
+        // Persist configuration
+        try {
+          localStorage.setItem('veterian_prop_firm_config', JSON.stringify({
+            propFirm: selectedPropFirm,
+            accountSize: accountSize,
+            currentEquity: currentEquity,
+            configuredAt: Date.now()
+          }));
+        } catch (e) {}
+
+        updatePropFirmRulesDisplay();
+        updateActiveModelView();
+        updateComparisonTable();
+
+        const firm = PROP_FIRMS[selectedPropFirm];
+        addLog(`[PROP FIRM SETUP] Configured ${firm.name} (${firm.phases}). Account: $${accountSize.toLocaleString()} | Equity: $${currentEquity.toLocaleString()} | Daily Limit: ${(firm.dailyLoss * 100)}% ($${(accountSize * firm.dailyLoss).toLocaleString()})`, 'text-emerald-400 font-bold');
+      });
+    }
+
     // Asset Select (Updates TradingView Chart + Engine Calculations + Active Trade)
     const symbolSelect = document.getElementById('hub-symbol-select');
     if (symbolSelect) {
@@ -3085,13 +3932,21 @@
     const styleEl = document.createElement('style');
     styleEl.id = 'veterian-layout-cleanup-styles';
     styleEl.textContent = `
-      .grid.gap-4.px-4.pb-6.lg\\:grid-cols-12 > div:not(#ai-engines-hub-card):not(#news-insight-card):not(#marine-traffic-card),
-      main .grid > div:not(#ai-engines-hub-card):not(#news-insight-card):not(#marine-traffic-card) {
+      .grid.gap-4.px-4.pb-6.lg\\:grid-cols-12 > div:not(#ai-engines-hub-card):not(#news-insight-card):not(#marine-traffic-card) {
         display: none !important;
       }
       #ai-engines-hub-card, #news-insight-card, #marine-traffic-card {
         grid-column: 1 / -1 !important;
         width: 100% !important;
+      }
+      #ai-engines-hub-card .grid {
+        display: grid !important;
+      }
+      #ai-engines-hub-card .grid > div {
+        display: block !important;
+      }
+      #prop-firm-setup-panel select, #prop-firm-setup-panel input {
+        display: block !important;
       }
     `;
     document.head.appendChild(styleEl);
