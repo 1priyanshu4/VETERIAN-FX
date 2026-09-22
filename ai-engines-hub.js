@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AI TRADE ANALYZER • INSTITUTIONAL MULTI-ENGINE SUITE
  * 
  * Proprietary Quantitative Robots:
@@ -7085,6 +7085,48 @@
   // Active Trading & Model State
   let currentSymbol = 'EUR/USD';
   let currentModel = 'aether9';
+  let currentTradingMode = 'intraday'; // 'scalp', 'intraday', 'swing'
+
+  // Trading Mode Specifications (SCALP, INTRADAY, SWING)
+  const TRADING_MODES = {
+    scalp: {
+      key: 'scalp',
+      name: 'SCALP',
+      badge: '&#9889; SCALP',
+      badgeClass: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+      timeframe: '1m / 5m Liquidity Scalp',
+      multiplier: 0.38,
+      duration: '15m - 4 Hours (Max 6h)',
+      holdingRule: 'Quick Scalp &bull; Close in 1-4 hrs (Max 6h) &bull; Rapid Break-Even',
+      rrMultiplier: 0.95
+    },
+    intraday: {
+      key: 'intraday',
+      name: 'INTRADAY',
+      badge: '&#127919; INTRADAY',
+      badgeClass: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+      timeframe: '15m / 1H Session Flow',
+      multiplier: 1.0,
+      duration: '2 - 8 Hours (Same-Day)',
+      holdingRule: 'Same-Day Position &bull; Close Before Session End (No Overnight)',
+      rrMultiplier: 1.0
+    },
+    swing: {
+      key: 'swing',
+      name: 'SWING',
+      badge: '&#127754; SWING',
+      badgeClass: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+      timeframe: '4H / Daily Macro Trend',
+      multiplier: 2.2,
+      duration: '1 - 5 Days (Multi-Day)',
+      holdingRule: 'Multi-Day Swing &bull; Hold 1-5 Days &bull; Overnight Permitted',
+      rrMultiplier: 1.15
+    }
+  };
+
+  function getTradingModeConfig(modeKey) {
+    return TRADING_MODES[modeKey] || TRADING_MODES.intraday;
+  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CHAT INTERFACE STATE MANAGEMENT
@@ -7480,7 +7522,11 @@
   }
 
   // Model-specific configurations with PROPRIETARY INSTITUTIONAL ROBOT NAMES
-  function getModelData(modelKey, symbol) {
+  function getModelData(modelKey, symbol, mode) {
+    const tradeModeKey = mode || currentTradingMode || 'intraday';
+    const activeMode = getTradingModeConfig(tradeModeKey);
+    const modeMul = activeMode.multiplier;
+
     const asset = ASSETS[symbol] || ASSETS['BTC/USDT'];
     const market = livePrices[symbol] || livePrices['BTC/USDT'];
     const p = market.price;
@@ -7502,51 +7548,51 @@
         maxSafeSLPct = Math.max(0.0005, maxPriceDropOnMinLot / p);
       }
     }
-    // SL percentage limits calibrated per engine (bounded by maxSafeSLPct if prop firm is configured)
-    const aetherSLPctVal = propFirmConfigured ? Math.min(0.0165 * scale, maxSafeSLPct * 0.85) : (0.0165 * scale);
-    const evolveSLPctVal = propFirmConfigured ? Math.min(0.0125 * scale, maxSafeSLPct * 0.65) : (0.0125 * scale);
-    const sentinelSLPctVal = propFirmConfigured ? Math.min(0.0210 * scale, maxSafeSLPct * 0.95) : (0.0210 * scale);
-    const unitySLPctVal = propFirmConfigured ? Math.min(0.0150 * scale, maxSafeSLPct * 0.75) : (0.0150 * scale);
-    const orbitSLPctVal = propFirmConfigured ? Math.min(0.0145 * scale, maxSafeSLPct * 0.70) : (0.0145 * scale);
+    // SL percentage limits calibrated per engine and scaled by mode multiplier (bounded by maxSafeSLPct)
+    const aetherSLPctVal = (propFirmConfigured ? Math.min(0.0165 * scale, maxSafeSLPct * 0.85) : (0.0165 * scale)) * modeMul;
+    const evolveSLPctVal = (propFirmConfigured ? Math.min(0.0125 * scale, maxSafeSLPct * 0.65) : (0.0125 * scale)) * modeMul;
+    const sentinelSLPctVal = (propFirmConfigured ? Math.min(0.0210 * scale, maxSafeSLPct * 0.95) : (0.0210 * scale)) * modeMul;
+    const unitySLPctVal = (propFirmConfigured ? Math.min(0.0150 * scale, maxSafeSLPct * 0.75) : (0.0150 * scale)) * modeMul;
+    const orbitSLPctVal = (propFirmConfigured ? Math.min(0.0145 * scale, maxSafeSLPct * 0.70) : (0.0145 * scale)) * modeMul;
 
-    // 1. AETHER-9: Order Block Pullback Limit (-0.65% * scale for BUY, +0.65% for SELL)
+    // 1. AETHER-9: Order Block Pullback Limit (scaled by modeMul)
     const aetherDir = determineDirection(symbol, 'aether9');
-    const aetherOffset = aetherDir === 'SELL' ? 0.0065 * scale : -0.0065 * scale;
+    const aetherOffset = (aetherDir === 'SELL' ? 0.0065 * scale : -0.0065 * scale) * modeMul;
     const aetherEntry = p * (1 + aetherOffset);
     const aetherSL = aetherDir === 'SELL' ? aetherEntry * (1 + aetherSLPctVal) : aetherEntry * (1 - aetherSLPctVal);
-    const aetherTP = aetherDir === 'SELL' ? aetherEntry - Math.abs(aetherSL - aetherEntry) * 2.35 : aetherEntry + (aetherEntry - aetherSL) * 2.35;
+    const aetherTP = aetherDir === 'SELL' ? aetherEntry - Math.abs(aetherSL - aetherEntry) * (2.35 * activeMode.rrMultiplier) : aetherEntry + (aetherEntry - aetherSL) * (2.35 * activeMode.rrMultiplier);
     const aetherRR = (Math.abs(aetherTP - aetherEntry) / Math.abs(aetherEntry - aetherSL)).toFixed(2);
 
-    // 2. EVOLVE-X: Adaptive Best Bid Slice TWAP (-0.08% * scale for BUY, +0.08% for SELL)
+    // 2. EVOLVE-X: Adaptive Best Bid Slice TWAP (scaled by modeMul)
     const evolveDir = determineDirection(symbol, 'evolvex');
-    const evolveOffset = evolveDir === 'SELL' ? 0.0008 * scale : -0.0008 * scale;
+    const evolveOffset = (evolveDir === 'SELL' ? 0.0008 * scale : -0.0008 * scale) * modeMul;
     const evolveEntry = p * (1 + evolveOffset);
     const evolveSL = evolveDir === 'SELL' ? evolveEntry * (1 + evolveSLPctVal) : evolveEntry * (1 - evolveSLPctVal);
-    const evolveTP = evolveDir === 'SELL' ? evolveEntry - Math.abs(evolveSL - evolveEntry) * 2.24 : evolveEntry + (evolveEntry - evolveSL) * 2.24;
+    const evolveTP = evolveDir === 'SELL' ? evolveEntry - Math.abs(evolveSL - evolveEntry) * (2.24 * activeMode.rrMultiplier) : evolveEntry + (evolveEntry - evolveSL) * (2.24 * activeMode.rrMultiplier);
     const evolveRR = (Math.abs(evolveTP - evolveEntry) / Math.abs(evolveEntry - evolveSL)).toFixed(2);
 
-    // 3. SENTINEL: Risk-Weighted Scale-in Limit (-0.42% * scale for BUY, +0.42% for SELL)
+    // 3. SENTINEL: Risk-Weighted Scale-in Limit (scaled by modeMul)
     const sentinelDir = determineDirection(symbol, 'sentinel');
-    const sentinelOffset = sentinelDir === 'SELL' ? 0.0042 * scale : -0.0042 * scale;
+    const sentinelOffset = (sentinelDir === 'SELL' ? 0.0042 * scale : -0.0042 * scale) * modeMul;
     const sentinelEntry = p * (1 + sentinelOffset);
     const sentinelSL = sentinelDir === 'SELL' ? sentinelEntry * (1 + sentinelSLPctVal) : sentinelEntry * (1 - sentinelSLPctVal);
-    const sentinelTP = sentinelDir === 'SELL' ? sentinelEntry - Math.abs(sentinelSL - sentinelEntry) * 2.65 : sentinelEntry + (sentinelEntry - sentinelSL) * 2.65;
+    const sentinelTP = sentinelDir === 'SELL' ? sentinelEntry - Math.abs(sentinelSL - sentinelEntry) * (2.65 * activeMode.rrMultiplier) : sentinelEntry + (sentinelEntry - sentinelSL) * (2.65 * activeMode.rrMultiplier);
     const sentinelRR = (Math.abs(sentinelTP - sentinelEntry) / Math.abs(sentinelEntry - sentinelSL)).toFixed(2);
 
-    // 4. UNITY: Cross-Account Bar VWAP Execution (-0.20% * scale for BUY, +0.20% for SELL)
+    // 4. UNITY: Cross-Account Bar VWAP Execution (scaled by modeMul)
     const unityDir = determineDirection(symbol, 'unity');
-    const unityOffset = unityDir === 'SELL' ? 0.0020 * scale : -0.0020 * scale;
+    const unityOffset = (unityDir === 'SELL' ? 0.0020 * scale : -0.0020 * scale) * modeMul;
     const unityEntry = p * (1 + unityOffset);
     const unitySL = unityDir === 'SELL' ? unityEntry * (1 + unitySLPctVal) : unityEntry * (1 - unitySLPctVal);
-    const unityTP = unityDir === 'SELL' ? unityEntry - Math.abs(unitySL - unityEntry) * 2.26 : unityEntry + (unityEntry - unitySL) * 2.26;
+    const unityTP = unityDir === 'SELL' ? unityEntry - Math.abs(unitySL - unityEntry) * (2.26 * activeMode.rrMultiplier) : unityEntry + (unityEntry - unitySL) * (2.26 * activeMode.rrMultiplier);
     const unityRR = (Math.abs(unityTP - unityEntry) / Math.abs(unityEntry - unitySL)).toFixed(2);
 
-    // 5. ORBIT: News Momentum Breakout Trigger (+0.25% * scale for BUY, -0.25% for SELL)
+    // 5. ORBIT: News Momentum Breakout Trigger (scaled by modeMul)
     const orbitDir = determineDirection(symbol, 'orbit');
-    const orbitOffset = orbitDir === 'SELL' ? -0.0025 * scale : 0.0025 * scale;
+    const orbitOffset = (orbitDir === 'SELL' ? -0.0025 * scale : 0.0025 * scale) * modeMul;
     const orbitEntry = p * (1 + orbitOffset);
     const orbitSL = orbitDir === 'SELL' ? orbitEntry * (1 + orbitSLPctVal) : orbitEntry * (1 - orbitSLPctVal);
-    const orbitTP = orbitDir === 'SELL' ? orbitEntry - Math.abs(orbitSL - orbitEntry) * 2.80 : orbitEntry + (orbitEntry - orbitSL) * 2.80;
+    const orbitTP = orbitDir === 'SELL' ? orbitEntry - Math.abs(orbitSL - orbitEntry) * (2.80 * activeMode.rrMultiplier) : orbitEntry + (orbitEntry - orbitSL) * (2.80 * activeMode.rrMultiplier);
     const orbitRR = (Math.abs(orbitTP - orbitEntry) / Math.abs(orbitEntry - orbitSL)).toFixed(2);
 
     // 6. UNIFIED MODEL: 5-Engine Consensus Brain (Weighted Average)
@@ -7763,6 +7809,15 @@
 
     const selectedModel = models[modelKey] || models.aether9;
 
+    // Attach mode metadata
+    selectedModel.mode = activeMode.key;
+    selectedModel.modeName = activeMode.name;
+    selectedModel.modeBadge = activeMode.badge;
+    selectedModel.modeBadgeClass = activeMode.badgeClass;
+    selectedModel.expectedDuration = activeMode.duration;
+    selectedModel.holdingRule = activeMode.holdingRule;
+    selectedModel.timeframe = `${activeMode.timeframe} (${activeMode.duration})`;
+
     // Attach lot size calculation if prop firm is configured
     selectedModel.lotSizeData = calculateSafeLotSize(symbol, selectedModel.rawEntry, selectedModel.rawSL);
 
@@ -7801,13 +7856,18 @@
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-xs font-bold font-heading text-foreground">${msg.modelName}</span>
               <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border/60">${msg.modelBadge}</span>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded ${msg.modeBadgeClass || 'bg-blue-500/15 text-blue-400 border-blue-500/30'}">${msg.modeBadge || 'ðŸŽ¯ INTRADAY'}</span>
               <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">#${msg.analysisId}</span>
               <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-muted text-foreground border border-border/60">${msg.symbol}</span>
             </div>
-            <div class="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground font-mono">
+            <div class="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground font-mono flex-wrap">
               <span>${msg.date} &bull; ${msg.timestamp}</span>
               <span>&bull;</span>
               <span>Session: <strong class="text-foreground">${msg.session || 'GLOBAL'}</strong></span>
+              <span>&bull;</span>
+              <span>Target Hold: <strong class="text-emerald-400">${msg.expectedDuration || '2â€“8 Hours'}</strong></span>
+              <span>&bull;</span>
+              <span>Rule: <strong class="text-foreground">${msg.holdingRule || 'Same-Day Close'}</strong></span>
             </div>
           </div>
         </div>
@@ -7946,6 +8006,7 @@
   function renderHubHTML() {
     const activeAsset = ASSETS[currentSymbol] || ASSETS['BTC/USDT'];
     const activeSession = detectTradingSession();
+    const activeModelObj = getModelData(currentModel, currentSymbol, currentTradingMode);
 
     return `
     <div id="ai-engines-hub-card" data-slot="card" class="col-span-12 group/card flex flex-col overflow-hidden rounded-xl bg-card text-sm text-card-foreground ring-1 ring-foreground/10 mb-6 transition-all" style="grid-column: 1 / -1; width: 100%;">
@@ -8131,7 +8192,7 @@
         <div class="rounded-xl border border-border bg-card p-3.5 space-y-3 ring-1 ring-foreground/5 shadow-md">
           
           <!-- Row 1: Engine Selector & Prop Firm Parameters -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
             <!-- 1. Engine Selector -->
             <div class="space-y-1">
               <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">1. AI Engine</label>
@@ -8145,9 +8206,19 @@
               </select>
             </div>
 
-            <!-- 2. Prop Firm Selector -->
+            <!-- 2. Trading Style / Mode Selector (SCALP, INTRADAY, SWING) -->
             <div class="space-y-1">
-              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">2. Prop Firm</label>
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">2. Style / Mode</label>
+              <select id="chat-mode-select" class="w-full h-8 rounded-lg border border-border bg-background px-2 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+                <option value="scalp" ${currentTradingMode === 'scalp' ? 'selected' : ''}>&#9889; SCALP (1m - 5m &bull; Max 4-6h)</option>
+                <option value="intraday" ${currentTradingMode === 'intraday' ? 'selected' : ''}>&#127919; INTRADAY (15m - 1H &bull; Same-Day)</option>
+                <option value="swing" ${currentTradingMode === 'swing' ? 'selected' : ''}>&#127754; SWING (4H - 1D &bull; 1-5 Days)</option>
+              </select>
+            </div>
+
+            <!-- 3. Prop Firm Selector -->
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">3. Prop Firm</label>
               <select id="chat-prop-firm-select" class="w-full h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
                 <option value="ftmo" selected>FTMO (Evaluation)</option>
                 <option value="fundingpips">FundingPips</option>
@@ -8165,27 +8236,27 @@
               </select>
             </div>
 
-            <!-- 3. Current Equity -->
+            <!-- 4. Current Equity -->
             <div class="space-y-1">
-              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">3. Equity ($)</label>
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">4. Equity ($)</label>
               <input type="number" id="chat-equity-input" value="${currentEquity || 10000}" min="100" step="100" class="w-full h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-mono font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500">
             </div>
 
-            <!-- 4. Max DD Limit % -->
+            <!-- 5. Max DD Limit % -->
             <div class="space-y-1">
-              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">4. Max DD %</label>
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">5. Max DD %</label>
               <input type="number" id="chat-max-dd-input" value="10" min="1" max="50" step="0.5" class="w-full h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-mono font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500">
             </div>
 
-            <!-- 5. Daily DD Limit % -->
+            <!-- 6. Daily DD Limit % -->
             <div class="space-y-1">
-              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">5. Daily DD %</label>
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">6. Daily DD %</label>
               <input type="number" id="chat-daily-dd-input" value="5" min="1" max="25" step="0.5" class="w-full h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-mono font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500">
             </div>
 
-            <!-- 6. 1% Risk Rule -->
+            <!-- 7. 1% Risk Rule -->
             <div class="space-y-1">
-              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">6. 1% PnL Rule</label>
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">7. 1% PnL Rule</label>
               <select id="chat-risk-rule-select" class="w-full h-8 rounded-lg border border-border bg-background px-2 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
                 <option value="enforce" selected>Enforce (Max 1% DD)</option>
                 <option value="relaxed">Relaxed (Max 1.5% DD)</option>
@@ -8198,7 +8269,7 @@
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/50">
             <div class="flex items-center gap-2 text-xs text-muted-foreground font-mono flex-1 min-w-[240px]">
               <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span id="chat-prompt-status">Scan order flow & generate execution plan for <strong class="text-foreground">${currentSymbol}</strong> using <strong class="text-emerald-400">AETHER-9</strong></span>
+              <span id="chat-prompt-status">Scan order flow & generate <strong class="text-amber-400 font-bold uppercase">${currentTradingMode}</strong> plan for <strong class="text-foreground">${currentSymbol}</strong> using <strong class="text-emerald-400">${activeModelObj.name}</strong></span>
             </div>
 
             <button type="button" id="chat-analyze-btn" class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-5 py-2.5 text-xs font-bold shadow-md transition-all select-none cursor-pointer">
@@ -8217,10 +8288,11 @@
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // CHAT STATE LOGIC & RUNTIME INTERACTION
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  function createAndAppendAnalysis(symbol, modelKey) {
+  function createAndAppendAnalysis(symbol, modelKey, mode) {
     const sym = symbol || currentSymbol;
     const mKey = modelKey || currentModel;
-    const model = getModelData(mKey, sym);
+    const tMode = mode || currentTradingMode || 'intraday';
+    const model = getModelData(mKey, sym, tMode);
     const session = detectTradingSession();
     const analysisId = generateAnalysisId();
     const asset = ASSETS[sym] || ASSETS['BTC/USDT'];
@@ -8246,6 +8318,12 @@
       modelKey: mKey,
       modelName: model.name,
       modelBadge: model.badge,
+      mode: model.mode,
+      modeName: model.modeName,
+      modeBadge: model.modeBadge,
+      modeBadgeClass: model.modeBadgeClass,
+      expectedDuration: model.expectedDuration,
+      holdingRule: model.holdingRule,
       direction: model.direction || model.signalType || 'BUY',
       signal: model.signal,
       conviction: model.conviction,
@@ -9295,7 +9373,7 @@
 
     const keys = ['aether9', 'evolvex', 'sentinel', 'unity', 'orbit', 'unified'];
     tbody.innerHTML = keys.map(k => {
-      const m = getModelData(k, currentSymbol);
+      const m = getModelData(k, currentSymbol, currentTradingMode);
       const isSelected = k === currentModel;
       const lotDisplay = m.lotSizeData ? `<span class="font-bold text-foreground">${m.lotSizeData.lotSize.toFixed(2)} lots</span> <span class="text-muted-foreground text-[10px]">($${m.lotSizeData.riskAmount.toFixed(1)})</span>` : '<span class="text-muted-foreground">—</span>';
       const statusDisplay = m.lotSizeData 
@@ -9346,15 +9424,30 @@
 
     // 1. Model Selector Dropdown in Chat Input Bar
     const chatModelSelect = document.getElementById('chat-model-select');
+    const chatModeSelect = document.getElementById('chat-mode-select');
     const promptStatus = document.getElementById('chat-prompt-status');
+
+    function updatePromptStatusUI() {
+      const model = getModelData(currentModel, currentSymbol, currentTradingMode);
+      if (promptStatus) {
+        promptStatus.innerHTML = `Scan order flow & generate <strong class="text-amber-400 font-bold uppercase">${currentTradingMode}</strong> plan for <strong class="text-foreground">${currentSymbol}</strong> using <strong class="text-emerald-400">${model.name}</strong>`;
+      }
+    }
+
     if (chatModelSelect) {
       chatModelSelect.value = currentModel;
       chatModelSelect.addEventListener('change', (e) => {
         currentModel = e.target.value;
-        const model = getModelData(currentModel, currentSymbol);
-        if (promptStatus) {
-          promptStatus.innerHTML = `Scan order flow & generate execution plan for <strong class="text-foreground">${currentSymbol}</strong> using <strong class="text-emerald-400">${model.name}</strong>`;
-        }
+        updatePromptStatusUI();
+        updateComparisonTable();
+      });
+    }
+
+    if (chatModeSelect) {
+      chatModeSelect.value = currentTradingMode;
+      chatModeSelect.addEventListener('change', (e) => {
+        currentTradingMode = e.target.value;
+        updatePromptStatusUI();
         updateComparisonTable();
       });
     }
@@ -9397,11 +9490,11 @@
         chatAnalyzeBtn.classList.add('opacity-80');
         if (chatAnalyzeIcon) chatAnalyzeIcon.classList.add('animate-spin');
         
-        const m = getModelData(currentModel, currentSymbol);
-        if (chatAnalyzeText) chatAnalyzeText.textContent = `Computing ${m.name}...`;
+        const m = getModelData(currentModel, currentSymbol, currentTradingMode);
+        if (chatAnalyzeText) chatAnalyzeText.textContent = `Computing ${m.name} (${currentTradingMode.toUpperCase()})...`;
 
         setTimeout(() => {
-          createAndAppendAnalysis(currentSymbol, currentModel);
+          createAndAppendAnalysis(currentSymbol, currentModel, currentTradingMode);
           if (chatAnalyzeText) chatAnalyzeText.innerHTML = '&#9889; Analyze Market (Generate Signal)';
           if (chatAnalyzeIcon) chatAnalyzeIcon.classList.remove('animate-spin');
           chatAnalyzeBtn.disabled = false;
