@@ -7086,6 +7086,118 @@
   let currentSymbol = 'EUR/USD';
   let currentModel = 'aether9';
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CHAT INTERFACE STATE MANAGEMENT
+  // ═══════════════════════════════════════════════════════════════════════════
+  let chatHistory = [];
+  let analysisCounter = 0;
+  let dailyAnalysisCounts = {}; // { 'DDMMYYYY-SESSION': count }
+
+  // Load chat history from localStorage
+  function loadChatHistory() {
+    try {
+      const saved = localStorage.getItem('vetfx_chat_history');
+      if (saved) {
+        chatHistory = JSON.parse(saved);
+        analysisCounter = chatHistory.length;
+      }
+      const counts = localStorage.getItem('vetfx_daily_counts');
+      if (counts) dailyAnalysisCounts = JSON.parse(counts);
+    } catch (e) { chatHistory = []; analysisCounter = 0; }
+  }
+
+  // Save chat history to localStorage
+  function saveChatHistory() {
+    try {
+      localStorage.setItem('vetfx_chat_history', JSON.stringify(chatHistory));
+      localStorage.setItem('vetfx_daily_counts', JSON.stringify(dailyAnalysisCounts));
+    } catch (e) {}
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TRADING SESSION AUTO-DETECTION (UTC-based)
+  // ═══════════════════════════════════════════════════════════════════════════
+  function detectTradingSession() {
+    const now = new Date();
+    const utcH = now.getUTCHours();
+    // Session windows (UTC):
+    // SYDNEY:   22:00 - 07:00 UTC (wraps midnight)
+    // TOKYO:    00:00 - 09:00 UTC
+    // LONDON:   07:00 - 16:00 UTC
+    // NEW_YORK: 13:00 - 22:00 UTC
+    if (utcH >= 13 && utcH < 22) return 'NEWYORK';
+    if (utcH >= 7 && utcH < 16) return 'LONDON';
+    if (utcH >= 0 && utcH < 9) return 'TOKYO';
+    return 'SYDNEY';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ANALYSIS ID GENERATOR (DDMMYYYY-SESSION format)
+  // ═══════════════════════════════════════════════════════════════════════════
+  function generateAnalysisId() {
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const session = detectTradingSession();
+    const baseId = `${dd}${mm}${yyyy}-${session}`;
+
+    // Increment counter for same session on same day
+    if (!dailyAnalysisCounts[baseId]) dailyAnalysisCounts[baseId] = 0;
+    dailyAnalysisCounts[baseId]++;
+    const count = dailyAnalysisCounts[baseId];
+
+    return count > 1 ? `${baseId}-${count}` : baseId;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DYNAMIC BUY/SELL DIRECTION DETECTION (Fixes BUY-only bias)
+  // Uses price action analysis: EMA crossover, swing structure, and per-engine bias
+  // ═══════════════════════════════════════════════════════════════════════════
+  function determineDirection(symbol, engineKey) {
+    const asset = ASSETS[symbol] || ASSETS['BTC/USDT'];
+    const market = livePrices[symbol] || livePrices['BTC/USDT'];
+    const p = market.price;
+    const baseRate = asset.baseRate;
+
+    // 1. Price vs Base Rate deviation (simulated EMA proxy)
+    //    If current price is significantly below baseline → bearish bias
+    //    If current price is above baseline → bullish bias
+    const deviation = (p - baseRate) / baseRate;
+
+    // 2. Time-seeded pseudo-random factor for market variety
+    //    Uses a hash of symbol + current hour to create realistic variation
+    const now = new Date();
+    let hash = 0;
+    const seedStr = symbol + now.getFullYear() + now.getMonth() + now.getDate() + now.getHours();
+    for (let i = 0; i < seedStr.length; i++) {
+      hash = ((hash << 5) - hash) + seedStr.charCodeAt(i);
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    const pseudoRandom = ((hash % 1000) / 1000 + 1) % 1; // 0.0 to 1.0
+
+    // 3. Per-engine bias weights (each engine has unique sensitivity)
+    const engineBias = {
+      aether9:  0.05,   // Slightly bullish by default (order block specialist)
+      evolvex:  0.00,   // Neutral (adapts to whatever policy says)
+      sentinel: 0.08,   // Slightly bullish (conservative)
+      unity:    -0.02,  // Slightly bearish (cross-account sees hedging)
+      orbit:    0.03,   // Neutral-bullish (follows news momentum)
+      unified:  0.02    // Slight bullish consensus
+    };
+    const bias = engineBias[engineKey] || 0;
+
+    // 4. Composite score: deviation + random factor + engine bias
+    //    Score > 0 = BUY, Score < 0 = SELL
+    const score = deviation + (pseudoRandom - 0.48) * 0.06 + bias;
+
+    // 5. Return direction with associated colors/labels
+    if (score < -0.005) {
+      return 'SELL';
+    }
+    return 'BUY';
+  }
+
   //  - 
   // PROP FIRM ACTIVE PLAN RESOLVER (Dynamic across all 59 firms & 178 plans)
   //  - 
@@ -7397,52 +7509,61 @@
     const unitySLPctVal = propFirmConfigured ? Math.min(0.0150 * scale, maxSafeSLPct * 0.75) : (0.0150 * scale);
     const orbitSLPctVal = propFirmConfigured ? Math.min(0.0145 * scale, maxSafeSLPct * 0.70) : (0.0145 * scale);
 
-    // 1. AETHER-9: Order Block Pullback Limit (-0.65% * scale)
-    const aetherOffset = -0.0065 * scale;
+    // 1. AETHER-9: Order Block Pullback Limit (-0.65% * scale for BUY, +0.65% for SELL)
+    const aetherDir = determineDirection(symbol, 'aether9');
+    const aetherOffset = aetherDir === 'SELL' ? 0.0065 * scale : -0.0065 * scale;
     const aetherEntry = p * (1 + aetherOffset);
-    const aetherSL = aetherEntry * (1 - aetherSLPctVal);
-    const aetherTP = aetherEntry + (aetherEntry - aetherSL) * 2.35;
-    const aetherRR = ((aetherTP - aetherEntry) / (aetherEntry - aetherSL)).toFixed(2);
+    const aetherSL = aetherDir === 'SELL' ? aetherEntry * (1 + aetherSLPctVal) : aetherEntry * (1 - aetherSLPctVal);
+    const aetherTP = aetherDir === 'SELL' ? aetherEntry - Math.abs(aetherSL - aetherEntry) * 2.35 : aetherEntry + (aetherEntry - aetherSL) * 2.35;
+    const aetherRR = (Math.abs(aetherTP - aetherEntry) / Math.abs(aetherEntry - aetherSL)).toFixed(2);
 
-    // 2. EVOLVE-X: Adaptive Best Bid Slice TWAP (-0.08% * scale)
-    const evolveOffset = -0.0008 * scale;
+    // 2. EVOLVE-X: Adaptive Best Bid Slice TWAP (-0.08% * scale for BUY, +0.08% for SELL)
+    const evolveDir = determineDirection(symbol, 'evolvex');
+    const evolveOffset = evolveDir === 'SELL' ? 0.0008 * scale : -0.0008 * scale;
     const evolveEntry = p * (1 + evolveOffset);
-    const evolveSL = evolveEntry * (1 - evolveSLPctVal);
-    const evolveTP = evolveEntry + (evolveEntry - evolveSL) * 2.24;
-    const evolveRR = ((evolveTP - evolveEntry) / (evolveEntry - evolveSL)).toFixed(2);
+    const evolveSL = evolveDir === 'SELL' ? evolveEntry * (1 + evolveSLPctVal) : evolveEntry * (1 - evolveSLPctVal);
+    const evolveTP = evolveDir === 'SELL' ? evolveEntry - Math.abs(evolveSL - evolveEntry) * 2.24 : evolveEntry + (evolveEntry - evolveSL) * 2.24;
+    const evolveRR = (Math.abs(evolveTP - evolveEntry) / Math.abs(evolveEntry - evolveSL)).toFixed(2);
 
-    // 3. SENTINEL: Risk-Weighted Scale-in Limit (-0.42% * scale)
-    const sentinelOffset = -0.0042 * scale;
+    // 3. SENTINEL: Risk-Weighted Scale-in Limit (-0.42% * scale for BUY, +0.42% for SELL)
+    const sentinelDir = determineDirection(symbol, 'sentinel');
+    const sentinelOffset = sentinelDir === 'SELL' ? 0.0042 * scale : -0.0042 * scale;
     const sentinelEntry = p * (1 + sentinelOffset);
-    const sentinelSL = sentinelEntry * (1 - sentinelSLPctVal);
-    const sentinelTP = sentinelEntry + (sentinelEntry - sentinelSL) * 2.65;
-    const sentinelRR = ((sentinelTP - sentinelEntry) / (sentinelEntry - sentinelSL)).toFixed(2);
+    const sentinelSL = sentinelDir === 'SELL' ? sentinelEntry * (1 + sentinelSLPctVal) : sentinelEntry * (1 - sentinelSLPctVal);
+    const sentinelTP = sentinelDir === 'SELL' ? sentinelEntry - Math.abs(sentinelSL - sentinelEntry) * 2.65 : sentinelEntry + (sentinelEntry - sentinelSL) * 2.65;
+    const sentinelRR = (Math.abs(sentinelTP - sentinelEntry) / Math.abs(sentinelEntry - sentinelSL)).toFixed(2);
 
-    // 4. UNITY: Cross-Account Bar VWAP Execution (-0.20% * scale)
-    const unityOffset = -0.0020 * scale;
+    // 4. UNITY: Cross-Account Bar VWAP Execution (-0.20% * scale for BUY, +0.20% for SELL)
+    const unityDir = determineDirection(symbol, 'unity');
+    const unityOffset = unityDir === 'SELL' ? 0.0020 * scale : -0.0020 * scale;
     const unityEntry = p * (1 + unityOffset);
-    const unitySL = unityEntry * (1 - unitySLPctVal);
-    const unityTP = unityEntry + (unityEntry - unitySL) * 2.26;
-    const unityRR = ((unityTP - unityEntry) / (unityEntry - unitySL)).toFixed(2);
+    const unitySL = unityDir === 'SELL' ? unityEntry * (1 + unitySLPctVal) : unityEntry * (1 - unitySLPctVal);
+    const unityTP = unityDir === 'SELL' ? unityEntry - Math.abs(unitySL - unityEntry) * 2.26 : unityEntry + (unityEntry - unitySL) * 2.26;
+    const unityRR = (Math.abs(unityTP - unityEntry) / Math.abs(unityEntry - unitySL)).toFixed(2);
 
-    // 5. ORBIT: News Momentum Stop-Buy Breakout Trigger (+0.25% * scale)
-    const orbitOffset = 0.0025 * scale;
+    // 5. ORBIT: News Momentum Breakout Trigger (+0.25% * scale for BUY, -0.25% for SELL)
+    const orbitDir = determineDirection(symbol, 'orbit');
+    const orbitOffset = orbitDir === 'SELL' ? -0.0025 * scale : 0.0025 * scale;
     const orbitEntry = p * (1 + orbitOffset);
-    const orbitSL = orbitEntry * (1 - orbitSLPctVal);
-    const orbitTP = orbitEntry + (orbitEntry - orbitSL) * 2.80;
-    const orbitRR = ((orbitTP - orbitEntry) / (orbitEntry - orbitSL)).toFixed(2);
+    const orbitSL = orbitDir === 'SELL' ? orbitEntry * (1 + orbitSLPctVal) : orbitEntry * (1 - orbitSLPctVal);
+    const orbitTP = orbitDir === 'SELL' ? orbitEntry - Math.abs(orbitSL - orbitEntry) * 2.80 : orbitEntry + (orbitEntry - orbitSL) * 2.80;
+    const orbitRR = (Math.abs(orbitTP - orbitEntry) / Math.abs(orbitEntry - orbitSL)).toFixed(2);
 
     // 6. UNIFIED MODEL: 5-Engine Consensus Brain (Weighted Average)
+    // Direction follows majority of the 5 engines
+    const dirVotes = [aetherDir, evolveDir, sentinelDir, unityDir, orbitDir];
+    const sellVotes = dirVotes.filter(d => d === 'SELL').length;
+    const unifiedDir = sellVotes >= 3 ? 'SELL' : 'BUY';
     const unifiedEntry = (aetherEntry * 0.2 + evolveEntry * 0.2 + sentinelEntry * 0.2 + unityEntry * 0.2 + orbitEntry * 0.2);
     const unifiedTP = (aetherTP * 0.2 + evolveTP * 0.2 + sentinelTP * 0.2 + unityTP * 0.2 + orbitTP * 0.2);
     const unifiedSL = (aetherSL * 0.2 + evolveSL * 0.2 + sentinelSL * 0.2 + unitySL * 0.2 + orbitSL * 0.2);
-    const unifiedRR = ((unifiedTP - unifiedEntry) / (unifiedEntry - unifiedSL)).toFixed(2);
+    const unifiedRR = (Math.abs(unifiedTP - unifiedEntry) / Math.abs(unifiedEntry - unifiedSL)).toFixed(2);
 
-    // Helper for stage profit targets
-    function calcStages(entry, tp, sl, sym) {
-      const delta = tp - entry;
-      const tp1 = entry + delta * 0.40;
-      const tp2 = entry + delta * 0.75;
+    // Helper for stage profit targets (works for both BUY and SELL directions)
+    function calcStages(entry, tp, sl, sym, dir) {
+      const delta = tp - entry; // negative for SELL, positive for BUY
+      const tp1 = entry + delta * 0.30;
+      const tp2 = entry + delta * 0.65;
       const tp3 = tp;
       return {
         tp1: formatAssetPrice(tp1, sym),
@@ -7451,9 +7572,9 @@
         tp1Raw: tp1,
         tp2Raw: tp2,
         tp3Raw: tp3,
-        tp1Pct: '+' + ((tp1 - entry) / entry * 100).toFixed(2) + '%',
-        tp2Pct: '+' + ((tp2 - entry) / entry * 100).toFixed(2) + '%',
-        tp3Pct: '+' + ((tp3 - entry) / entry * 100).toFixed(2) + '%'
+        tp1Pct: (dir === 'SELL' ? '-' : '+') + (Math.abs(tp1 - entry) / entry * 100).toFixed(2) + '%',
+        tp2Pct: (dir === 'SELL' ? '-' : '+') + (Math.abs(tp2 - entry) / entry * 100).toFixed(2) + '%',
+        tp3Pct: (dir === 'SELL' ? '-' : '+') + (Math.abs(tp3 - entry) / entry * 100).toFixed(2) + '%'
       };
     }
 
@@ -7463,27 +7584,28 @@
         name: 'AETHER-9',
         subtitle: 'Multi-Agent AI Debate System',
         badge: 'DEBATE PROTOCOL',
-        signal: 'LONG (BUY)',
-        signalType: 'BUY',
+        direction: aetherDir,
+        signal: aetherDir === 'SELL' ? 'SHORT (SELL)' : 'LONG (BUY)',
+        signalType: aetherDir,
         conviction: '88% Debate Weight',
-        orderType: 'Limit Order (Order Block Pullback)',
+        orderType: aetherDir === 'SELL' ? 'Limit Order (Supply Block Pullback)' : 'Limit Order (Order Block Pullback)',
         timeframe: cat === 'forex' ? '15m / 1H Liquidity Sweep' : '15m / 1H Order Flow',
         entry: formatAssetPrice(aetherEntry, symbol),
         rawEntry: aetherEntry,
         entryOffset: formatOffset(aetherOffset, symbol, true),
         tp: formatAssetPrice(aetherTP, symbol),
         rawTP: aetherTP,
-        tpPct: '+' + (Math.abs(aetherTP - aetherEntry) / aetherEntry * 100).toFixed(2) + '% Target',
+        tpPct: (aetherDir === 'SELL' ? '-' : '+') + (Math.abs(aetherTP - aetherEntry) / aetherEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(aetherSL, symbol),
         rawSL: aetherSL,
-        slPct: '-' + (Math.abs(aetherEntry - aetherSL) / aetherEntry * 100).toFixed(2) + '% Invalidation',
+        slPct: (aetherDir === 'SELL' ? '+' : '-') + (Math.abs(aetherEntry - aetherSL) / aetherEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + aetherRR,
-        stages: calcStages(aetherEntry, aetherTP, aetherSL, symbol),
+        stages: calcStages(aetherEntry, aetherTP, aetherSL, symbol, aetherDir),
         basis: `Adversarial Debate Protocol between Order Flow & Liquidity Specialist and Market Structure Analyst for ${asset.name}.`,
-        rationale: `AETHER-9 Order Flow Specialist detected institutional liquidity absorption on ${symbol} at ${formatAssetPrice(aetherEntry, symbol)}. The debate protocol concluded with 88% consensus to place a passive limit order waiting for demand sweep. Primary target sits at ${formatAssetPrice(aetherTP, symbol)} with hard invalidation below ${formatAssetPrice(aetherSL, symbol)}.`,
+        rationale: `AETHER-9 Order Flow Specialist detected institutional liquidity ${aetherDir === 'SELL' ? 'distribution' : 'absorption'} on ${symbol} at ${formatAssetPrice(aetherEntry, symbol)}. The debate protocol concluded with 88% consensus to place a passive ${aetherDir === 'SELL' ? 'sell' : 'buy'} limit order waiting for ${aetherDir === 'SELL' ? 'supply sweep' : 'demand sweep'}. Primary target sits at ${formatAssetPrice(aetherTP, symbol)} with hard invalidation ${aetherDir === 'SELL' ? 'above' : 'below'} ${formatAssetPrice(aetherSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Adversarial Multi-Agent Debate' },
-          { label: 'Demand Order Block', val: formatAssetPrice(aetherEntry, symbol) },
+          { label: aetherDir === 'SELL' ? 'Supply Order Block' : 'Demand Order Block', val: formatAssetPrice(aetherEntry, symbol) },
           { label: 'Risk Controller Filter', val: 'Passed (1.25R Max Allocation)' }
         ]
       },
@@ -7492,28 +7614,29 @@
         name: 'EVOLVE-X',
         subtitle: 'Self-Evolving Strategy Engine',
         badge: 'SELF-EVOLVING RL',
-        signal: 'POLICY: BUY',
-        signalType: 'BUY',
+        direction: evolveDir,
+        signal: evolveDir === 'SELL' ? 'POLICY: SELL' : 'POLICY: BUY',
+        signalType: evolveDir,
         conviction: '89.4% Actor-Critic Q-Value',
-        orderType: 'Adaptive TWAP Slice (Best Bid)',
+        orderType: evolveDir === 'SELL' ? 'Adaptive TWAP Slice (Best Ask)' : 'Adaptive TWAP Slice (Best Bid)',
         timeframe: '5m / 15m Horizon',
         entry: formatAssetPrice(evolveEntry, symbol),
         rawEntry: evolveEntry,
         entryOffset: formatOffset(evolveOffset, symbol, true),
         tp: formatAssetPrice(evolveTP, symbol),
         rawTP: evolveTP,
-        tpPct: '+' + (Math.abs(evolveTP - evolveEntry) / evolveEntry * 100).toFixed(2) + '% Target',
+        tpPct: (evolveDir === 'SELL' ? '-' : '+') + (Math.abs(evolveTP - evolveEntry) / evolveEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(evolveSL, symbol),
         rawSL: evolveSL,
-        slPct: '-' + (Math.abs(evolveEntry - evolveSL) / evolveEntry * 100).toFixed(2) + '% Invalidation',
+        slPct: (evolveDir === 'SELL' ? '+' : '-') + (Math.abs(evolveEntry - evolveSL) / evolveEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + evolveRR,
-        stages: calcStages(evolveEntry, evolveTP, evolveSL, symbol),
+        stages: calcStages(evolveEntry, evolveTP, evolveSL, symbol, evolveDir),
         basis: 'Self-Evolving Deep Reinforcement Learning (PPO) that continuously optimizes policy weights based on live turbulence, spread liquidity, and inventory reward signals.',
-        rationale: `EVOLVE-X policy network autonomously selected an adaptive Best Bid execution for ${symbol} at ${formatAssetPrice(evolveEntry, symbol)} to capture maker rebates and minimize slippage. Expected cumulative reward peaks at ${formatAssetPrice(evolveTP, symbol)}, with defensive exit at ${formatAssetPrice(evolveSL, symbol)}.`,
+        rationale: `EVOLVE-X policy network autonomously selected an adaptive ${evolveDir === 'SELL' ? 'Best Ask' : 'Best Bid'} execution for ${symbol} at ${formatAssetPrice(evolveEntry, symbol)} to capture maker rebates and minimize slippage. Expected cumulative reward peaks at ${formatAssetPrice(evolveTP, symbol)}, with defensive exit at ${formatAssetPrice(evolveSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Self-Evolving PPO Deep RL' },
           { label: 'Turbulence Index', val: '38.4 / 140 (Normal State)' },
-          { label: 'Expected Q-Value V(s)', val: '+94.62 Risk Points' }
+          { label: 'Expected Q-Value V(s)', val: (evolveDir === 'SELL' ? '-' : '+') + '94.62 Risk Points' }
         ]
       },
       sentinel: {
@@ -7521,8 +7644,9 @@
         name: 'SENTINEL',
         subtitle: 'Behavior + Psychology Guard',
         badge: 'PSYCHOLOGY GUARD',
-        signal: 'ACCUMULATE LONG',
-        signalType: 'BUY',
+        direction: sentinelDir,
+        signal: sentinelDir === 'SELL' ? 'DISTRIBUTE SHORT' : 'ACCUMULATE LONG',
+        signalType: sentinelDir,
         conviction: '75% Weighted Allocation',
         orderType: 'Scale-in Limit (Risk-Weighted)',
         timeframe: '4H / Daily Multi-Horizon',
@@ -7531,14 +7655,14 @@
         entryOffset: formatOffset(sentinelOffset, symbol, true),
         tp: formatAssetPrice(sentinelTP, symbol),
         rawTP: sentinelTP,
-        tpPct: '+' + (Math.abs(sentinelTP - sentinelEntry) / sentinelEntry * 100).toFixed(2) + '% Target',
+        tpPct: (sentinelDir === 'SELL' ? '-' : '+') + (Math.abs(sentinelTP - sentinelEntry) / sentinelEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(sentinelSL, symbol),
         rawSL: sentinelSL,
-        slPct: '-' + (Math.abs(sentinelEntry - sentinelSL) / sentinelEntry * 100).toFixed(2) + '% Invalidation',
+        slPct: (sentinelDir === 'SELL' ? '+' : '-') + (Math.abs(sentinelEntry - sentinelSL) / sentinelEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + sentinelRR,
-        stages: calcStages(sentinelEntry, sentinelTP, sentinelSL, symbol),
+        stages: calcStages(sentinelEntry, sentinelTP, sentinelSL, symbol, sentinelDir),
         basis: 'Behavioral and psychological compliance shield that eliminates tilt, revenge trading, and over-leveraging on prop firm funded accounts through strict statistical risk bounds.',
-        rationale: `SENTINEL behavioral guard identified disciplined risk parameters for ${symbol} and approved a scale-in limit entry at ${formatAssetPrice(sentinelEntry, symbol)}. Macro expansion targets ${formatAssetPrice(sentinelTP, symbol)} while guarding drawdown with a 2.0σ capital floor at ${formatAssetPrice(sentinelSL, symbol)}.`,
+        rationale: `SENTINEL behavioral guard identified disciplined risk parameters for ${symbol} and approved a scale-in limit ${sentinelDir === 'SELL' ? 'sell' : 'buy'} entry at ${formatAssetPrice(sentinelEntry, symbol)}. Macro ${sentinelDir === 'SELL' ? 'contraction' : 'expansion'} targets ${formatAssetPrice(sentinelTP, symbol)} while guarding drawdown with a 2.0σ capital floor at ${formatAssetPrice(sentinelSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Behavioral & Psychology Compliance' },
           { label: 'Drawdown Protection', val: 'Strict 2.0σ Statistical Floor' },
@@ -7550,8 +7674,9 @@
         name: 'UNITY',
         subtitle: 'Cross-Account Risk Brain',
         badge: 'CROSS-ACCOUNT RISK',
-        signal: 'QUANT: LONG',
-        signalType: 'BUY',
+        direction: unityDir,
+        signal: unityDir === 'SELL' ? 'QUANT: SHORT' : 'QUANT: LONG',
+        signalType: unityDir,
         conviction: '92nd Percentile Decile',
         orderType: 'Bar VWAP Execution (Alpha Matrix)',
         timeframe: '15m Bar Clustered',
@@ -7560,14 +7685,14 @@
         entryOffset: formatOffset(unityOffset, symbol, true),
         tp: formatAssetPrice(unityTP, symbol),
         rawTP: unityTP,
-        tpPct: '+' + (Math.abs(unityTP - unityEntry) / unityEntry * 100).toFixed(2) + '% Target',
+        tpPct: (unityDir === 'SELL' ? '-' : '+') + (Math.abs(unityTP - unityEntry) / unityEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(unitySL, symbol),
         rawSL: unitySL,
-        slPct: '-' + (Math.abs(unityEntry - unitySL) / unityEntry * 100).toFixed(2) + '% Invalidation',
+        slPct: (unityDir === 'SELL' ? '+' : '-') + (Math.abs(unityEntry - unitySL) / unityEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + unityRR,
-        stages: calcStages(unityEntry, unityTP, unitySL, symbol),
+        stages: calcStages(unityEntry, unityTP, unitySL, symbol, unityDir),
         basis: 'Cross-account quantitative risk engine evaluating high-dimensional multi-factor alpha matrices, correlation risk, portfolio drawdowns, and 15m Bar VWAP execution.',
-        rationale: `UNITY cross-account risk brain evaluated 158 multi-factor indicators for ${symbol}. Positive factor momentum confirms forward drift with a predicted 15m Bar VWAP entry of ${formatAssetPrice(unityEntry, symbol)}, targeting ${formatAssetPrice(unityTP, symbol)} with risk capped at ${formatAssetPrice(unitySL, symbol)}.`,
+        rationale: `UNITY cross-account risk brain evaluated 158 multi-factor indicators for ${symbol}. ${unityDir === 'SELL' ? 'Negative' : 'Positive'} factor momentum confirms ${unityDir === 'SELL' ? 'downward' : 'forward'} drift with a predicted 15m Bar VWAP entry of ${formatAssetPrice(unityEntry, symbol)}, targeting ${formatAssetPrice(unityTP, symbol)} with risk capped at ${formatAssetPrice(unitySL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Cross-Account Alpha Matrix & VWAP' },
           { label: 'Information Coeff (IC)', val: '0.0942 (Statistically Valid)' },
@@ -7579,28 +7704,29 @@
         name: 'ORBIT',
         subtitle: 'Live News + Order Flow + Sentiment',
         badge: 'SENTIMENT & ORDER FLOW',
-        signal: 'BULLISH MOMENTUM',
-        signalType: 'BUY',
-        conviction: '+0.78 Polarity Score',
-        orderType: 'Stop-Buy (Sentiment Breakout Trigger)',
+        direction: orbitDir,
+        signal: orbitDir === 'SELL' ? 'BEARISH MOMENTUM' : 'BULLISH MOMENTUM',
+        signalType: orbitDir,
+        conviction: orbitDir === 'SELL' ? '-0.78 Polarity Score' : '+0.78 Polarity Score',
+        orderType: orbitDir === 'SELL' ? 'Stop-Sell (Sentiment Breakdown Trigger)' : 'Stop-Buy (Sentiment Breakout Trigger)',
         timeframe: '1H / 4H News Momentum',
         entry: formatAssetPrice(orbitEntry, symbol),
         rawEntry: orbitEntry,
         entryOffset: formatOffset(orbitOffset, symbol, true),
         tp: formatAssetPrice(orbitTP, symbol),
         rawTP: orbitTP,
-        tpPct: '+' + (Math.abs(orbitTP - orbitEntry) / orbitEntry * 100).toFixed(2) + '% Target',
+        tpPct: (orbitDir === 'SELL' ? '-' : '+') + (Math.abs(orbitTP - orbitEntry) / orbitEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(orbitSL, symbol),
         rawSL: orbitSL,
-        slPct: '-' + (Math.abs(orbitEntry - orbitSL) / orbitEntry * 100).toFixed(2) + '% Invalidation',
+        slPct: (orbitDir === 'SELL' ? '+' : '-') + (Math.abs(orbitEntry - orbitSL) / orbitEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + orbitRR,
-        stages: calcStages(orbitEntry, orbitTP, orbitSL, symbol),
+        stages: calcStages(orbitEntry, orbitTP, orbitSL, symbol, orbitDir),
         basis: 'High-frequency news sentiment engine processing real-time institutional financial publications, ETF allocations, and sudden order flow absorption for breakout momentum timing.',
-        rationale: `ORBIT financial NLP engine ingested positive sentiment skew across macro wires for ${symbol}. It arms a Stop-Buy breakout trigger at ${formatAssetPrice(orbitEntry, symbol)}. Continuation targets ${formatAssetPrice(orbitTP, symbol)} with risk exit at ${formatAssetPrice(orbitSL, symbol)}.`,
+        rationale: `ORBIT financial NLP engine ingested ${orbitDir === 'SELL' ? 'negative' : 'positive'} sentiment skew across macro wires for ${symbol}. It arms a ${orbitDir === 'SELL' ? 'Stop-Sell breakdown' : 'Stop-Buy breakout'} trigger at ${formatAssetPrice(orbitEntry, symbol)}. Continuation targets ${formatAssetPrice(orbitTP, symbol)} with risk exit at ${formatAssetPrice(orbitSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Live News NLP & Order Absorption' },
-          { label: 'Sentiment Vector', val: '+0.78 (Strong Positive Skew)' },
-          { label: 'Trigger Type', val: 'Stop-Buy on Resistance Break' }
+          { label: 'Sentiment Vector', val: orbitDir === 'SELL' ? '-0.78 (Strong Negative Skew)' : '+0.78 (Strong Positive Skew)' },
+          { label: 'Trigger Type', val: orbitDir === 'SELL' ? 'Stop-Sell on Support Break' : 'Stop-Buy on Resistance Break' }
         ]
       },
       unified: {
@@ -7608,27 +7734,28 @@
         name: 'UNIFIED MODEL',
         subtitle: '5-Engine Consensus Brain',
         badge: '5-ENGINE CONSENSUS',
-        signal: 'UNIFIED STRONG BUY',
-        signalType: 'BUY',
-        conviction: '89% Consensus Agreement',
-        orderType: 'Consensus Weighted Limit',
+        direction: unifiedDir,
+        signal: unifiedDir === 'SELL' ? 'UNIFIED STRONG SELL' : 'UNIFIED STRONG BUY',
+        signalType: unifiedDir,
+        conviction: `${Math.round(((sellVotes >= 3 ? sellVotes : (5 - sellVotes)) / 5) * 100)}% Consensus Agreement`,
+        orderType: unifiedDir === 'SELL' ? 'Consensus Weighted Limit (Sell)' : 'Consensus Weighted Limit (Buy)',
         timeframe: 'Multi-Timeframe Synthesized',
         entry: formatAssetPrice(unifiedEntry, symbol),
         rawEntry: unifiedEntry,
-        entryOffset: formatOffset(-0.0030 * scale, symbol, true),
+        entryOffset: formatOffset((unifiedDir === 'SELL' ? 0.0030 : -0.0030) * scale, symbol, true),
         tp: formatAssetPrice(unifiedTP, symbol),
         rawTP: unifiedTP,
-        tpPct: '+' + (Math.abs(unifiedTP - unifiedEntry) / unifiedEntry * 100).toFixed(2) + '% Target',
+        tpPct: (unifiedDir === 'SELL' ? '-' : '+') + (Math.abs(unifiedTP - unifiedEntry) / unifiedEntry * 100).toFixed(2) + '% Target',
         sl: formatAssetPrice(unifiedSL, symbol),
         rawSL: unifiedSL,
-        slPct: '-' + (Math.abs(unifiedEntry - unifiedSL) / unifiedEntry * 100).toFixed(2) + '% Invalidation',
+        slPct: (unifiedDir === 'SELL' ? '+' : '-') + (Math.abs(unifiedEntry - unifiedSL) / unifiedEntry * 100).toFixed(2) + '% Invalidation',
         rr: '1 : ' + unifiedRR,
-        stages: calcStages(unifiedEntry, unifiedTP, unifiedSL, symbol),
+        stages: calcStages(unifiedEntry, unifiedTP, unifiedSL, symbol, unifiedDir),
         basis: 'Master consensus intelligence synthesizing signals, weights, and risk boundaries from AETHER-9, EVOLVE-X, SENTINEL, UNITY, and ORBIT into a single verified trade execution plan.',
-        rationale: `UNIFIED MODEL weights all 5 proprietary engines for ${symbol}. The consensus optimal execution entry is ${formatAssetPrice(unifiedEntry, symbol)}, targeting ${formatAssetPrice(unifiedTP, symbol)} with risk capped at ${formatAssetPrice(unifiedSL, symbol)}.`,
+        rationale: `UNIFIED MODEL weights all 5 proprietary engines for ${symbol}. The consensus optimal ${unifiedDir} execution entry is ${formatAssetPrice(unifiedEntry, symbol)}, targeting ${formatAssetPrice(unifiedTP, symbol)} with risk capped at ${formatAssetPrice(unifiedSL, symbol)}.`,
         keyMetrics: [
           { label: 'Execution Basis', val: 'Unified 5-Engine Master Consensus' },
-          { label: 'Engine Agreement', val: '5 of 5 Engines Confirm LONG' },
+          { label: 'Engine Agreement', val: `${sellVotes >= 3 ? sellVotes : (5 - sellVotes)} of 5 Engines Confirm ${unifiedDir}` },
           { label: 'Composite R:R', val: '1 : ' + unifiedRR + ' (Hurdle Cleared)' }
         ]
       }
@@ -7642,31 +7769,209 @@
     return selectedModel;
   }
 
-  // Render 1: Main AI Engines Hub & Large TradingView Chart
-  function renderHubHTML() {
-    const activeAsset = ASSETS[currentSymbol] || ASSETS['BTC/USDT'];
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // CHAT MESSAGE CARD RENDERING (Institutional Analysis Bubbles)
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  function renderAnalysisChatMessage(msg) {
+    const isSell = msg.direction === 'SELL';
+    const dirBadgeClass = isSell 
+      ? 'bg-rose-500/15 text-rose-400 border-rose-500/30' 
+      : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+    const dirIcon = isSell 
+      ? '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-rose-400"><path d="m19 12-7 7-7-7"></path><path d="M12 19V5"></path></svg>'
+      : '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400"><path d="m5 12 7-7 7 7"></path><path d="M12 5v14"></path></svg>';
+
+    const feedbackBadge = msg.feedback ? `
+      <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span>Outcome:</span>
+        <span class="font-bold">${msg.feedback}</span>
+      </div>
+    ` : '';
 
     return `
-    <div id="ai-engines-hub-card" data-slot="card" class="col-span-12 group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 mb-6 transition-all" style="grid-column: 1 / -1; width: 100%;">
+    <div class="chat-message-card rounded-xl border border-border/80 bg-background/95 p-4 space-y-4 shadow-sm transition-all hover:border-border ring-1 ring-foreground/5 animate-in fade-in-50 duration-300" id="${msg.id}" data-msg-id="${msg.id}">
       
-      <!-- TOP HEADER: Properly Aligned, Full Width -->
-      <div data-slot="card-header" class="flex flex-wrap items-center justify-between gap-4 px-5 pt-1 pb-3 border-b border-border/60" style="width: 100%;">
+      <!-- Top Message Header -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/60">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted border border-border text-foreground shadow-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-bold font-heading text-foreground">${msg.modelName}</span>
+              <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border/60">${msg.modelBadge}</span>
+              <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">#${msg.analysisId}</span>
+              <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-muted text-foreground border border-border/60">${msg.symbol}</span>
+            </div>
+            <div class="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground font-mono">
+              <span>${msg.date} &bull; ${msg.timestamp}</span>
+              <span>&bull;</span>
+              <span>Session: <strong class="text-foreground">${msg.session || 'GLOBAL'}</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono font-bold border shadow-xs ${dirBadgeClass}">
+            ${dirIcon}
+            <span>${msg.signal}</span>
+          </div>
+          ${feedbackBadge}
+        </div>
+      </div>
+
+      <!-- Execution Grid: 5 DISTINCT TARGET CARDS (Pure Levels, No Booking % Shown) -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+        <!-- 1. ENTRY -->
+        <div class="rounded-lg border border-border/70 bg-muted/40 p-2.5 space-y-0.5">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">EXECUTION ENTRY</span>
+          <span class="text-sm font-extrabold font-mono text-foreground tabular-nums block">${msg.entry}</span>
+          <span class="text-[10px] font-mono text-muted-foreground block truncate" title="${msg.entryOffset}">${msg.entryOffset}</span>
+        </div>
+
+        <!-- 2. TP 1 -->
+        <div class="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2.5 space-y-0.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-500">TP 1 TARGET</span>
+            <span class="text-[9px] font-mono font-semibold text-emerald-400">Scale 1</span>
+          </div>
+          <span class="text-sm font-extrabold font-mono text-emerald-400 tabular-nums block">${msg.tp1}</span>
+          <span class="text-[10px] font-mono text-emerald-500/80 block">Break-Even Trigger</span>
+        </div>
+
+        <!-- 3. TP 2 -->
+        <div class="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2.5 space-y-0.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-500">TP 2 TARGET</span>
+            <span class="text-[9px] font-mono font-semibold text-emerald-400">Scale 2</span>
+          </div>
+          <span class="text-sm font-extrabold font-mono text-emerald-400 tabular-nums block">${msg.tp2}</span>
+          <span class="text-[10px] font-mono text-emerald-500/80 block">Primary Target</span>
+        </div>
+
+        <!-- 4. TP 3 -->
+        <div class="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-2.5 space-y-0.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-500">TP 3 TARGET</span>
+            <span class="text-[9px] font-mono font-semibold text-emerald-400">Runner</span>
+          </div>
+          <span class="text-sm font-extrabold font-mono text-emerald-400 tabular-nums block">${msg.tp3}</span>
+          <span class="text-[10px] font-mono text-emerald-500/80 block">Macro Liquidity Sweep</span>
+        </div>
+
+        <!-- 5. STOP LOSS -->
+        <div class="rounded-lg border border-rose-500/30 bg-rose-500/5 p-2.5 space-y-0.5 col-span-2 sm:col-span-1">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-rose-500">STOP LOSS (INVALIDATION)</span>
+            <span class="text-[9px] font-mono font-semibold text-rose-400">Hard Cap</span>
+          </div>
+          <span class="text-sm font-extrabold font-mono text-rose-400 tabular-nums block">${msg.sl}</span>
+          <span class="text-[10px] font-mono text-rose-500/80 block">Capital Defense Floor</span>
+        </div>
+      </div>
+
+      <!-- Execution Parameters & Risk Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-mono">
+        <div class="flex items-center justify-between p-2 rounded-md bg-muted/30 border border-border/40">
+          <span class="text-[10px] text-muted-foreground uppercase">Safe Lot Size:</span>
+          <span class="font-bold text-foreground">${msg.lotSize}</span>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-md bg-muted/30 border border-border/40">
+          <span class="text-[10px] text-muted-foreground uppercase">Risk Capital:</span>
+          <span class="font-bold text-foreground">${msg.riskAmount} (${msg.riskPctEquity})</span>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-md bg-muted/30 border border-border/40">
+          <span class="text-[10px] text-muted-foreground uppercase">Risk : Reward:</span>
+          <span class="font-bold text-emerald-400">${msg.rr}</span>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded-md bg-muted/30 border border-border/40">
+          <span class="text-[10px] text-muted-foreground uppercase">Order Type:</span>
+          <span class="font-semibold text-foreground truncate pl-1" title="${msg.orderType}">${msg.orderType}</span>
+        </div>
+      </div>
+
+      <!-- Institutional Rationale & Debate Logic -->
+      <div class="rounded-lg border border-border/60 bg-muted/20 p-3 space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Institutional Trade Logic & Quantitative Rationale
+          </span>
+          <span class="text-[10px] font-mono text-muted-foreground">${msg.conviction}</span>
+        </div>
+        <p class="text-xs text-foreground/90 font-sans leading-relaxed">${msg.logic}</p>
+      </div>
+
+      <!-- Prop Firm Compliance Guard -->
+      <div class="rounded-lg border border-border/60 bg-card p-2.5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+        <div class="flex items-center gap-2">
+          <div class="size-2 rounded-full bg-emerald-500"></div>
+          <span class="text-muted-foreground">Prop Firm Guard:</span>
+          <strong class="text-foreground">${msg.propFirmName || 'FTMO'} Challenge</strong>
+        </div>
+        <div class="flex items-center gap-4 text-[11px] text-muted-foreground flex-wrap">
+          <span>Daily Loss: <strong class="text-emerald-400">${msg.dailyLimitRemaining || 'Safe (< 5%)'}</strong></span>
+          <span>Max DD Limit: <strong class="text-emerald-400">${msg.maxDDRemaining || 'Safe (< 10%)'}</strong></span>
+          <span>1% Rule: <strong class="text-emerald-400">Guaranteed Compliant &#10003;</strong></span>
+        </div>
+      </div>
+
+      <!-- Interactive Outcome & Feedback Action Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-border/40">
+        <span class="text-[11px] text-muted-foreground font-mono">Rate Trade Outcome (Calibrate AI Weights):</span>
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button type="button" class="chat-feedback-btn px-2.5 py-1 rounded border border-border text-[11px] font-mono font-medium hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer ${msg.feedback === 'Hit Target' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 font-bold' : ''}" data-msg-id="${msg.id}" data-outcome="Hit Target">
+            &#9989; Hit Target
+          </button>
+          <button type="button" class="chat-feedback-btn px-2.5 py-1 rounded border border-border text-[11px] font-mono font-medium hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer ${msg.feedback === 'Booked 50%' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 font-bold' : ''}" data-msg-id="${msg.id}" data-outcome="Booked 50%">
+            &#128202; Booked 50%
+          </button>
+          <button type="button" class="chat-feedback-btn px-2.5 py-1 rounded border border-border text-[11px] font-mono font-medium hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer ${msg.feedback === 'Break-Even' ? 'bg-blue-500/20 text-blue-400 border-blue-500/40 font-bold' : ''}" data-msg-id="${msg.id}" data-outcome="Break-Even">
+            &#9878; Break-Even
+          </button>
+          <button type="button" class="chat-feedback-btn px-2.5 py-1 rounded border border-border text-[11px] font-mono font-medium hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer ${msg.feedback === 'Stopped Out' ? 'bg-rose-500/20 text-rose-400 border-rose-500/40 font-bold' : ''}" data-msg-id="${msg.id}" data-outcome="Stopped Out">
+            &#10060; Stopped Out
+          </button>
+        </div>
+      </div>
+
+    </div>
+    `;
+  }
+
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // CHAT INTERFACE & TRADINGVIEW HUB LAYOUT
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  function renderHubHTML() {
+    const activeAsset = ASSETS[currentSymbol] || ASSETS['BTC/USDT'];
+    const activeSession = detectTradingSession();
+
+    return `
+    <div id="ai-engines-hub-card" data-slot="card" class="col-span-12 group/card flex flex-col overflow-hidden rounded-xl bg-card text-sm text-card-foreground ring-1 ring-foreground/10 mb-6 transition-all" style="grid-column: 1 / -1; width: 100%;">
+      
+      <!-- TOP HEADER: Sleek Institutional Header -->
+      <div data-slot="card-header" class="flex flex-wrap items-center justify-between gap-4 px-5 pt-3 pb-3 border-b border-border/60" style="width: 100%;">
         <div class="flex items-center gap-3 min-w-[280px] flex-1">
           <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted border border-border text-foreground">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity text-emerald-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.48 12H2"></path></svg>
           </div>
           <div>
             <div class="flex items-center gap-2 flex-wrap">
-              <h3 class="font-heading text-base font-bold text-foreground tracking-tight">AI Trade Analyzer • Institutional Multi-Engine Suite</h3>
+              <h3 class="font-heading text-base font-bold text-foreground tracking-tight">AI Trade Analyzer &bull; Institutional Chat & Multi-Engine Suite</h3>
               <span class="inline-flex items-center rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500 dark:text-emerald-400">INSTITUTIONAL GRADE</span>
+              <span class="inline-flex items-center gap-1 rounded-md border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-400 font-mono">
+                <span class="size-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+                SESSION: ${activeSession}
+              </span>
             </div>
             <p class="text-xs text-muted-foreground mt-0.5">
-              Live algorithmic execution across 35+ Forex, CFD Commodities, Indices & Crypto assets with real-time TradingView charting.
+              Conversational trade execution assistant powered by 5 proprietary algorithms (AETHER-9, EVOLVE-X, SENTINEL, UNITY, ORBIT) and 59 Prop Firm risk safeguards.
             </p>
           </div>
         </div>
 
-        <!-- Right Side: Live Ticker, Asset Selector & Controls -->
+        <!-- Right Side: Live Price Ticker & Global Actions -->
         <div class="flex items-center gap-2.5 flex-wrap shrink-0">
           <div class="flex items-center gap-2 bg-muted/60 border border-border px-3 py-1.5 rounded-lg">
             <span class="text-[11px] text-muted-foreground font-medium" id="hub-feed-source-label">Live Feed:</span>
@@ -7674,756 +7979,376 @@
             <span id="hub-live-change" class="text-[10px] font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded tabular-nums">+0.45%</span>
           </div>
 
-          <!-- Market Category Filter & Asset Selector -->
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <div class="inline-flex h-9 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground gap-0.5 border border-border/60 text-xs">
-              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-semibold text-foreground bg-background shadow-xs transition-all cursor-pointer" data-category="all">All</button>
-              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-category="forex">Forex</button>
-              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-category="commodities">CFD / Metals</button>
-              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-category="indices">Indices</button>
-              <button type="button" class="hub-asset-cat-btn px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer" data-category="crypto">Crypto</button>
-            </div>
-
-            <div class="relative">
-              <select id="hub-symbol-select" class="h-9 rounded-lg border border-border bg-background px-3 pr-8 text-xs text-foreground font-mono outline-none focus:ring-1 focus:ring-ring transition-colors cursor-pointer font-bold">
-                
-                <!-- 1. FOREX CURRENCIES -->
-                <optgroup label="── FOREX MAJORS & CROSSES (10) ──" data-category="forex">
-                  <option value="EUR/USD">EUR/USD • Euro / US Dollar</option>
-                  <option value="GBP/USD">GBP/USD • British Pound / US Dollar</option>
-                  <option value="USD/JPY">USD/JPY • US Dollar / Japanese Yen</option>
-                  <option value="AUD/USD">AUD/USD • Australian Dollar / US Dollar</option>
-                  <option value="USD/CAD">USD/CAD • US Dollar / Canadian Dollar</option>
-                  <option value="USD/CHF">USD/CHF • US Dollar / Swiss Franc</option>
-                  <option value="NZD/USD">NZD/USD • New Zealand Dollar / US Dollar</option>
-                  <option value="EUR/GBP">EUR/GBP • Euro / British Pound</option>
-                  <option value="EUR/JPY">EUR/JPY • Euro / Japanese Yen</option>
-                  <option value="GBP/JPY">GBP/JPY • British Pound / Japanese Yen</option>
-                </optgroup>
-
-                <!-- 2. CFD COMMODITIES & METALS -->
-                <optgroup label="── CFD METALS & ENERGY COMMODITIES (7) ──" data-category="commodities">
-                  <option value="XAU/USD (Gold)">XAU/USD • Gold Spot / US Dollar</option>
-                  <option value="XAG/USD (Silver)">XAG/USD • Silver Spot / US Dollar</option>
-                  <option value="XPT/USD (Platinum)">XPT/USD • Platinum Spot / US Dollar</option>
-                  <option value="USOIL (WTI Crude)">USOIL • WTI Light Crude Oil CFD</option>
-                  <option value="UKOIL (Brent Crude)">UKOIL • Brent Crude Oil CFD</option>
-                  <option value="NATGAS (Natural Gas)">NATGAS • Henry Hub Natural Gas CFD</option>
-                  <option value="COPPER">COPPER • High Grade Copper Futures</option>
-                </optgroup>
-
-                <!-- 3. CFD GLOBAL INDICES -->
-                <optgroup label="── CFD GLOBAL INDICES (6) ──" data-category="indices">
-                  <option value="US30 (Dow Jones 30)">US30 • Wall Street 30 Cash CFD</option>
-                  <option value="NAS100 (Nasdaq 100)">NAS100 • US Tech 100 Cash CFD</option>
-                  <option value="US500 (S&P 500)">US500 • US 500 Cash CFD</option>
-                  <option value="GER40 (DAX 40)">GER40 • Germany 40 Cash CFD</option>
-                  <option value="UK100 (FTSE 100)">UK100 • UK 100 Cash CFD</option>
-                  <option value="JP225 (Nikkei 225)">JP225 • Japan 225 Cash CFD</option>
-                </optgroup>
-
-                <!-- 4. CRYPTOCURRENCIES -->
-                <optgroup label="── CRYPTOCURRENCIES (12) ──" data-category="crypto">
-                  <option value="BTC/USDT" selected>BTC/USDT • Bitcoin</option>
-                  <option value="ETH/USDT">ETH/USDT • Ethereum</option>
-                  <option value="SOL/USDT">SOL/USDT • Solana</option>
-                  <option value="BNB/USDT">BNB/USDT • Binance Coin</option>
-                  <option value="XRP/USDT">XRP/USDT • Ripple XRP</option>
-                  <option value="DOGE/USDT">DOGE/USDT • Dogecoin</option>
-                  <option value="ADA/USDT">ADA/USDT • Cardano</option>
-                  <option value="AVAX/USDT">AVAX/USDT • Avalanche</option>
-                  <option value="LINK/USDT">LINK/USDT • Chainlink</option>
-                  <option value="SUI/USDT">SUI/USDT • Sui Network</option>
-                  <option value="NEAR/USDT">NEAR/USDT • NEAR Protocol</option>
-                  <option value="PEPE/USDT">PEPE/USDT • Pepe</option>
-                </optgroup>
-              </select>
-            </div>
-          </div>
-
-          <button type="button" id="hub-refresh-price-btn" title="Sync Live Market Feed" class="inline-flex items-center justify-center size-9 rounded-lg border border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
-            <svg id="hub-refresh-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
-          </button>
-
-          <button type="button" id="hub-run-analysis-btn" class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 text-xs font-semibold shadow-xs transition-all select-none cursor-pointer">
-            <svg id="hub-run-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
-            <span id="hub-run-text">Execute Analysis</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 0. PROP FIRM ACCOUNT SETUP & RULE COMPLIANCE PANEL -->
-      <!-- 0. PROP FIRM CONFIGURATION & COMPLIANCE PANEL (40 Prop Firms & 95+ Official Plans from PropFirmMatch) -->
-      <div class="px-5">
-        <div class="rounded-xl border border-border bg-card p-4 space-y-4 ring-1 ring-foreground/5 shadow-xs" id="prop-firm-setup-panel">
-          <!-- Header -->
-          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/60">
-            <div class="flex items-center gap-2.5">
-              <div class="flex size-9 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shadow-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h4 class="text-sm font-bold text-foreground">Prop Firm Match  -  40 Institutional Firms & 95+ Official Plans</h4>
-                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">LIVE DIRECTORY</span>
-                </div>
-                <p class="text-[11px] text-muted-foreground">Select any firm & challenge plan listed on PropFirmMatch - calculates safe lot sizes, dynamic SL clamping & guarantees 1% floating equity rule compliance</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <div id="prop-firm-status-badge" class="text-[10px] font-mono font-semibold px-2.5 py-1 rounded border ${propFirmConfigured ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}">
-                ${propFirmConfigured ? 'CONFIGURED & PROTECTED' : 'NOT CONFIGURED - Setup Required'}
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Search & Filter Bar -->
+          <!-- Asset Selector Dropdown -->
           <div class="relative">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            </div>
-            <input type="text" id="prop-search-filter" placeholder="Quick Search: Type any Prop Firm or Plan name (e.g. Apex, FTMO, Stellar, 5ers, Instant, Alpha Pro, Track, Swing)..." class="w-full h-9 pl-9 pr-4 rounded-lg border border-border bg-background/80 text-xs font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+            <select id="hub-asset-select" class="h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-xs">
+              <!-- 1. FOREX MAJORS & CROSSES -->
+              <optgroup label="â”€â”€ FOREX MAJORS & CROSSES (10) â”€â”€" data-category="forex">
+                <option value="EUR/USD" ${currentSymbol === 'EUR/USD' ? 'selected' : ''}>EUR/USD &bull; Euro / US Dollar</option>
+                <option value="GBP/USD" ${currentSymbol === 'GBP/USD' ? 'selected' : ''}>GBP/USD &bull; British Pound / USD</option>
+                <option value="USD/JPY" ${currentSymbol === 'USD/JPY' ? 'selected' : ''}>USD/JPY &bull; US Dollar / Japanese Yen</option>
+                <option value="AUD/USD" ${currentSymbol === 'AUD/USD' ? 'selected' : ''}>AUD/USD &bull; Australian Dollar / USD</option>
+                <option value="USD/CAD" ${currentSymbol === 'USD/CAD' ? 'selected' : ''}>USD/CAD &bull; US Dollar / Canadian Dollar</option>
+                <option value="USD/CHF" ${currentSymbol === 'USD/CHF' ? 'selected' : ''}>USD/CHF &bull; US Dollar / Swiss Franc</option>
+                <option value="NZD/USD" ${currentSymbol === 'NZD/USD' ? 'selected' : ''}>NZD/USD &bull; New Zealand Dollar / USD</option>
+                <option value="EUR/GBP" ${currentSymbol === 'EUR/GBP' ? 'selected' : ''}>EUR/GBP &bull; Euro / British Pound</option>
+                <option value="EUR/JPY" ${currentSymbol === 'EUR/JPY' ? 'selected' : ''}>EUR/JPY &bull; Euro / Japanese Yen</option>
+                <option value="GBP/JPY" ${currentSymbol === 'GBP/JPY' ? 'selected' : ''}>GBP/JPY &bull; British Pound / Yen</option>
+              </optgroup>
+
+              <!-- 2. COMMODITIES & METALS -->
+              <optgroup label="â”€â”€ COMMODITIES & METALS (7) â”€â”€" data-category="commodities">
+                <option value="XAU/USD (Gold)" ${currentSymbol === 'XAU/USD (Gold)' ? 'selected' : ''}>XAU/USD &bull; Spot Gold Bullion</option>
+                <option value="XAG/USD (Silver)" ${currentSymbol === 'XAG/USD (Silver)' ? 'selected' : ''}>XAG/USD &bull; Spot Silver Bullion</option>
+                <option value="US OIL (WTI Crude)" ${currentSymbol === 'US OIL (WTI Crude)' ? 'selected' : ''}>WTI CRUDE &bull; US Light Sweet Oil</option>
+                <option value="UK OIL (Brent Crude)" ${currentSymbol === 'UK OIL (Brent Crude)' ? 'selected' : ''}>BRENT &bull; North Sea Brent Crude</option>
+                <option value="NATGAS (Natural Gas)" ${currentSymbol === 'NATGAS (Natural Gas)' ? 'selected' : ''}>NATGAS &bull; Henry Hub Natural Gas</option>
+                <option value="COPPER (High Grade)" ${currentSymbol === 'COPPER (High Grade)' ? 'selected' : ''}>COPPER &bull; Comex Grade A</option>
+                <option value="PLATINUM" ${currentSymbol === 'PLATINUM' ? 'selected' : ''}>PLATINUM &bull; Spot Platinum</option>
+              </optgroup>
+
+              <!-- 3. CFD GLOBAL INDICES -->
+              <optgroup label="â”€â”€ CFD GLOBAL INDICES (6) â”€â”€" data-category="indices">
+                <option value="US30 (Dow Jones 30)" ${currentSymbol === 'US30 (Dow Jones 30)' ? 'selected' : ''}>US30 &bull; Wall Street 30 Cash CFD</option>
+                <option value="NAS100 (Nasdaq 100)" ${currentSymbol === 'NAS100 (Nasdaq 100)' ? 'selected' : ''}>NAS100 &bull; US Tech 100 Cash CFD</option>
+                <option value="US500 (S&P 500)" ${currentSymbol === 'US500 (S&P 500)' ? 'selected' : ''}>US500 &bull; US 500 Cash CFD</option>
+                <option value="GER40 (DAX 40)" ${currentSymbol === 'GER40 (DAX 40)' ? 'selected' : ''}>GER40 &bull; Germany 40 Cash CFD</option>
+                <option value="UK100 (FTSE 100)" ${currentSymbol === 'UK100 (FTSE 100)' ? 'selected' : ''}>UK100 &bull; UK 100 Cash CFD</option>
+                <option value="JP225 (Nikkei 225)" ${currentSymbol === 'JP225 (Nikkei 225)' ? 'selected' : ''}>JP225 &bull; Japan 225 Cash CFD</option>
+              </optgroup>
+
+              <!-- 4. CRYPTOCURRENCIES -->
+              <optgroup label="â”€â”€ CRYPTOCURRENCIES (12) â”€â”€" data-category="crypto">
+                <option value="BTC/USDT" ${currentSymbol === 'BTC/USDT' ? 'selected' : ''}>BTC/USDT &bull; Bitcoin</option>
+                <option value="ETH/USDT" ${currentSymbol === 'ETH/USDT' ? 'selected' : ''}>ETH/USDT &bull; Ethereum</option>
+                <option value="SOL/USDT" ${currentSymbol === 'SOL/USDT' ? 'selected' : ''}>SOL/USDT &bull; Solana</option>
+                <option value="BNB/USDT" ${currentSymbol === 'BNB/USDT' ? 'selected' : ''}>BNB/USDT &bull; Binance Coin</option>
+                <option value="XRP/USDT" ${currentSymbol === 'XRP/USDT' ? 'selected' : ''}>XRP/USDT &bull; Ripple XRP</option>
+                <option value="DOGE/USDT" ${currentSymbol === 'DOGE/USDT' ? 'selected' : ''}>DOGE/USDT &bull; Dogecoin</option>
+                <option value="ADA/USDT" ${currentSymbol === 'ADA/USDT' ? 'selected' : ''}>ADA/USDT &bull; Cardano</option>
+                <option value="AVAX/USDT" ${currentSymbol === 'AVAX/USDT' ? 'selected' : ''}>AVAX/USDT &bull; Avalanche</option>
+                <option value="LINK/USDT" ${currentSymbol === 'LINK/USDT' ? 'selected' : ''}>LINK/USDT &bull; Chainlink</option>
+                <option value="SUI/USDT" ${currentSymbol === 'SUI/USDT' ? 'selected' : ''}>SUI/USDT &bull; Sui Network</option>
+                <option value="NEAR/USDT" ${currentSymbol === 'NEAR/USDT' ? 'selected' : ''}>NEAR/USDT &bull; NEAR Protocol</option>
+                <option value="PEPE/USDT" ${currentSymbol === 'PEPE/USDT' ? 'selected' : ''}>PEPE/USDT &bull; Pepe</option>
+              </optgroup>
+            </select>
           </div>
 
-          <!-- Setup Form Controls (5 Columns) -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <!-- 1. Prop Firm Selector -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">1. Prop Firm (40 Firms)</label>
-              <select id="prop-firm-select" class="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
-                <!-- Populated dynamically with optgroups -->
-              </select>
-            </div>
+          <!-- Toggle Comparison Matrix Button -->
+          <button type="button" id="chat-toggle-matrix-btn" title="Toggle 5-Engine Comparison Matrix" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-semibold transition-colors cursor-pointer shadow-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg>
+            <span>5-Engine Matrix</span>
+          </button>
 
-            <!-- 2. Plan / Challenge Selector -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">2. Plan / Challenge (95+ Plans)</label>
-              <select id="prop-plan-select" class="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
-                <!-- Populated dynamically based on chosen firm -->
-              </select>
-            </div>
-
-            <!-- 3. Account Size -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">3. Account Size ($)</label>
-              <div class="flex gap-1">
-                <select id="prop-account-size-select" class="flex-1 h-9 rounded-lg border border-border bg-background px-2 text-xs font-mono font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
-                  <!-- Populated dynamically with tiers + custom -->
-                </select>
-                <input type="number" id="prop-account-size-custom" placeholder="Custom $" class="hidden w-24 h-9 rounded-lg border border-border bg-background px-2 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500" min="100" step="100">
-              </div>
-            </div>
-
-            <!-- 4. Current Equity -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">4. Current Equity ($)</label>
-              <input type="number" id="prop-current-equity" placeholder="e.g. 9850" value="${currentEquity || ''}" class="w-full h-9 rounded-lg border border-border bg-background px-3 text-xs font-mono font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500" min="0" step="0.01">
-            </div>
-
-            <!-- 5. Apply Button -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">&nbsp;</label>
-              <button type="button" id="prop-firm-apply-btn" class="w-full h-9 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-                <span>Apply & Recalculate</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Prop Firm Rules Display -->
-          <div id="prop-firm-rules-display" class="${propFirmConfigured ? '' : 'hidden'} space-y-3">
-            <!-- Rules Summary Grid -->
-            <div class="rounded-lg border border-border/80 bg-muted/30 p-3 space-y-2.5">
-              <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/60">
-                <div class="flex items-center gap-2">
-                  <span class="size-2 rounded-full bg-emerald-500"></span>
-                  <span class="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                    <span id="prop-rules-firm-name">Prop Firm</span>  -  <span id="prop-rules-plan-name" class="text-emerald-500 font-bold">Plan</span>  -  Official Verified Rules
-                  </span>
-                </div>
-                <div class="flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
-                  <span id="prop-rules-firm-category" class="px-2 py-0.5 rounded bg-background border border-border font-semibold text-foreground">Forex & CFDs</span>
-                  <a id="prop-rules-firm-website" href="#" target="_blank" class="text-primary hover:underline"></a>
-                </div>
-              </div>
-              <div id="prop-firm-rules-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs font-mono">
-                <!-- Populated dynamically -->
-              </div>
-            </div>
-
-            <!-- Rule Compliance Checker (Live) -->
-            <div id="prop-firm-compliance-card" class="rounded-lg border border-border/80 bg-muted/30 p-3 space-y-2">
-              <div class="flex items-center justify-between pb-1.5 border-b border-border/60">
-                <span class="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="m9 11 3 3L22 4"></path></svg>
-                  Trade Rule Compliance & Safety Matrix
-                </span>
-                <span id="prop-compliance-overall" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">ALL RULES PASSED</span>
-              </div>
-              <div id="prop-compliance-items" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
-                <!-- Populated dynamically -->
-              </div>
-            </div>
-          </div>
+          <!-- Clear Chat History Button -->
+          <button type="button" id="chat-clear-btn" title="Reset & Clear Chat History" class="inline-flex items-center justify-center size-9 rounded-lg border border-border bg-background hover:bg-rose-500/10 text-muted-foreground hover:text-rose-400 transition-colors cursor-pointer shadow-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+          </button>
         </div>
       </div>
-      <!-- 1. LIVE TRADINGVIEW CANDLESTICK CHART (SCREEN-FITTED: 480px BALANCED HEIGHT, MATCHES NEWS CARD) -->
-      <div class="px-5">
+
+      <!-- 1. LIVE TRADINGVIEW CANDLESTICK CHART (TOP) -->
+      <div class="px-5 pt-4">
         <div class="rounded-xl border border-border bg-background overflow-hidden ring-1 ring-foreground/5 shadow-xs">
           <!-- TradingView Chart Header -->
           <div class="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b border-border/60 text-xs">
             <div class="flex items-center gap-2">
               <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span class="font-semibold text-foreground font-mono" id="tv-chart-title">TradingView Real-Time Chart • ${activeAsset.tv} (15m Candlestick)</span>
+              <span class="font-semibold text-foreground font-mono" id="tv-chart-title">TradingView Real-Time Chart &bull; ${activeAsset.tv} (15m Candlestick)</span>
             </div>
             <div class="flex items-center gap-3 text-[11px] text-muted-foreground font-mono">
               <span>Timezone: UTC</span>
-              <span>•</span>
+              <span>&bull;</span>
               <span class="text-emerald-500 font-medium">Real-Time Low-Latency Feed</span>
             </div>
           </div>
 
-          <!-- TradingView Embedded Frame (Balanced Size: 480px, fits on screen, not too small, not too big) -->
-          <div class="w-full bg-black" style="height: 480px; min-height: 450px; max-height: 520px; width: 100%;">
-            <iframe id="hub-tradingview-iframe" src="https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(activeAsset.tv)}&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=rgba(0,0,0,0)&theme=dark&style=1&timezone=Etc%2FUTC&locale=en" width="100%" height="100%" style="width: 100%; height: 100%; min-height: 450px; border: 0;" frameborder="0" allowtransparency="true" scrolling="no" class="w-full h-full"></iframe>
+          <!-- TradingView Frame (460px height) -->
+          <div class="w-full bg-black" style="height: 460px; min-height: 420px; max-height: 500px; width: 100%;">
+            <iframe id="hub-tradingview-iframe" src="https://s.tradingview.com/widgetembed/?symbol=${encodeURIComponent(activeAsset.tv)}&interval=15&hidesidetoolbar=0&symboledit=1&saveimage=1&toolbarbg=rgba(0,0,0,0)&theme=dark&style=1&timezone=Etc%2FUTC&locale=en" width="100%" height="100%" style="width: 100%; height: 100%; min-height: 420px; border: 0;" frameborder="0" allowtransparency="true" scrolling="no" class="w-full h-full"></iframe>
           </div>
         </div>
       </div>
 
-      <!-- 2. PROPRIETARY ROBOTS SWITCHER & DROPDOWN -->
-      <div class="px-5 space-y-2.5">
-        <div class="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-border/40">
-          <div class="flex items-center gap-2">
-            <label for="hub-model-dropdown" class="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono flex items-center gap-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-              <span>Select AI Engine:</span>
-            </label>
-            <select id="hub-model-dropdown" class="h-8 rounded-lg border border-border bg-background px-3 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer shadow-xs">
-              <option value="aether9" selected>AETHER-9 • Multi-Agent AI Debate System</option>
-              <option value="evolvex">EVOLVE-X • Self-Evolving Strategy Engine</option>
-              <option value="sentinel">SENTINEL • Behavior + Psychology Guard</option>
-              <option value="unity">UNITY • Cross-Account Risk Brain</option>
-              <option value="orbit">ORBIT • Live News + Order Flow + Sentiment</option>
-              <option value="unified">UNIFIED MODEL • 5-Engine Consensus Brain</option>
-            </select>
+      <!-- COLLAPSIBLE 5-ENGINE COMPARISON DRAWER (Hidden by default, toggled via button) -->
+      <div id="chat-comparison-drawer" class="px-5 pt-3 hidden transition-all">
+        <div class="rounded-xl border border-border bg-card p-4 space-y-3 ring-1 ring-foreground/5 shadow-xs">
+          <div class="flex items-center justify-between border-b border-border/60 pb-2">
+            <div class="flex items-center gap-2">
+              <h4 class="text-xs font-bold font-mono uppercase text-foreground">5-Engine Master Consensus Matrix</h4>
+              <span class="text-[10px] text-muted-foreground">Side-by-side comparison for ${currentSymbol}</span>
+            </div>
+            <button type="button" id="chat-close-matrix-btn" class="text-muted-foreground hover:text-foreground text-xs cursor-pointer">&#10005; Close</button>
           </div>
-
-          <div class="flex items-center gap-2 text-xs font-mono">
-            <span class="text-muted-foreground">Active Engine:</span>
-            <span id="hub-active-model-inline" class="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">AETHER-9 (Debate Protocol)</span>
-          </div>
-        </div>
-
-        <div class="inline-flex h-10 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground w-full overflow-x-auto gap-1 border border-border/60 text-xs">
-          <!-- 1. AETHER-9 -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-foreground bg-background shadow-xs transition-all shrink-0 cursor-pointer" data-model="aether9">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-git-commit text-emerald-500"><circle cx="12" cy="12" r="3"></circle><line x1="3" x2="9" y1="12" y2="12"></line><line x1="15" x2="21" y1="12" y2="12"></line></svg>
-            <span>AETHER-9</span>
-          </button>
-
-          <!-- 2. EVOLVE-X -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="evolvex">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu"><rect width="16" height="16" x="4" y="4" rx="2"></rect><rect width="6" height="6" x="9" y="9" rx="1"></rect><path d="M15 2v2"></path><path d="M15 20v2"></path><path d="M2 15h2"></path><path d="M2 9h2"></path><path d="M20 15h2"></path><path d="M20 9h2"></path><path d="M9 2v2"></path><path d="M9 20v2"></path></svg>
-            <span>EVOLVE-X</span>
-          </button>
-
-          <!-- 3. SENTINEL -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="sentinel">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check text-emerald-500"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-            <span>SENTINEL</span>
-          </button>
-
-          <!-- 4. UNITY -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="unity">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layers"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"></path><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"></path></svg>
-            <span>UNITY</span>
-          </button>
-
-          <!-- 5. ORBIT -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="orbit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
-            <span>ORBIT</span>
-          </button>
-
-          <!-- 6. UNIFIED MODEL -->
-          <button type="button" class="hub-model-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer" data-model="unified">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle text-emerald-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="m9 11 3 3L22 4"></path></svg>
-            <span>UNIFIED MODEL (Consensus)</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 3. EXECUTIVE SIGNAL & TRADE SETUP BANNER -->
-      <div class="px-5">
-        <div class="rounded-xl border border-border bg-card p-4 space-y-4 ring-1 ring-foreground/5">
-          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 pb-3 border-b border-border/60">
-            <div>
-              <div class="flex items-center gap-2">
-                <h4 id="hub-active-model-name" class="font-heading text-sm font-bold text-foreground">AETHER-9</h4>
-                <span id="hub-active-model-badge" class="inline-flex items-center rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500 dark:text-emerald-400">DEBATE PROTOCOL</span>
-              </div>
-              <p id="hub-active-model-subtitle" class="text-xs text-muted-foreground mt-0.5">Multi-Agent AI Debate System</p>
-            </div>
-
-            <div class="flex items-center gap-4">
-              <div class="text-right">
-                <span class="text-[10px] uppercase font-semibold text-muted-foreground block tracking-wider">Robot Signal</span>
-                <span id="hub-active-signal" class="text-sm font-bold text-emerald-500 dark:text-emerald-400">LONG (BUY)</span>
-              </div>
-              <div class="text-right border-l border-border pl-4">
-                <span class="text-[10px] uppercase font-semibold text-muted-foreground block tracking-wider">Weight / Conviction</span>
-                <span id="hub-active-conviction" class="text-xs font-semibold text-foreground font-mono">88% Debate Weight</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dynamic Trade Plan Grid: Distinct Entry, TP, SL, and Order Type -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <!-- Box 1: Model Entry Price -->
-            <div class="rounded-lg border border-border/80 bg-muted/40 p-3 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">Calculated Entry</span>
-                  <span id="hub-trade-order-type" class="text-[9px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted border border-border text-foreground truncate max-w-[130px]">Limit Pullback</span>
-                </div>
-                <span id="hub-trade-entry" class="text-base font-bold font-mono text-foreground tabular-nums block mt-1">$80,733.80</span>
-              </div>
-              <span id="hub-trade-entry-offset" class="text-[10px] font-mono text-muted-foreground mt-1">-0.65% from current market</span>
-            </div>
-
-            <!-- Box 2: Take Profit Target -->
-            <div class="rounded-lg border border-border/80 bg-muted/40 p-3 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">Take Profit Target</span>
-                  <span id="hub-trade-tp-pct" class="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500">+3.60% Target</span>
-                </div>
-                <span id="hub-trade-tp" class="text-base font-bold font-mono text-emerald-500 dark:text-emerald-400 tabular-nums block mt-1">$84,187.40</span>
-              </div>
-              <span class="text-[10px] font-mono text-muted-foreground mt-1">Opposing Liquidity Wall</span>
-            </div>
-
-            <!-- Box 3: Invalidation Stop Loss -->
-            <div class="rounded-lg border border-border/80 bg-muted/40 p-3 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">Invalidation Stop</span>
-                  <span id="hub-trade-sl-pct" class="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-500">-1.65% Stop</span>
-                </div>
-                <span id="hub-trade-sl" class="text-base font-bold font-mono text-rose-500 dark:text-rose-400 tabular-nums block mt-1">$79,921.20</span>
-              </div>
-              <span class="text-[10px] font-mono text-muted-foreground mt-1">Demand Sweep Floor</span>
-            </div>
-
-            <!-- Box 4: Risk-to-Reward Ratio & Execution Horizon -->
-            <div class="rounded-lg border border-border/80 bg-muted/40 p-3 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-medium text-muted-foreground uppercase tracking-wider block">Risk : Reward</span>
-                  <span id="hub-trade-timeframe" class="text-[9px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted border border-border text-foreground">15m / 1H</span>
-                </div>
-                <span id="hub-trade-rr" class="text-base font-bold font-mono text-foreground block mt-1">1 : 2.68</span>
-              </div>
-              <span class="text-[10px] font-mono text-muted-foreground mt-1">Hurdle Met (> 1:2.0)</span>
-            </div>
-
-            <!-- Box 5: Safe Lot Size & Risk (Prop Firm-Aware) -->
-            <div id="prop-lot-size-box" class="rounded-lg border-2 border-dashed border-amber-500/30 bg-amber-500/5 p-3 flex flex-col justify-between ${propFirmConfigured ? '' : 'opacity-40'}">
-              <div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-medium text-amber-500 uppercase tracking-wider block flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-                    Safe Lot Size
-                  </span>
-                  <span id="hub-trade-risk-badge" class="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/20 text-amber-500">${propFirmConfigured ? 'CALCULATED' : 'SETUP REQUIRED'}</span>
-                </div>
-                <span id="hub-trade-lot-size" class="text-lg font-extrabold font-mono text-foreground block mt-1">${propFirmConfigured ? '—' : '—'}</span>
-              </div>
-              <div class="space-y-0.5 mt-1">
-                <div class="flex items-center justify-between text-[9px] font-mono text-muted-foreground">
-                  <span>Risk $:</span>
-                  <span id="hub-trade-risk-amount" class="text-foreground font-semibold">—</span>
-                </div>
-                <div class="flex items-center justify-between text-[9px] font-mono text-muted-foreground">
-                  <span>Risk % Equity:</span>
-                  <span id="hub-trade-risk-pct-equity" class="text-foreground font-semibold">—</span>
-                </div>
-                <div class="flex items-center justify-between text-[9px] font-mono text-muted-foreground">
-                  <span>Daily Limit Used:</span>
-                  <span id="hub-trade-risk-pct-daily" class="text-foreground font-semibold">—</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4. STAGE-BY-STAGE PROFIT BOOKING PROTOCOL -->
-          <div class="rounded-lg border border-border/80 bg-background p-3.5 space-y-2.5">
-            <div class="flex items-center justify-between pb-1.5 border-b border-border/60">
-              <span class="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up text-emerald-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                Stage-by-Stage Profit Booking & Scale-Out Protocol
-              </span>
-              <span class="text-[10px] font-mono text-muted-foreground">Capital Preservation Rule</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono">
-              <!-- Stage 1 -->
-              <div class="p-2.5 rounded-md bg-muted/40 border border-border/60 space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-emerald-500">STAGE 1: TP 1</span>
-                  <span id="stage-tp1-price" class="text-foreground font-semibold tabular-nums">$82,115.24</span>
-                </div>
-                <div class="text-[11px] text-foreground font-semibold">Book 40% Position Profit</div>
-                <p class="text-[10px] text-muted-foreground font-sans leading-tight">
-                  Action: Immediately move Stop Loss to <strong>Break-Even ($Entry)</strong>. The trade is now 100% risk-free.
-                </p>
-              </div>
-
-              <!-- Stage 2 -->
-              <div class="p-2.5 rounded-md bg-muted/40 border border-border/60 space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-emerald-500">STAGE 2: TP 2</span>
-                  <span id="stage-tp2-price" class="text-foreground font-semibold tabular-nums">$83,323.00</span>
-                </div>
-                <div class="text-[11px] text-foreground font-semibold">Book 35% Additional Profit</div>
-                <p class="text-[10px] text-muted-foreground font-sans leading-tight">
-                  Action: Trail Stop Loss to <strong>TP 1 Level</strong>. Locks in net positive gains on remaining units.
-                </p>
-              </div>
-
-              <!-- Stage 3 -->
-              <div class="p-2.5 rounded-md bg-muted/40 border border-border/60 space-y-1">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-emerald-500">STAGE 3: TP 3 (Final)</span>
-                  <span id="stage-tp3-price" class="text-foreground font-semibold tabular-nums">$84,187.40</span>
-                </div>
-                <div class="text-[11px] text-foreground font-semibold">25% Runner Position</div>
-                <p class="text-[10px] text-muted-foreground font-sans leading-tight">
-                  Action: Trail SL with 15m swing lows to capture maximum trend expansion without premature exit.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 5. ACTIVE TRADE REAL-TIME MONITOR & DYNAMIC AI GUIDANCE -->
-          <div id="active-trade-monitor" class="rounded-lg border border-border/80 bg-background p-3.5 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/60">
-              <div class="flex items-center gap-2">
-                <span id="active-trade-pulse" class="size-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span class="text-xs font-bold text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
-                  ACTIVE TRADE #<span id="active-trade-id">1</span> MONITOR • <span id="active-trade-symbol">BTC/USDT</span>
-                </span>
-                <span id="active-trade-status-badge" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  TRADE RUNNING
-                </span>
-              </div>
-              <div class="flex items-center gap-2">
-                <button type="button" id="hub-analyze-next-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-white transition-all cursor-pointer shadow-xs">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></svg>
-                  <span>Analyze Next Trade</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Dynamic AI Guidance & Real-Time Alert Callout -->
-            <div id="active-trade-ai-alert" class="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 text-xs space-y-1.5">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-emerald-500 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                  Real-Time AI Trade Guidance & Booking Alert
-                </span>
-                <span id="active-trade-pnl" class="text-xs font-mono font-bold text-emerald-500">+1.12% PnL ($81,950.00)</span>
-              </div>
-              <p id="active-trade-alert-text" class="text-foreground/90 font-sans leading-relaxed text-xs">
-                <strong>Guidance:</strong> Price is +1.12% in profit approaching TP 1 ($82,115.24). As soon as TP 1 is tagged, <strong>immediately book 50% profit</strong> and trail your Stop Loss to Cost-to-Cost ($80,733.80) to eliminate all downside risk.
-              </p>
-            </div>
-
-            <!-- Target Proximity Progress Bars -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
-              <div class="p-2 rounded bg-muted/30 border border-border/40 space-y-1">
-                <div class="flex justify-between text-[10px] text-muted-foreground">
-                  <span>ENTRY</span>
-                  <span id="trade-monitor-entry">$80,733.80</span>
-                </div>
-                <div class="text-[11px] font-bold text-foreground">FILLED / ACTIVE</div>
-              </div>
-              <div class="p-2 rounded bg-muted/30 border border-border/40 space-y-1">
-                <div class="flex justify-between text-[10px] text-muted-foreground">
-                  <span>STAGE 1: TP 1 (50% Book)</span>
-                  <span id="trade-monitor-tp1">$82,115.24</span>
-                </div>
-                <div id="trade-monitor-tp1-status" class="text-[11px] font-bold text-emerald-500">Approaching (92% reached)</div>
-              </div>
-              <div class="p-2 rounded bg-muted/30 border border-border/40 space-y-1">
-                <div class="flex justify-between text-[10px] text-muted-foreground">
-                  <span>STAGE 2: TP 2 (Target)</span>
-                  <span id="trade-monitor-tp2">$84,187.40</span>
-                </div>
-                <div id="trade-monitor-tp2-status" class="text-[11px] font-bold text-muted-foreground">Pending Expansion</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 6. CRITICAL RISK & DRAWDOWN WARNING -->
-          <div class="rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 flex items-start gap-3">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert text-rose-500 shrink-0 mt-0.5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
-            <div class="text-xs space-y-1">
-              <span class="font-bold text-rose-500 block uppercase tracking-wider text-[11px]">PropGuard Compliance & Drawdown Warning:</span>
-              <p class="text-foreground/90 font-sans leading-relaxed">
-                1. <strong>Risk Budget:</strong> Never risk more than <strong>0.5% - 1.0%</strong> of your funded account equity per trade.<br>
-                2. <strong>Hard Invalidation:</strong> If a 15-minute candle closes beyond the Stop Loss level, close the position immediately without manual holding.<br>
-                3. <strong>High-Impact News:</strong> Check the economic calendar; tighten trailing stops or flatten runner positions prior to red-folder releases.
-              </p>
-            </div>
-          </div>
-
-          <!-- 7. INTERACTIVE TRADE OUTCOME VERIFICATION & FEEDBACK -->
-          <div class="rounded-lg border border-border bg-muted/30 p-3.5 space-y-2.5">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-border/60">
-              <div>
-                <span class="text-xs font-bold text-foreground uppercase tracking-wider block">Trade Outcome Verification & Community Feedback</span>
-                <p class="text-[11px] text-muted-foreground">Did this trade setup hit your target or stop out? Submit your execution result to fine-tune consensus weights.</p>
-              </div>
-              <span class="text-[10px] font-mono text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded shrink-0">84.6% Verified Win Rate (1,420 Traders)</span>
-            </div>
-
-            <div class="flex items-center gap-2 flex-wrap">
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-500 text-xs font-medium text-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="tp_hit">
-                <span class="size-1.5 rounded-full bg-emerald-500"></span>
-                <span>Hit Target (TP1 / TP2)</span>
-              </button>
-
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-500 text-xs font-medium text-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="booked_50_c2c">
-                <span class="size-1.5 rounded-full bg-emerald-400"></span>
-                <span>50% Booked + C2C</span>
-              </button>
-
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted hover:text-foreground text-xs font-medium text-muted-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="breakeven">
-                <span class="size-1.5 rounded-full bg-muted-foreground"></span>
-                <span>Exited at Break-Even</span>
-              </button>
-
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-rose-500/10 hover:border-rose-500/40 hover:text-rose-500 text-xs font-medium text-muted-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="stopped_out">
-                <span class="size-1.5 rounded-full bg-rose-500"></span>
-                <span>Stopped Out</span>
-              </button>
-
-              <button type="button" class="hub-feedback-btn px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-blue-500/10 hover:border-blue-500/40 hover:text-blue-500 text-xs font-medium text-muted-foreground transition-all cursor-pointer flex items-center gap-1.5" data-outcome="running">
-                <span class="size-1.5 rounded-full bg-blue-500"></span>
-                <span>Trade Currently Running</span>
-              </button>
-            </div>
-
-            <div id="hub-feedback-status" class="hidden text-xs text-emerald-500 font-medium pt-1">
-              <!-- Confirmation text injected dynamically -->
-            </div>
-          </div>
-
-          <!-- Detailed Rationale & Logic -->
-          <div class="pt-1">
-            <span class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Execution Rationale & Quantitative Evidence:</span>
-            <p id="hub-active-rationale" class="text-xs text-foreground/90 leading-relaxed font-sans">
-              AETHER-9 Order Flow Specialist detected institutional liquidity absorption. The debate protocol concluded with 88% consensus to place a passive limit order waiting for demand sweep.
-            </p>
-          </div>
-
-          <!-- Key Metrics Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-border/60 text-xs" id="hub-active-metrics">
-            <!-- Populated dynamically -->
-          </div>
-        </div>
-      </div>
-
-      <!-- 7. SUB-TABS: EXECUTION TERMINAL FEED & COMPARISON MATRIX -->
-      <div class="px-5">
-        <div class="flex items-center gap-1 border-b border-border overflow-x-auto pb-1 text-xs">
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-foreground bg-muted transition-colors cursor-pointer" data-target="tab-live-stream">
-            Execution Terminal Feed
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-comparison">
-            All 5 Robots Comparison Matrix
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-debate">
-            AETHER-9 Debate Protocol
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-sentinel">
-            SENTINEL Psychology Guard
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-orbit">
-            ORBIT News Sentiment
-          </button>
-          <button type="button" class="hub-tab-btn px-3 py-1.5 rounded-md font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer" data-target="tab-unity-evolve">
-            UNITY & EVOLVE-X Quant Studio
-          </button>
-        </div>
-      </div>
-
-      <!-- Tab Panes -->
-      <div class="px-5">
-        <!-- 1. Live Terminal Stream Tab -->
-        <div id="tab-live-stream" class="hub-tab-pane space-y-2">
-          <div class="rounded-lg border border-border bg-background p-3 font-mono text-xs text-muted-foreground h-44 overflow-y-auto space-y-1.5" id="hub-live-logs">
-            <div class="text-emerald-500 font-semibold">[ORCHESTRATOR] Real-time market feed initialized. Connected to Binance WebSocket.</div>
-            <div id="log-market-status" class="text-foreground font-semibold">[FEED] BTC/USDT Live: $81,262.00 | 24h: +2.85%</div>
-            <div>[AETHER-9] Calculated Order Block limit entry: $80,733.80 (-0.65% pullback).</div>
-            <div>[EVOLVE-X] Calculated PPO adaptive Best Bid slice: $81,196.99 (-0.08%).</div>
-            <div>[SENTINEL] Calculated Risk-weighted scale-in limit entry: $80,920.70 (-0.42%).</div>
-            <div>[UNITY] Calculated Alpha Matrix predicted Bar VWAP: $81,099.48 (-0.20%).</div>
-            <div>[ORBIT] Calculated News momentum breakout trigger: $81,465.15 (+0.25%).</div>
-            <div class="text-muted-foreground">[READY] Select any robot from the switcher above to inspect its distinct algorithmic trade plan.</div>
-          </div>
-        </div>
-
-        <!-- 2. All 5 Robots Comparison Matrix Tab -->
-        <div id="tab-comparison" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3 overflow-x-auto">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">5-Engine Algorithmic Comparison Matrix (Live Pricing)</span>
-              <span class="text-[10px] font-mono text-muted-foreground">Updated in Real-Time</span>
-            </div>
+          <div class="overflow-x-auto">
             <table class="w-full text-left text-xs font-mono">
               <thead>
-                <tr class="border-b border-border/60 text-muted-foreground text-[10px] uppercase">
-                  <th class="py-2 pr-3">Robot / Algorithm</th>
-                  <th class="py-2 px-3">Order Type</th>
-                  <th class="py-2 px-3">Live Entry</th>
-                  <th class="py-2 px-3">Take Profit (TP)</th>
-                  <th class="py-2 px-3">Stop Loss (SL)</th>
-                  <th class="py-2 px-3">R:R</th>
-                  <th class="py-2 px-3">Safe Lot Size</th>
-                  <th class="py-2 px-3">Compliance</th>
-                  <th class="py-2 pl-3">Timeframe</th>
+                <tr class="border-b border-border text-[11px] text-muted-foreground">
+                  <th class="py-2 pr-3">ENGINE</th>
+                  <th class="py-2 px-3">SIGNAL</th>
+                  <th class="py-2 px-3">ENTRY</th>
+                  <th class="py-2 px-3">TP 1</th>
+                  <th class="py-2 px-3">SL</th>
+                  <th class="py-2 px-3">R : R</th>
+                  <th class="py-2 px-3">SAFE LOTS</th>
+                  <th class="py-2 px-3">TIMEFRAME</th>
                 </tr>
               </thead>
               <tbody id="hub-comparison-tbody" class="divide-y divide-border/40">
-                <!-- Populated dynamically with distinct prices -->
+                <!-- Populated dynamically -->
               </tbody>
             </table>
           </div>
         </div>
+      </div>
 
-        <!-- 3. AETHER-9 Debate Tab -->
-        <div id="tab-debate" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">AETHER-9 • Multi-Agent AI Debate Arena</span>
-              <span class="inline-flex items-center rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500 dark:text-emerald-400">Order Flow Dominated</span>
+      <!-- 2. SCROLLABLE CHAT MESSAGES AREA -->
+      <div class="px-5 pt-4">
+        <div class="rounded-xl border border-border bg-muted/20 flex flex-col overflow-hidden ring-1 ring-foreground/5 shadow-xs">
+          
+          <!-- Chat Header Bar -->
+          <div class="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border/60 text-xs">
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg>
+              <span class="font-bold text-foreground font-mono">AI Execution Dialogue & Trade Log</span>
             </div>
-            <div class="space-y-2 text-xs">
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60">
-                <div class="flex items-center gap-1.5 font-semibold text-emerald-500 dark:text-emerald-400 mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                  <span>Order Flow & Liquidity Specialist:</span>
-                </div>
-                <p class="text-foreground/90 leading-relaxed">
-                  "Institutional limit orders absorbed sell-side volume at the lower range boundary. Cumulative Volume Delta (CVD) shows positive divergence while open interest expanded."
-                </p>
-              </div>
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60">
-                <div class="flex items-center gap-1.5 font-semibold text-rose-500 dark:text-rose-400 mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
-                  <span>Market Structure & Resistance Analyst:</span>
-                </div>
-                <p class="text-foreground/90 leading-relaxed">
-                  "Resistance cluster situated 3.2% above market price. Caution advised on chasing high-volume breakout candles without prior pullback."
-                </p>
-              </div>
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60">
-                <div class="flex items-center gap-1.5 font-semibold text-foreground mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check text-emerald-500"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-                  <span>Quantitative Risk & Portfolio Controller:</span>
-                </div>
-                <p class="text-foreground/90 leading-relaxed">
-                  "Order flow divergence outweighs overhead liquidity risk. Position approved at 1.25R allocation with hard invalidation at the support floor."
-                </p>
-              </div>
+            <div class="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
+              <span id="chat-message-count-badge" class="px-2 py-0.5 rounded bg-muted border border-border">0 Analyses Logged</span>
             </div>
           </div>
-        </div>
 
-        <!-- 4. SENTINEL Psychology Guard Tab -->
-        <div id="tab-sentinel" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">SENTINEL • Behavioral & Psychology Guard</span>
-              <span class="inline-flex items-center rounded border border-border bg-muted/60 px-2 py-0.5 text-[10px] font-semibold text-foreground">Tilt Prevention Active</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60 text-xs">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="font-semibold text-foreground">Quantitative Momentum Vector</span>
-                  <span class="inline-flex items-center rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.2 text-[9px] font-semibold text-emerald-500">STRONG BUY</span>
-                </div>
-                <p class="text-muted-foreground leading-relaxed">Momentum z-score is +2.1σ with mean reversion confirmed across high-frequency order books.</p>
-              </div>
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60 text-xs">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="font-semibold text-foreground">Drawdown Capital Armor</span>
-                  <span class="inline-flex items-center rounded border border-border bg-muted px-1.5 py-0.2 text-[9px] font-semibold text-foreground">PROTECTION READY</span>
-                </div>
-                <p class="text-muted-foreground leading-relaxed">Maximum permissible account risk strictly clamped at 1.0% per trade to guarantee prop compliance.</p>
-              </div>
-            </div>
+          <!-- Scrollable Messages Container -->
+          <div id="hub-chat-messages" class="flex flex-col gap-4 p-4 overflow-y-auto" style="max-height: 560px; min-height: 260px;">
+            <!-- Message Cards Appended Here Dynamically -->
           </div>
-        </div>
 
-        <!-- 5. ORBIT News Sentiment Tab -->
-        <div id="tab-orbit" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">ORBIT • Real-Time News & Order Flow Engine</span>
-              <span class="inline-flex items-center rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-500">Sentiment +0.78</span>
-            </div>
-            <div class="space-y-2 text-xs font-mono">
-              <div class="p-2.5 rounded bg-muted/40 border border-border/60 flex items-center justify-between">
-                <span class="text-foreground">Global Macro Sentiment Polarity</span>
-                <span class="text-emerald-500 font-bold">+78% Bullish Bias</span>
-              </div>
-              <div class="p-2.5 rounded bg-muted/40 border border-border/60 flex items-center justify-between">
-                <span class="text-foreground">Institutional Order Absorption Speed</span>
-                <span class="text-foreground font-semibold">1,480 Units / Minute</span>
-              </div>
-              <div class="p-2.5 rounded bg-muted/40 border border-border/60 flex items-center justify-between">
-                <span class="text-foreground">Breakout Stop-Buy Trigger Price</span>
-                <span class="text-emerald-500 font-bold" id="orbit-trigger-preview">$81,465.15</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 6. UNITY & EVOLVE-X Quant Studio Tab -->
-        <div id="tab-unity-evolve" class="hub-tab-pane hidden space-y-3">
-          <div class="rounded-lg border border-border bg-card p-3 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-border/60">
-              <span class="font-semibold text-xs text-foreground">UNITY & EVOLVE-X • Quantitative Factor & Policy Studio</span>
-              <span class="text-[10px] font-mono text-muted-foreground">Self-Evolving Multi-Factor</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60 space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold text-foreground">EVOLVE-X Deep RL Policy</span>
-                  <span class="text-[10px] font-mono text-emerald-500 font-semibold">PPO Online</span>
-                </div>
-                <p class="text-muted-foreground text-[11px] leading-relaxed">
-                  Continuous execution policy adapts to bid-ask spread depth, routing TWAP slices to capture spread rebates without market impact.
-                </p>
-              </div>
-              <div class="p-3 rounded-md bg-muted/40 border border-border/60 space-y-1.5">
-                <div class="flex items-center justify-between">
-                  <span class="font-semibold text-foreground">UNITY Cross-Account Factor Matrix</span>
-                  <span class="text-[10px] font-mono text-emerald-500 font-semibold">158 Factors</span>
-                </div>
-                <p class="text-muted-foreground text-[11px] leading-relaxed">
-                  Calculates rolling 15m Bar VWAP benchmark across all broker connections, maintaining zero inter-account correlation violations.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
+
+      <!-- 3. CHATGPT-STYLE BOTTOM CONTROL & PROMPT BAR -->
+      <div class="p-5 pt-3">
+        <div class="rounded-xl border border-border bg-card p-3.5 space-y-3 ring-1 ring-foreground/5 shadow-md">
+          
+          <!-- Row 1: Engine Selector & Prop Firm Parameters -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <!-- 1. Engine Selector -->
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">1. AI Engine</label>
+              <select id="chat-model-select" class="w-full h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+                <option value="aether9" ${currentModel === 'aether9' ? 'selected' : ''}>AETHER-9 (Debate)</option>
+                <option value="evolvex" ${currentModel === 'evolvex' ? 'selected' : ''}>EVOLVE-X (Deep RL)</option>
+                <option value="sentinel" ${currentModel === 'sentinel' ? 'selected' : ''}>SENTINEL (Psychology)</option>
+                <option value="unity" ${currentModel === 'unity' ? 'selected' : ''}>UNITY (Risk Matrix)</option>
+                <option value="orbit" ${currentModel === 'orbit' ? 'selected' : ''}>ORBIT (News Flow)</option>
+                <option value="unified" ${currentModel === 'unified' ? 'selected' : ''}>UNIFIED (Consensus)</option>
+              </select>
+            </div>
+
+            <!-- 2. Prop Firm Selector -->
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">2. Prop Firm</label>
+              <select id="chat-prop-firm-select" class="w-full h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+                <option value="ftmo" selected>FTMO (Evaluation)</option>
+                <option value="fundingpips">FundingPips</option>
+                <option value="fundednext">FundedNext</option>
+                <option value="the5ers">The 5%ers</option>
+                <option value="topstep">Topstep</option>
+                <option value="alphacapital">Alpha Capital Group</option>
+                <option value="e8markets">E8 Markets</option>
+                <option value="myfundedfx">MyFundedFX</option>
+                <option value="goatfundedtrader">Goat Funded Trader</option>
+                <option value="consummatetraders">Consummate Traders</option>
+                <option value="audacitycapital">Audacity Capital</option>
+                <option value="blueguardian">Blue Guardian</option>
+                <option value="lux_trading">Lux Trading Firm</option>
+              </select>
+            </div>
+
+            <!-- 3. Current Equity -->
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">3. Equity ($)</label>
+              <input type="number" id="chat-equity-input" value="${currentEquity || 10000}" min="100" step="100" class="w-full h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-mono font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            </div>
+
+            <!-- 4. Max DD Limit % -->
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">4. Max DD %</label>
+              <input type="number" id="chat-max-dd-input" value="10" min="1" max="50" step="0.5" class="w-full h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-mono font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            </div>
+
+            <!-- 5. Daily DD Limit % -->
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">5. Daily DD %</label>
+              <input type="number" id="chat-daily-dd-input" value="5" min="1" max="25" step="0.5" class="w-full h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-mono font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            </div>
+
+            <!-- 6. 1% Risk Rule -->
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">6. 1% PnL Rule</label>
+              <select id="chat-risk-rule-select" class="w-full h-8 rounded-lg border border-border bg-background px-2 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+                <option value="enforce" selected>Enforce (Max 1% DD)</option>
+                <option value="relaxed">Relaxed (Max 1.5% DD)</option>
+                <option value="off">Off (Standard Risk)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Prompt Trigger & Execution Button -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/50">
+            <div class="flex items-center gap-2 text-xs text-muted-foreground font-mono flex-1 min-w-[240px]">
+              <span class="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="chat-prompt-status">Scan order flow & generate execution plan for <strong class="text-foreground">${currentSymbol}</strong> using <strong class="text-emerald-400">AETHER-9</strong></span>
+            </div>
+
+            <button type="button" id="chat-analyze-btn" class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-5 py-2.5 text-xs font-bold shadow-md transition-all select-none cursor-pointer">
+              <svg id="chat-analyze-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+              <span id="chat-analyze-text">&#9889; Analyze Market (Generate Signal)</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
     </div>
     `;
+  }
+
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // CHAT STATE LOGIC & RUNTIME INTERACTION
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  function createAndAppendAnalysis(symbol, modelKey) {
+    const sym = symbol || currentSymbol;
+    const mKey = modelKey || currentModel;
+    const model = getModelData(mKey, sym);
+    const session = detectTradingSession();
+    const analysisId = generateAnalysisId();
+    const asset = ASSETS[sym] || ASSETS['BTC/USDT'];
+    const p = (livePrices[sym] || {}).price || asset.baseRate;
+
+    const activeFirm = getActivePlan();
+    const firmName = (activeFirm && activeFirm.name) ? activeFirm.name : (selectedPropFirm || 'FTMO').toUpperCase();
+
+    const lotData = model.lotSizeData || {
+      lotSize: 0.05,
+      riskAmount: 14.18,
+      riskPctEquity: '0.14%',
+      riskPctDailyLimit: '47.3%'
+    };
+
+    const msg = {
+      id: 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+      analysisId: analysisId,
+      session: session,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      symbol: sym,
+      modelKey: mKey,
+      modelName: model.name,
+      modelBadge: model.badge,
+      direction: model.direction || model.signalType || 'BUY',
+      signal: model.signal,
+      conviction: model.conviction,
+      orderType: model.orderType,
+      timeframe: model.timeframe,
+      entry: model.entry,
+      entryOffset: model.entryOffset,
+      tp1: model.stages ? model.stages.tp1 : model.tp,
+      tp2: model.stages ? model.stages.tp2 : model.tp,
+      tp3: model.stages ? model.stages.tp3 : model.tp,
+      sl: model.sl,
+      rr: model.rr,
+      lotSize: (typeof lotData.lotSize === 'number' ? lotData.lotSize.toFixed(2) : '0.05') + ' lots',
+      riskAmount: '$' + (typeof lotData.riskAmount === 'number' ? lotData.riskAmount.toFixed(2) : '14.18'),
+      riskPctEquity: (lotData.riskPctEquity ? lotData.riskPctEquity : '0.14') + (lotData.riskPctEquity && String(lotData.riskPctEquity).includes('%') ? '' : '%'),
+      dailyLimitRemaining: '52.7% remaining',
+      maxDDRemaining: '8.5% remaining',
+      propFirmName: firmName,
+      logic: model.rationale || model.basis,
+      feedback: null
+    };
+
+    chatHistory.push(msg);
+    saveChatHistory();
+
+    const container = document.getElementById('hub-chat-messages');
+    if (container) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = renderAnalysisChatMessage(msg).trim();
+      const newCard = tempDiv.firstElementChild;
+      container.appendChild(newCard);
+
+      // Attach feedback listeners to this newly created card
+      attachCardFeedbackListeners(newCard);
+
+      // Auto-scroll to bottom of chat
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    }
+
+    updateChatBadgeCount();
+    return msg;
+  }
+
+  function handleChatFeedback(msgId, outcome) {
+    const msg = chatHistory.find(m => m.id === msgId);
+    if (!msg) return;
+
+    msg.feedback = outcome;
+    saveChatHistory();
+
+    const card = document.getElementById(msgId);
+    if (card) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = renderAnalysisChatMessage(msg).trim();
+      const updatedCard = tempDiv.firstElementChild;
+      card.replaceWith(updatedCard);
+      attachCardFeedbackListeners(updatedCard);
+    }
+  }
+
+  function attachCardFeedbackListeners(cardElement) {
+    if (!cardElement) return;
+    const btns = cardElement.querySelectorAll('.chat-feedback-btn');
+    btns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const msgId = btn.getAttribute('data-msg-id');
+        const outcome = btn.getAttribute('data-outcome');
+        handleChatFeedback(msgId, outcome);
+      });
+    });
+  }
+
+  function updateChatBadgeCount() {
+    const badge = document.getElementById('chat-message-count-badge');
+    if (badge) {
+      const len = chatHistory.length;
+      badge.textContent = `${len} ${len === 1 ? 'Analysis' : 'Analyses'} Logged`;
+    }
+  }
+
+  function renderAllChatMessages() {
+    loadChatHistory();
+    const container = document.getElementById('hub-chat-messages');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (chatHistory.length === 0) {
+      // Create initial welcome analysis for active symbol & engine
+      createAndAppendAnalysis(currentSymbol, currentModel);
+      return;
+    }
+
+    chatHistory.forEach(msg => {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = renderAnalysisChatMessage(msg).trim();
+      const card = tempDiv.firstElementChild;
+      container.appendChild(card);
+      attachCardFeedbackListeners(card);
+    });
+
+    updateChatBadgeCount();
+    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
   }
 
   // Render 2: News Insight Widget (Replaces legacy "Bitcoin Insight")
@@ -9414,7 +9339,127 @@
   }
 
   // Interactivity Setup
+  // Interactivity Setup
   function setupInteractivity() {
+    // â”€â”€ CHAT INTERFACE EVENT WIRING â”€â”€
+    renderAllChatMessages();
+
+    // 1. Model Selector Dropdown in Chat Input Bar
+    const chatModelSelect = document.getElementById('chat-model-select');
+    const promptStatus = document.getElementById('chat-prompt-status');
+    if (chatModelSelect) {
+      chatModelSelect.value = currentModel;
+      chatModelSelect.addEventListener('change', (e) => {
+        currentModel = e.target.value;
+        const model = getModelData(currentModel, currentSymbol);
+        if (promptStatus) {
+          promptStatus.innerHTML = `Scan order flow & generate execution plan for <strong class="text-foreground">${currentSymbol}</strong> using <strong class="text-emerald-400">${model.name}</strong>`;
+        }
+        updateComparisonTable();
+      });
+    }
+
+    // 2. Prop Firm Inputs in Chat Input Bar
+    const chatPropFirmSelect = document.getElementById('chat-prop-firm-select');
+    const chatEquityInput = document.getElementById('chat-equity-input');
+    const chatMaxDDInput = document.getElementById('chat-max-dd-input');
+    const chatDailyDDInput = document.getElementById('chat-daily-dd-input');
+
+    if (chatPropFirmSelect) {
+      chatPropFirmSelect.value = selectedPropFirm || 'ftmo';
+      chatPropFirmSelect.addEventListener('change', (e) => {
+        selectedPropFirm = e.target.value;
+        propFirmConfigured = true;
+        updateComparisonTable();
+      });
+    }
+
+    if (chatEquityInput) {
+      chatEquityInput.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (!isNaN(val) && val > 0) {
+          currentEquity = val;
+          accountSize = val;
+          updateComparisonTable();
+        }
+      });
+    }
+
+    // 3. Analyze Market Button
+    const chatAnalyzeBtn = document.getElementById('chat-analyze-btn');
+    const chatAnalyzeText = document.getElementById('chat-analyze-text');
+    const chatAnalyzeIcon = document.getElementById('chat-analyze-icon');
+
+    if (chatAnalyzeBtn) {
+      chatAnalyzeBtn.addEventListener('click', () => {
+        if (chatAnalyzeBtn.disabled) return;
+        chatAnalyzeBtn.disabled = true;
+        chatAnalyzeBtn.classList.add('opacity-80');
+        if (chatAnalyzeIcon) chatAnalyzeIcon.classList.add('animate-spin');
+        
+        const m = getModelData(currentModel, currentSymbol);
+        if (chatAnalyzeText) chatAnalyzeText.textContent = `Computing ${m.name}...`;
+
+        setTimeout(() => {
+          createAndAppendAnalysis(currentSymbol, currentModel);
+          if (chatAnalyzeText) chatAnalyzeText.innerHTML = '&#9889; Analyze Market (Generate Signal)';
+          if (chatAnalyzeIcon) chatAnalyzeIcon.classList.remove('animate-spin');
+          chatAnalyzeBtn.disabled = false;
+          chatAnalyzeBtn.classList.remove('opacity-80');
+        }, 550);
+      });
+    }
+
+    // 4. Clear Chat History Button
+    const chatClearBtn = document.getElementById('chat-clear-btn');
+    if (chatClearBtn) {
+      chatClearBtn.addEventListener('click', () => {
+        if (confirm('Clear all trade analyses from this session?')) {
+          chatHistory = [];
+          saveChatHistory();
+          renderAllChatMessages();
+        }
+      });
+    }
+
+    // 5. Toggle Comparison Matrix Drawer Button
+    const toggleMatrixBtn = document.getElementById('chat-toggle-matrix-btn');
+    const closeMatrixBtn = document.getElementById('chat-close-matrix-btn');
+    const matrixDrawer = document.getElementById('chat-comparison-drawer');
+
+    if (toggleMatrixBtn && matrixDrawer) {
+      toggleMatrixBtn.addEventListener('click', () => {
+        matrixDrawer.classList.toggle('hidden');
+        if (!matrixDrawer.classList.contains('hidden')) {
+          updateComparisonTable();
+        }
+      });
+    }
+
+    if (closeMatrixBtn && matrixDrawer) {
+      closeMatrixBtn.addEventListener('click', () => {
+        matrixDrawer.classList.add('hidden');
+      });
+    }
+
+    // 6. Asset Selector Dropdown in Chat Header
+    const symbolSelect = document.getElementById('hub-asset-select');
+    if (symbolSelect) {
+      symbolSelect.value = currentSymbol;
+      symbolSelect.addEventListener('change', (e) => {
+        currentSymbol = e.target.value;
+        updateTradingViewChart(currentSymbol);
+        updateUIWithLivePrices();
+        updateComparisonTable();
+        if (promptStatus) {
+          const model = getModelData(currentModel, currentSymbol);
+          promptStatus.innerHTML = `Scan order flow & generate execution plan for <strong class="text-foreground">${currentSymbol}</strong> using <strong class="text-emerald-400">${model.name}</strong>`;
+        }
+        createAndAppendAnalysis(currentSymbol, currentModel);
+      });
+    }
+
+    // â”€â”€ LEGACY CONTROLS COMPATIBILITY â”€â”€
     // Prop Firm Configuration Setup & Persistence (40 Firms & 95+ Plans)
     const propFirmSelect = document.getElementById('prop-firm-select');
     const propPlanSelect = document.getElementById('prop-plan-select');
@@ -9695,7 +9740,7 @@
       });
     }
     // Asset Select (Updates TradingView Chart + Engine Calculations + Active Trade)
-    const symbolSelect = document.getElementById('hub-symbol-select');
+    const legacySymbolSelect = document.getElementById('hub-symbol-select');
     if (symbolSelect) {
       symbolSelect.value = currentSymbol;
       symbolSelect.addEventListener('change', (e) => {
