@@ -451,7 +451,77 @@
                                                                     },
                                                    "consistencyRule":  "No all-in gambling strategies",
                                                    "scalingPlan":  "Up to ,000,000"
-                                               }
+                                               },
+                               "aggressive_2step":  {
+                                                        "payoutSplit":  "80-90%",
+                                                        "id":  "aggressive_2step",
+                                                        "maxDrawdown":  0.2,
+                                                        "leverageNum":  100,
+                                                        "name":  "Aggressive (2-Step Challenge)",
+                                                        "overnightHolding":  true,
+                                                        "dailyLoss":  0.1,
+                                                        "weekendHolding":  false,
+                                                        "newsNote":  "Cannot open/close trades 2 min before \u0026 after red news",
+                                                        "phases":  "2-Step Aggressive",
+                                                        "prohibitedStrategies":  [
+                                                                                     "HFT",
+                                                                                     "Arbitrage"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  "Calculated on balance/equity (2x higher loss buffer for aggressive traders)",
+                                                        "leverage":  "1:100",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             10000,
+                                                                             25000,
+                                                                             50000,
+                                                                             100000
+                                                                         ],
+                                                        "drawdownType":  "static",
+                                                        "payoutFrequency":  "Bi-weekly (14 days)",
+                                                        "newsTrading":  "restricted",
+                                                        "minTradingDays":  4,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.2,
+                                                                             "phase2":  0.1
+                                                                         },
+                                                        "consistencyRule":  "Standard risk control",
+                                                        "scalingPlan":  "Up to ,000,000"
+                                                    },
+                               "express_1step":  {
+                                                     "payoutSplit":  "80-90%",
+                                                     "id":  "express_1step",
+                                                     "maxDrawdown":  0.07,
+                                                     "leverageNum":  50,
+                                                     "name":  "Express Evaluation (1-Step)",
+                                                     "overnightHolding":  true,
+                                                     "dailyLoss":  0.04,
+                                                     "weekendHolding":  true,
+                                                     "newsNote":  "News trading permitted",
+                                                     "phases":  "1-Step Evaluation",
+                                                     "prohibitedStrategies":  [
+                                                                                  "HFT"
+                                                                              ],
+                                                     "eaAllowed":  true,
+                                                     "drawdownNote":  "Static balance-based drawdown with 1-Step pass",
+                                                     "leverage":  "1:50",
+                                                     "maxTradingDays":  null,
+                                                     "accountSizes":  [
+                                                                          10000,
+                                                                          25000,
+                                                                          50000,
+                                                                          100000
+                                                                      ],
+                                                     "drawdownType":  "static",
+                                                     "payoutFrequency":  "Bi-weekly",
+                                                     "newsTrading":  "allowed",
+                                                     "minTradingDays":  3,
+                                                     "profitTarget":  {
+                                                                          "phase1":  0.1
+                                                                      },
+                                                     "consistencyRule":  "Standard",
+                                                     "scalingPlan":  "Standard scaling"
+                                                 }
                            },
                  "website":  "ftmo.com",
                  "category":  "Forex \u0026 CFDs",
@@ -478,7 +548,7 @@
                                                                                         "Arbitrage"
                                                                                     ],
                                                            "eaAllowed":  true,
-                                                           "drawdownNote":  "Static balance-based drawdown (includes 15% profit sharing in phase 1 \u0026 2)",
+                                                           "drawdownNote":  "Static balance-based drawdown (15% profit sharing in phase 1 \u0026 2)",
                                                            "leverage":  "1:100",
                                                            "maxTradingDays":  null,
                                                            "accountSizes":  [
@@ -509,14 +579,14 @@
                                                            "overnightHolding":  true,
                                                            "dailyLoss":  0.03,
                                                            "weekendHolding":  true,
-                                                           "newsNote":  "News trading allowed on Stellar 1-step",
+                                                           "newsNote":  "News trading allowed",
                                                            "phases":  "1-Step Stellar",
                                                            "prohibitedStrategies":  [
                                                                                         "HFT",
                                                                                         "Arbitrage"
                                                                                     ],
                                                            "eaAllowed":  true,
-                                                           "drawdownNote":  "Trailing drawdown calculated from high water mark",
+                                                           "drawdownNote":  "Relative drawdown trails until initial balance",
                                                            "leverage":  "1:30",
                                                            "maxTradingDays":  null,
                                                            "accountSizes":  [
@@ -534,7 +604,7 @@
                                                            "profitTarget":  {
                                                                                 "phase1":  0.1
                                                                             },
-                                                           "consistencyRule":  "None",
+                                                           "consistencyRule":  "Consistency score evaluated on payout request",
                                                            "scalingPlan":  "Up to ,000,000"
                                                        },
                                      "stellar_lite":  {
@@ -542,18 +612,17 @@
                                                           "id":  "stellar_lite",
                                                           "maxDrawdown":  0.08,
                                                           "leverageNum":  100,
-                                                          "name":  "Stellar Lite (2-Step Budget)",
+                                                          "name":  "Stellar Lite (Budget 2-Step)",
                                                           "overnightHolding":  true,
                                                           "dailyLoss":  0.04,
                                                           "weekendHolding":  true,
                                                           "newsNote":  "News trading allowed",
-                                                          "phases":  "2-Step Lite",
+                                                          "phases":  "2-Step Stellar Lite",
                                                           "prohibitedStrategies":  [
-                                                                                       "HFT",
-                                                                                       "Arbitrage"
+                                                                                       "HFT"
                                                                                    ],
                                                           "eaAllowed":  true,
-                                                          "drawdownNote":  "Static balance-based drawdown",
+                                                          "drawdownNote":  "Static balance-based drawdown with lowest challenge entry cost",
                                                           "leverage":  "1:100",
                                                           "maxTradingDays":  null,
                                                           "accountSizes":  [
@@ -564,90 +633,88 @@
                                                                                100000
                                                                            ],
                                                           "drawdownType":  "static",
-                                                          "payoutFrequency":  "Monthly",
+                                                          "payoutFrequency":  "Bi-weekly",
                                                           "newsTrading":  "allowed",
                                                           "minTradingDays":  5,
                                                           "profitTarget":  {
                                                                                "phase1":  0.08,
                                                                                "phase2":  0.04
                                                                            },
-                                                          "consistencyRule":  "Max 50% single trade rule",
+                                                          "consistencyRule":  "Standard risk guidelines",
                                                           "scalingPlan":  "Up to ,000,000"
                                                       },
-                                     "evaluation_2step":  {
-                                                              "payoutSplit":  "80-90%",
-                                                              "id":  "evaluation_2step",
-                                                              "maxDrawdown":  0.1,
-                                                              "leverageNum":  100,
-                                                              "name":  "Evaluation (2-Step Standard)",
-                                                              "overnightHolding":  true,
-                                                              "dailyLoss":  0.05,
-                                                              "weekendHolding":  false,
-                                                              "newsNote":  "News trading restricted during major releases",
-                                                              "phases":  "2-Step Evaluation",
-                                                              "prohibitedStrategies":  [
-                                                                                           "HFT",
-                                                                                           "Arbitrage"
-                                                                                       ],
-                                                              "eaAllowed":  true,
-                                                              "drawdownNote":  "Static balance-based drawdown",
-                                                              "leverage":  "1:100",
-                                                              "maxTradingDays":  null,
-                                                              "accountSizes":  [
-                                                                                   6000,
-                                                                                   15000,
-                                                                                   25000,
-                                                                                   50000,
-                                                                                   100000,
-                                                                                   200000
-                                                                               ],
-                                                              "drawdownType":  "static",
-                                                              "payoutFrequency":  "Monthly",
-                                                              "newsTrading":  "restricted",
-                                                              "minTradingDays":  5,
-                                                              "profitTarget":  {
-                                                                                   "phase1":  0.1,
-                                                                                   "phase2":  0.05
-                                                                               },
-                                                              "consistencyRule":  "None",
-                                                              "scalingPlan":  "Up to ,000,000"
-                                                          },
-                                     "express":  {
-                                                     "payoutSplit":  "60-90%",
-                                                     "id":  "express",
-                                                     "maxDrawdown":  0.1,
-                                                     "leverageNum":  100,
-                                                     "name":  "Express (1-Step Direct)",
-                                                     "overnightHolding":  true,
-                                                     "dailyLoss":  0.05,
-                                                     "weekendHolding":  true,
-                                                     "newsNote":  "News trading allowed",
-                                                     "phases":  "1-Step Express",
-                                                     "prohibitedStrategies":  [
-                                                                                  "HFT",
-                                                                                  "Arbitrage"
-                                                                              ],
-                                                     "eaAllowed":  true,
-                                                     "drawdownNote":  "Static balance-based drawdown",
-                                                     "leverage":  "1:100",
-                                                     "maxTradingDays":  null,
-                                                     "accountSizes":  [
-                                                                          6000,
-                                                                          15000,
-                                                                          25000,
-                                                                          50000,
-                                                                          100000
-                                                                      ],
-                                                     "drawdownType":  "static",
-                                                     "payoutFrequency":  "Monthly",
-                                                     "newsTrading":  "allowed",
-                                                     "minTradingDays":  10,
-                                                     "profitTarget":  {
-                                                                          "phase1":  0.25
-                                                                      },
-                                                     "consistencyRule":  "Consistency score rule applies",
-                                                     "scalingPlan":  "Up to ,000,000"
-                                                 }
+                                     "evaluation_classic":  {
+                                                                "payoutSplit":  "80-90%",
+                                                                "id":  "evaluation_classic",
+                                                                "maxDrawdown":  0.1,
+                                                                "leverageNum":  100,
+                                                                "name":  "Evaluation (Classic 2-Step)",
+                                                                "overnightHolding":  true,
+                                                                "dailyLoss":  0.05,
+                                                                "weekendHolding":  false,
+                                                                "newsNote":  "Restricted on funded account: 2 min before and after news",
+                                                                "phases":  "2-Step Evaluation",
+                                                                "prohibitedStrategies":  [
+                                                                                             "HFT",
+                                                                                             "Tick Scalping"
+                                                                                         ],
+                                                                "eaAllowed":  true,
+                                                                "drawdownNote":  "Balance-based daily loss, calculated from midnight server time",
+                                                                "leverage":  "1:100",
+                                                                "maxTradingDays":  28,
+                                                                "accountSizes":  [
+                                                                                     15000,
+                                                                                     25000,
+                                                                                     50000,
+                                                                                     100000,
+                                                                                     200000
+                                                                                 ],
+                                                                "drawdownType":  "static",
+                                                                "payoutFrequency":  "Monthly (first month) then bi-weekly",
+                                                                "newsTrading":  "restricted",
+                                                                "minTradingDays":  5,
+                                                                "profitTarget":  {
+                                                                                     "phase1":  0.1,
+                                                                                     "phase2":  0.05
+                                                                                 },
+                                                                "consistencyRule":  "Standard risk guidelines",
+                                                                "scalingPlan":  "Up to ,000,000"
+                                                            },
+                                     "express_challenge":  {
+                                                               "payoutSplit":  "60-90%",
+                                                               "id":  "express_challenge",
+                                                               "maxDrawdown":  0.1,
+                                                               "leverageNum":  100,
+                                                               "name":  "Express Challenge (1-Step Fast)",
+                                                               "overnightHolding":  true,
+                                                               "dailyLoss":  0.05,
+                                                               "weekendHolding":  true,
+                                                               "newsNote":  "News trading allowed",
+                                                               "phases":  "1-Step Express",
+                                                               "prohibitedStrategies":  [
+                                                                                            "HFT"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  "1-Step challenge with 25% target and no time limit",
+                                                               "leverage":  "1:100",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    6000,
+                                                                                    15000,
+                                                                                    25000,
+                                                                                    50000,
+                                                                                    100000
+                                                                                ],
+                                                               "drawdownType":  "static",
+                                                               "payoutFrequency":  "Monthly cycle",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  10,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.25
+                                                                                },
+                                                               "consistencyRule":  "Consistency rule applies on Non-Consistency / Consistency tier",
+                                                               "scalingPlan":  "Up to ,000,000"
+                                                           }
                                  },
                        "website":  "fundednext.com",
                        "category":  "Forex \u0026 CFDs",
@@ -658,142 +725,172 @@
                     "name":  "The 5%ers",
                     "color":  "#10b981",
                     "plans":  {
-                                  "high_stakes":  {
-                                                      "payoutSplit":  "80-100%",
-                                                      "id":  "high_stakes",
-                                                      "maxDrawdown":  0.1,
-                                                      "leverageNum":  100,
-                                                      "name":  "High Stakes (2-Step Challenge)",
-                                                      "overnightHolding":  true,
-                                                      "dailyLoss":  0.05,
-                                                      "weekendHolding":  true,
-                                                      "newsNote":  "News trading allowed on High Stakes accounts",
-                                                      "phases":  "2-Step Challenge",
-                                                      "prohibitedStrategies":  [
-                                                                                   "HFT",
-                                                                                   "Latency Arbitrage",
-                                                                                   "Grid without SL"
-                                                                               ],
-                                                      "eaAllowed":  true,
-                                                      "drawdownNote":  "Static balance-based drawdown",
-                                                      "leverage":  "1:100",
-                                                      "maxTradingDays":  null,
-                                                      "accountSizes":  [
-                                                                           5000,
-                                                                           10000,
-                                                                           20000,
-                                                                           60000,
-                                                                           100000
-                                                                       ],
-                                                      "drawdownType":  "static",
-                                                      "payoutFrequency":  "Bi-weekly (first payout in 14 days)",
-                                                      "newsTrading":  "allowed",
-                                                      "minTradingDays":  3,
-                                                      "profitTarget":  {
-                                                                           "phase1":  0.08,
-                                                                           "phase2":  0.05
-                                                                       },
-                                                      "consistencyRule":  "No extreme exposure / gambling",
-                                                      "scalingPlan":  "Up to ,000,000 (Account doubles every 10% gain)"
-                                                  },
-                                  "hyper_growth":  {
-                                                       "payoutSplit":  "75-100%",
-                                                       "id":  "hyper_growth",
-                                                       "maxDrawdown":  0.06,
-                                                       "leverageNum":  30,
-                                                       "name":  "Hyper Growth (1-Step Scaling)",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0.03,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading allowed",
-                                                       "phases":  "1-Step Evaluation",
-                                                       "prohibitedStrategies":  [
-                                                                                    "Trading without SL",
-                                                                                    "Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Static equity-based drawdown",
-                                                       "leverage":  "1:30",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            10000,
-                                                                            20000,
-                                                                            40000,
-                                                                            80000
-                                                                        ],
-                                                       "drawdownType":  "static",
-                                                       "payoutFrequency":  "Bi-weekly",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  0,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.1
-                                                                        },
-                                                       "consistencyRule":  "Must use stop loss on every position",
-                                                       "scalingPlan":  "Up to ,000,000 (Capital doubles on every 10% target)"
-                                                   },
-                                  "bootcamp":  {
-                                                   "payoutSplit":  "75-100%",
-                                                   "id":  "bootcamp",
-                                                   "maxDrawdown":  0.05,
-                                                   "leverageNum":  10,
-                                                   "name":  "Bootcamp (3-Step Low Cost)",
-                                                   "overnightHolding":  true,
-                                                   "dailyLoss":  0.05,
-                                                   "weekendHolding":  true,
-                                                   "newsNote":  "News trading allowed",
-                                                   "phases":  "3-Step Challenge",
-                                                   "prohibitedStrategies":  [
-                                                                                "Trading without SL",
-                                                                                "Arbitrage"
-                                                                            ],
-                                                   "eaAllowed":  true,
-                                                   "drawdownNote":  "Static 5% drawdown",
-                                                   "leverage":  "1:10",
-                                                   "maxTradingDays":  null,
-                                                   "accountSizes":  [
-                                                                        100000,
-                                                                        250000
-                                                                    ],
-                                                   "drawdownType":  "static",
-                                                   "payoutFrequency":  "Monthly",
-                                                   "newsTrading":  "allowed",
-                                                   "minTradingDays":  0,
-                                                   "profitTarget":  {
-                                                                        "phase3":  0.06,
-                                                                        "phase1":  0.06,
-                                                                        "phase2":  0.06
-                                                                    },
-                                                   "consistencyRule":  "Stop loss required on every trade within 2 hours",
-                                                   "scalingPlan":  "Up to ,000,000"
-                                               }
+                                  "high_stakes_2step":  {
+                                                            "payoutSplit":  "80-100%",
+                                                            "id":  "high_stakes_2step",
+                                                            "maxDrawdown":  0.1,
+                                                            "leverageNum":  100,
+                                                            "name":  "High Stakes (2-Step Challenge)",
+                                                            "overnightHolding":  true,
+                                                            "dailyLoss":  0.05,
+                                                            "weekendHolding":  true,
+                                                            "newsNote":  "News trading fully permitted with no restriction",
+                                                            "phases":  "2-Step High Stakes",
+                                                            "prohibitedStrategies":  [
+                                                                                         "HFT",
+                                                                                         "Latency Arbitrage"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  "Calculated on account balance or equity at daily reset",
+                                                            "leverage":  "1:100",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 5000,
+                                                                                 10000,
+                                                                                 20000,
+                                                                                 60000,
+                                                                                 100000
+                                                                             ],
+                                                            "drawdownType":  "static",
+                                                            "payoutFrequency":  "Bi-weekly / Monthly (100% split upon scaling)",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  3,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.08,
+                                                                                 "phase2":  0.05
+                                                                             },
+                                                            "consistencyRule":  "No single trade profit \u003e 50% of total profits at payout",
+                                                            "scalingPlan":  "Double capital at every 10% gain up to ,000,000"
+                                                        },
+                                  "hyper_growth_1step":  {
+                                                             "payoutSplit":  "80%",
+                                                             "id":  "hyper_growth_1step",
+                                                             "maxDrawdown":  0.06,
+                                                             "leverageNum":  30,
+                                                             "name":  "Hyper Growth (1-Step / Instant)",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.03,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News trading permitted",
+                                                             "phases":  "1-Step Hyper Growth",
+                                                             "prohibitedStrategies":  [
+                                                                                          "Trading without Stop Loss",
+                                                                                          "HFT"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Static 6% max drawdown based on starting balance",
+                                                             "leverage":  "1:30",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  10000,
+                                                                                  20000,
+                                                                                  40000
+                                                                              ],
+                                                             "drawdownType":  "static",
+                                                             "payoutFrequency":  "Bi-weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  4,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.1
+                                                                              },
+                                                             "consistencyRule":  "Mandatory stop loss on all trades",
+                                                             "scalingPlan":  "Doubles account balance every 10% target hit up to ,000,000"
+                                                         },
+                                  "bootcamp_3step":  {
+                                                         "payoutSplit":  "75-100%",
+                                                         "id":  "bootcamp_3step",
+                                                         "maxDrawdown":  0.05,
+                                                         "leverageNum":  10,
+                                                         "name":  "Bootcamp (3-Step Low Entry Cost)",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News trading allowed",
+                                                         "phases":  "3-Step Bootcamp",
+                                                         "prohibitedStrategies":  [
+                                                                                      "EAs not permitted",
+                                                                                      "Trading without SL"
+                                                                                  ],
+                                                         "eaAllowed":  false,
+                                                         "drawdownNote":  "Static 5% max drawdown, no daily loss rule! Pay full entry only when passed",
+                                                         "leverage":  "1:10",
+                                                         "maxTradingDays":  365,
+                                                         "accountSizes":  [
+                                                                              100000,
+                                                                              250000
+                                                                          ],
+                                                         "drawdownType":  "static",
+                                                         "payoutFrequency":  "Monthly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase3":  0.06,
+                                                                              "phase1":  0.06,
+                                                                              "phase2":  0.06
+                                                                          },
+                                                         "consistencyRule":  "Strict risk-to-reward ratio and SL required",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     },
+                                  "freestyle":  {
+                                                    "payoutSplit":  "100%",
+                                                    "id":  "freestyle",
+                                                    "maxDrawdown":  0.1,
+                                                    "leverageNum":  30,
+                                                    "name":  "Freestyle (Performance Funding)",
+                                                    "overnightHolding":  true,
+                                                    "dailyLoss":  0,
+                                                    "weekendHolding":  true,
+                                                    "newsNote":  "News trading allowed",
+                                                    "phases":  "Freestyle Performance",
+                                                    "prohibitedStrategies":  [
+                                                                                 "HFT"
+                                                                             ],
+                                                    "eaAllowed":  true,
+                                                    "drawdownNote":  "10% max trailing drawdown with 100% profit split",
+                                                    "leverage":  "1:30",
+                                                    "maxTradingDays":  null,
+                                                    "accountSizes":  [
+                                                                         50000,
+                                                                         100000
+                                                                     ],
+                                                    "drawdownType":  "static",
+                                                    "payoutFrequency":  "Bi-weekly",
+                                                    "newsTrading":  "allowed",
+                                                    "minTradingDays":  5,
+                                                    "profitTarget":  {
+                                                                         "phase1":  0.1
+                                                                     },
+                                                    "consistencyRule":  "Performance based",
+                                                    "scalingPlan":  "Scales to ,000,000"
+                                                }
                               },
                     "website":  "the5ers.com",
                     "category":  "Forex \u0026 CFDs",
-                    "shortName":  "The 5%ers"
+                    "shortName":  "The5ers"
                 },
     "fundingpips":  {
                         "id":  "fundingpips",
                         "name":  "Funding Pips",
-                        "color":  "#6366f1",
+                        "color":  "#8b5cf6",
                         "plans":  {
                                       "student_2step":  {
                                                             "payoutSplit":  "80-90%",
                                                             "id":  "student_2step",
                                                             "maxDrawdown":  0.1,
                                                             "leverageNum":  100,
-                                                            "name":  "2-Step (Student / Practitioner)",
+                                                            "name":  "Evaluation (2-Step Student)",
                                                             "overnightHolding":  true,
                                                             "dailyLoss":  0.05,
                                                             "weekendHolding":  true,
-                                                            "newsNote":  "News trading allowed without restrictions",
-                                                            "phases":  "2-Step Challenge",
+                                                            "newsNote":  "News trading allowed on evaluation; 2-minute bracket rule applies on Master accounts for high-impact",
+                                                            "phases":  "2-Step Student",
                                                             "prohibitedStrategies":  [
                                                                                          "HFT",
-                                                                                         "Arbitrage",
-                                                                                         "Reverse Trading"
+                                                                                         "Reverse Trading",
+                                                                                         "Latency Arbitrage"
                                                                                      ],
                                                             "eaAllowed":  true,
-                                                            "drawdownNote":  "Static balance-based calculation",
+                                                            "drawdownNote":  "Calculated based on daily balance or equity, whichever is higher at 00:00 UTC",
                                                             "leverage":  "1:100",
                                                             "maxTradingDays":  null,
                                                             "accountSizes":  [
@@ -804,90 +901,88 @@
                                                                                  100000
                                                                              ],
                                                             "drawdownType":  "static",
-                                                            "payoutFrequency":  "Weekly (Every 5 trading days)",
+                                                            "payoutFrequency":  "Every 5 trading days / Weekly",
                                                             "newsTrading":  "allowed",
-                                                            "minTradingDays":  1,
+                                                            "minTradingDays":  0,
                                                             "profitTarget":  {
                                                                                  "phase1":  0.08,
                                                                                  "phase2":  0.05
                                                                              },
-                                                            "consistencyRule":  "None",
-                                                            "scalingPlan":  "Up to ,000,000 (20% increase every 10% gain)"
+                                                            "consistencyRule":  "Risk per trade cannot exceed 2% on Master stage",
+                                                            "scalingPlan":  "Up to ,000,000 (20% increase every cycle)"
                                                         },
-                                      "one_step":  {
-                                                       "payoutSplit":  "80-90%",
-                                                       "id":  "one_step",
-                                                       "maxDrawdown":  0.06,
-                                                       "leverageNum":  30,
-                                                       "name":  "1-Step Evaluation",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0.03,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading allowed",
-                                                       "phases":  "1-Step Challenge",
-                                                       "prohibitedStrategies":  [
-                                                                                    "HFT",
-                                                                                    "Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Trailing relative drawdown",
-                                                       "leverage":  "1:30",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            5000,
-                                                                            10000,
-                                                                            25000,
-                                                                            50000,
-                                                                            100000
-                                                                        ],
-                                                       "drawdownType":  "trailing",
-                                                       "payoutFrequency":  "Weekly",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  1,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.12
-                                                                        },
-                                                       "consistencyRule":  "None",
-                                                       "scalingPlan":  "Up to ,000,000"
-                                                   },
-                                      "three_step_zero":  {
-                                                              "payoutSplit":  "80-90%",
-                                                              "id":  "three_step_zero",
-                                                              "maxDrawdown":  0.06,
-                                                              "leverageNum":  100,
-                                                              "name":  "3-Step Zero",
-                                                              "overnightHolding":  true,
-                                                              "dailyLoss":  0.04,
-                                                              "weekendHolding":  true,
-                                                              "newsNote":  "News trading allowed",
-                                                              "phases":  "3-Step Challenge",
-                                                              "prohibitedStrategies":  [
-                                                                                           "HFT",
-                                                                                           "Arbitrage"
-                                                                                       ],
-                                                              "eaAllowed":  true,
-                                                              "drawdownNote":  "Static balance-based drawdown",
-                                                              "leverage":  "1:100",
-                                                              "maxTradingDays":  null,
-                                                              "accountSizes":  [
-                                                                                   5000,
-                                                                                   10000,
-                                                                                   25000,
-                                                                                   50000,
-                                                                                   100000
-                                                                               ],
-                                                              "drawdownType":  "static",
-                                                              "payoutFrequency":  "Weekly",
-                                                              "newsTrading":  "allowed",
-                                                              "minTradingDays":  1,
-                                                              "profitTarget":  {
-                                                                                   "phase3":  0.05,
-                                                                                   "phase1":  0.05,
-                                                                                   "phase2":  0.05
-                                                                               },
-                                                              "consistencyRule":  "None",
-                                                              "scalingPlan":  "Up to ,000,000"
-                                                          }
+                                      "zero_1step":  {
+                                                         "payoutSplit":  "80-90%",
+                                                         "id":  "zero_1step",
+                                                         "maxDrawdown":  0.06,
+                                                         "leverageNum":  30,
+                                                         "name":  "Zero (1-Step Evaluation)",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.03,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News trading permitted",
+                                                         "phases":  "1-Step Zero",
+                                                         "prohibitedStrategies":  [
+                                                                                      "HFT"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "Trailing drawdown calculated to starting balance",
+                                                         "leverage":  "1:30",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              5000,
+                                                                              10000,
+                                                                              25000,
+                                                                              50000,
+                                                                              100000
+                                                                          ],
+                                                         "drawdownType":  "trailing",
+                                                         "payoutFrequency":  "Weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.1
+                                                                          },
+                                                         "consistencyRule":  "Standard risk parameters",
+                                                         "scalingPlan":  "Standard scaling to ,000,000"
+                                                     },
+                                      "master_3step":  {
+                                                           "payoutSplit":  "80-90%",
+                                                           "id":  "master_3step",
+                                                           "maxDrawdown":  0.08,
+                                                           "leverageNum":  100,
+                                                           "name":  "Scholar (3-Step Evaluation)",
+                                                           "overnightHolding":  true,
+                                                           "dailyLoss":  0.04,
+                                                           "weekendHolding":  true,
+                                                           "newsNote":  "News trading allowed",
+                                                           "phases":  "3-Step Scholar",
+                                                           "prohibitedStrategies":  [
+                                                                                        "HFT"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "Static balance-based drawdown with low 5% profit target per step",
+                                                           "leverage":  "1:100",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                5000,
+                                                                                10000,
+                                                                                25000,
+                                                                                50000,
+                                                                                100000
+                                                                            ],
+                                                           "drawdownType":  "static",
+                                                           "payoutFrequency":  "Every 5 trading days",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  0,
+                                                           "profitTarget":  {
+                                                                                "phase3":  0.05,
+                                                                                "phase1":  0.05,
+                                                                                "phase2":  0.05
+                                                                            },
+                                                           "consistencyRule":  "Standard risk control",
+                                                           "scalingPlan":  "Standard scaling"
+                                                       }
                                   },
                         "website":  "fundingpips.com",
                         "category":  "Forex \u0026 CFDs",
@@ -896,26 +991,902 @@
     "alphacapital":  {
                          "id":  "alphacapital",
                          "name":  "Alpha Capital Group",
-                         "color":  "#0ea5e9",
+                         "color":  "#06b6d4",
                          "plans":  {
-                                       "alpha_pro":  {
+                                       "alpha_pro_2step":  {
+                                                               "payoutSplit":  "80-90%",
+                                                               "id":  "alpha_pro_2step",
+                                                               "maxDrawdown":  0.1,
+                                                               "leverageNum":  100,
+                                                               "name":  "Alpha Pro (2-Step Evaluation)",
+                                                               "overnightHolding":  true,
+                                                               "dailyLoss":  0.05,
+                                                               "weekendHolding":  true,
+                                                               "newsNote":  "News trading allowed on evaluation and funded accounts",
+                                                               "phases":  "2-Step Alpha Pro",
+                                                               "prohibitedStrategies":  [
+                                                                                            "HFT",
+                                                                                            "Martingale",
+                                                                                            "Arbitrage"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  "Balance-based drawdown, 0% commission on raw spreads",
+                                                               "leverage":  "1:100",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    10000,
+                                                                                    25000,
+                                                                                    50000,
+                                                                                    100000,
+                                                                                    200000
+                                                                                ],
+                                                               "drawdownType":  "static",
+                                                               "payoutFrequency":  "Bi-weekly (first payout in 14 days)",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  0,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.08,
+                                                                                    "phase2":  0.05
+                                                                                },
+                                                               "consistencyRule":  "Lot size consistency rule: single trade lot size within +/- 30% of average",
+                                                               "scalingPlan":  "Up to ,000,000 with 10% profit consistency"
+                                                           },
+                                       "alpha_swing_2step":  {
+                                                                 "payoutSplit":  "80-90%",
+                                                                 "id":  "alpha_swing_2step",
+                                                                 "maxDrawdown":  0.1,
+                                                                 "leverageNum":  30,
+                                                                 "name":  "Alpha Swing (2-Step Swing)",
+                                                                 "overnightHolding":  true,
+                                                                 "dailyLoss":  0.05,
+                                                                 "weekendHolding":  true,
+                                                                 "newsNote":  "Full news trading freedom with lower leverage",
+                                                                 "phases":  "2-Step Alpha Swing",
+                                                                 "prohibitedStrategies":  [
+                                                                                              "HFT"
+                                                                                          ],
+                                                                 "eaAllowed":  true,
+                                                                 "drawdownNote":  "Zero news restrictions, weekend holding fully permitted",
+                                                                 "leverage":  "1:30",
+                                                                 "maxTradingDays":  null,
+                                                                 "accountSizes":  [
+                                                                                      10000,
+                                                                                      25000,
+                                                                                      50000,
+                                                                                      100000,
+                                                                                      200000
+                                                                                  ],
+                                                                 "drawdownType":  "static",
+                                                                 "payoutFrequency":  "Bi-weekly",
+                                                                 "newsTrading":  "allowed",
+                                                                 "minTradingDays":  0,
+                                                                 "profitTarget":  {
+                                                                                      "phase1":  0.08,
+                                                                                      "phase2":  0.05
+                                                                                  },
+                                                                 "consistencyRule":  "Standard risk control",
+                                                                 "scalingPlan":  "Up to ,000,000"
+                                                             },
+                                       "alpha_one_1step":  {
+                                                               "payoutSplit":  "80%",
+                                                               "id":  "alpha_one_1step",
+                                                               "maxDrawdown":  0.06,
+                                                               "leverageNum":  50,
+                                                               "name":  "Alpha One (1-Step Challenge)",
+                                                               "overnightHolding":  true,
+                                                               "dailyLoss":  0.04,
+                                                               "weekendHolding":  true,
+                                                               "newsNote":  "News trading permitted",
+                                                               "phases":  "1-Step Alpha One",
+                                                               "prohibitedStrategies":  [
+                                                                                            "HFT"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                               "leverage":  "1:50",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    10000,
+                                                                                    25000,
+                                                                                    50000,
+                                                                                    100000
+                                                                                ],
+                                                               "drawdownType":  "trailing",
+                                                               "payoutFrequency":  "Bi-weekly",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  1,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.1
+                                                                                },
+                                                               "consistencyRule":  "Lot size consistency",
+                                                               "scalingPlan":  "Up to ,000,000"
+                                                           },
+                                       "alpha_3step":  {
+                                                           "payoutSplit":  "80-90%",
+                                                           "id":  "alpha_3step",
+                                                           "maxDrawdown":  0.06,
+                                                           "leverageNum":  100,
+                                                           "name":  "Alpha 3-Step Challenge",
+                                                           "overnightHolding":  true,
+                                                           "dailyLoss":  0.03,
+                                                           "weekendHolding":  true,
+                                                           "newsNote":  "News trading allowed",
+                                                           "phases":  "3-Step Evaluation",
+                                                           "prohibitedStrategies":  [
+                                                                                        "HFT"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "Lowest entry fee 3-step with 5% target per step",
+                                                           "leverage":  "1:100",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                10000,
+                                                                                25000,
+                                                                                50000,
+                                                                                100000
+                                                                            ],
+                                                           "drawdownType":  "static",
+                                                           "payoutFrequency":  "Bi-weekly",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  0,
+                                                           "profitTarget":  {
+                                                                                "phase3":  0.05,
+                                                                                "phase1":  0.05,
+                                                                                "phase2":  0.05
+                                                                            },
+                                                           "consistencyRule":  "Standard",
+                                                           "scalingPlan":  "Up to ,000,000"
+                                                       }
+                                   },
+                         "website":  "alphacapitalgroup.uk",
+                         "category":  "Forex \u0026 CFDs",
+                         "shortName":  "Alpha Capital"
+                     },
+    "e8markets":  {
+                      "id":  "e8markets",
+                      "name":  "E8 Markets",
+                      "color":  "#ec4899",
+                      "plans":  {
+                                    "e8_classic_2step":  {
+                                                             "payoutSplit":  "80-100%",
+                                                             "id":  "e8_classic_2step",
+                                                             "maxDrawdown":  0.08,
+                                                             "leverageNum":  50,
+                                                             "name":  "E8 Classic (2-Step Evaluation)",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.05,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News trading allowed",
+                                                             "phases":  "2-Step Classic",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT",
+                                                                                          "Latency Arbitrage"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Drawdown trails account equity until reaching starting balance, then static",
+                                                             "leverage":  "1:50",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  25000,
+                                                                                  50000,
+                                                                                  100000,
+                                                                                  250000
+                                                                              ],
+                                                             "drawdownType":  "trailing",
+                                                             "payoutFrequency":  "On-demand after first payout (8-day minimum)",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  0,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.08,
+                                                                                  "phase2":  0.05
+                                                                              },
+                                                             "consistencyRule":  "No single day can exceed 40% of total profit for payout eligibility",
+                                                             "scalingPlan":  "Up to ,000,000 with E8 Elevate"
+                                                         },
+                                    "e8_track_3step":  {
+                                                           "payoutSplit":  "80%",
+                                                           "id":  "e8_track_3step",
+                                                           "maxDrawdown":  0.06,
+                                                           "leverageNum":  50,
+                                                           "name":  "E8 Track (3-Step Evaluation)",
+                                                           "overnightHolding":  true,
+                                                           "dailyLoss":  0.04,
+                                                           "weekendHolding":  true,
+                                                           "newsNote":  "News trading allowed",
+                                                           "phases":  "3-Step Track",
+                                                           "prohibitedStrategies":  [
+                                                                                        "HFT"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "Trailing drawdown with lowest challenge entry cost across 3 phases",
+                                                           "leverage":  "1:50",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                10000,
+                                                                                25000,
+                                                                                50000,
+                                                                                100000
+                                                                            ],
+                                                           "drawdownType":  "trailing",
+                                                           "payoutFrequency":  "Bi-weekly",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  0,
+                                                           "profitTarget":  {
+                                                                                "phase3":  0.05,
+                                                                                "phase1":  0.05,
+                                                                                "phase2":  0.05
+                                                                            },
+                                                           "consistencyRule":  "Standard risk parameters",
+                                                           "scalingPlan":  "Standard scaling to ,000,000"
+                                                       },
+                                    "e8_one_1step":  {
+                                                         "payoutSplit":  "80%",
+                                                         "id":  "e8_one_1step",
+                                                         "maxDrawdown":  0.06,
+                                                         "leverageNum":  30,
+                                                         "name":  "E8 One (1-Step Evaluation)",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.03,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News trading permitted",
+                                                         "phases":  "1-Step E8 One",
+                                                         "prohibitedStrategies":  [
+                                                                                      "HFT"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "Fast single-phase evaluation",
+                                                         "leverage":  "1:30",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              10000,
+                                                                              25000,
+                                                                              50000,
+                                                                              100000
+                                                                          ],
+                                                         "drawdownType":  "trailing",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  1,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.1
+                                                                          },
+                                                         "consistencyRule":  "Standard",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     },
+                                    "e8_elevate_custom":  {
+                                                              "payoutSplit":  "90-100%",
+                                                              "id":  "e8_elevate_custom",
+                                                              "maxDrawdown":  0.14,
+                                                              "leverageNum":  50,
+                                                              "name":  "E8 Signature / Elevate (Custom Rules)",
+                                                              "overnightHolding":  true,
+                                                              "dailyLoss":  0.05,
+                                                              "weekendHolding":  true,
+                                                              "newsNote":  "News allowed",
+                                                              "phases":  "2-Step Elevate",
+                                                              "prohibitedStrategies":  [
+                                                                                           "HFT"
+                                                                                       ],
+                                                              "eaAllowed":  true,
+                                                              "drawdownNote":  "Customizable drawdown up to 14% with flexible scaling",
+                                                              "leverage":  "1:50",
+                                                              "maxTradingDays":  null,
+                                                              "accountSizes":  [
+                                                                                   50000,
+                                                                                   100000,
+                                                                                   200000
+                                                                               ],
+                                                              "drawdownType":  "trailing",
+                                                              "payoutFrequency":  "Weekly",
+                                                              "newsTrading":  "allowed",
+                                                              "minTradingDays":  0,
+                                                              "profitTarget":  {
+                                                                                   "phase1":  0.08,
+                                                                                   "phase2":  0.04
+                                                                               },
+                                                              "consistencyRule":  "Flexible",
+                                                              "scalingPlan":  "Scales to ,500,000"
+                                                          }
+                                },
+                      "website":  "e8markets.com",
+                      "category":  "Forex \u0026 CFDs",
+                      "shortName":  "E8 Markets"
+                  },
+    "blueguardian":  {
+                         "id":  "blueguardian",
+                         "name":  "Blue Guardian",
+                         "color":  "#3b82f6",
+                         "plans":  {
+                                       "unlimited_guardian_2step":  {
+                                                                        "payoutSplit":  "85%",
+                                                                        "id":  "unlimited_guardian_2step",
+                                                                        "maxDrawdown":  0.08,
+                                                                        "leverageNum":  100,
+                                                                        "name":  "Unlimited Guardian (2-Step Challenge)",
+                                                                        "overnightHolding":  true,
+                                                                        "dailyLoss":  0.04,
+                                                                        "weekendHolding":  true,
+                                                                        "newsNote":  "News trading permitted",
+                                                                        "phases":  "2-Step Unlimited",
+                                                                        "prohibitedStrategies":  [
+                                                                                                     "HFT",
+                                                                                                     "Arbitrage"
+                                                                                                 ],
+                                                                        "eaAllowed":  true,
+                                                                        "drawdownNote":  "Static drawdown with Guardian Protector risk management suite",
+                                                                        "leverage":  "1:100",
+                                                                        "maxTradingDays":  null,
+                                                                        "accountSizes":  [
+                                                                                             10000,
+                                                                                             25000,
+                                                                                             50000,
+                                                                                             100000,
+                                                                                             200000
+                                                                                         ],
+                                                                        "drawdownType":  "static",
+                                                                        "payoutFrequency":  "Bi-weekly (first payout in 14 days)",
+                                                                        "newsTrading":  "allowed",
+                                                                        "minTradingDays":  0,
+                                                                        "profitTarget":  {
+                                                                                             "phase1":  0.08,
+                                                                                             "phase2":  0.04
+                                                                                         },
+                                                                        "consistencyRule":  "None on Unlimited challenge",
+                                                                        "scalingPlan":  "Up to ,000,000"
+                                                                    },
+                                       "elite_guardian_2step":  {
+                                                                    "payoutSplit":  "85-90%",
+                                                                    "id":  "elite_guardian_2step",
+                                                                    "maxDrawdown":  0.1,
+                                                                    "leverageNum":  100,
+                                                                    "name":  "Elite Guardian (2-Step Challenge)",
+                                                                    "overnightHolding":  true,
+                                                                    "dailyLoss":  0.04,
+                                                                    "weekendHolding":  true,
+                                                                    "newsNote":  "News trading allowed",
+                                                                    "phases":  "2-Step Elite",
+                                                                    "prohibitedStrategies":  [
+                                                                                                 "HFT"
+                                                                                             ],
+                                                                    "eaAllowed":  true,
+                                                                    "drawdownNote":  "10% max drawdown buffer for higher flexibility",
+                                                                    "leverage":  "1:100",
+                                                                    "maxTradingDays":  null,
+                                                                    "accountSizes":  [
+                                                                                         10000,
+                                                                                         25000,
+                                                                                         50000,
+                                                                                         100000,
+                                                                                         200000
+                                                                                     ],
+                                                                    "drawdownType":  "static",
+                                                                    "payoutFrequency":  "Bi-weekly",
+                                                                    "newsTrading":  "allowed",
+                                                                    "minTradingDays":  0,
+                                                                    "profitTarget":  {
+                                                                                         "phase1":  0.1,
+                                                                                         "phase2":  0.05
+                                                                                     },
+                                                                    "consistencyRule":  "Standard",
+                                                                    "scalingPlan":  "Up to ,000,000"
+                                                                },
+                                       "rapid_guardian_1step":  {
+                                                                    "payoutSplit":  "85%",
+                                                                    "id":  "rapid_guardian_1step",
+                                                                    "maxDrawdown":  0.06,
+                                                                    "leverageNum":  50,
+                                                                    "name":  "Rapid Guardian (1-Step Challenge)",
+                                                                    "overnightHolding":  true,
+                                                                    "dailyLoss":  0.04,
+                                                                    "weekendHolding":  true,
+                                                                    "newsNote":  "News trading allowed",
+                                                                    "phases":  "1-Step Rapid",
+                                                                    "prohibitedStrategies":  [
+                                                                                                 "HFT"
+                                                                                             ],
+                                                                    "eaAllowed":  true,
+                                                                    "drawdownNote":  "Trailing drawdown with 1-Step verification",
+                                                                    "leverage":  "1:50",
+                                                                    "maxTradingDays":  null,
+                                                                    "accountSizes":  [
+                                                                                         10000,
+                                                                                         25000,
+                                                                                         50000,
+                                                                                         100000
+                                                                                     ],
+                                                                    "drawdownType":  "trailing",
+                                                                    "payoutFrequency":  "Bi-weekly",
+                                                                    "newsTrading":  "allowed",
+                                                                    "minTradingDays":  0,
+                                                                    "profitTarget":  {
+                                                                                         "phase1":  0.1
+                                                                                     },
+                                                                    "consistencyRule":  "Standard",
+                                                                    "scalingPlan":  "Up to ,000,000"
+                                                                },
+                                       "edge_guardian":  {
+                                                             "payoutSplit":  "80%",
+                                                             "id":  "edge_guardian",
+                                                             "maxDrawdown":  0.05,
+                                                             "leverageNum":  30,
+                                                             "name":  "Edge Guardian (Direct / Instant)",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News trading allowed",
+                                                             "phases":  "Instant Capital",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Instant funding with no evaluation, 5% max drawdown",
+                                                             "leverage":  "1:30",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  10000,
+                                                                                  25000,
+                                                                                  50000
+                                                                              ],
+                                                             "drawdownType":  "static",
+                                                             "payoutFrequency":  "Bi-weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  0,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.08
+                                                                              },
+                                                             "consistencyRule":  "Standard",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         }
+                                   },
+                         "website":  "blueguardian.com",
+                         "category":  "Forex \u0026 CFDs",
+                         "shortName":  "Blue Guardian"
+                     },
+    "goatfunded":  {
+                       "id":  "goatfunded",
+                       "name":  "Goat Funded Trader",
+                       "color":  "#14b8a6",
+                       "plans":  {
+                                     "classic_2step":  {
+                                                           "payoutSplit":  "80-95%",
+                                                           "id":  "classic_2step",
+                                                           "maxDrawdown":  0.1,
+                                                           "leverageNum":  100,
+                                                           "name":  "Classic (2-Step Challenge)",
+                                                           "overnightHolding":  true,
+                                                           "dailyLoss":  0.05,
+                                                           "weekendHolding":  true,
+                                                           "newsNote":  "News trading allowed without restrictions",
+                                                           "phases":  "2-Step Classic",
+                                                           "prohibitedStrategies":  [
+                                                                                        "HFT",
+                                                                                        "Arbitrage"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "Balance-based drawdown, no minimum trading days",
+                                                           "leverage":  "1:100",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                5000,
+                                                                                10000,
+                                                                                25000,
+                                                                                50000,
+                                                                                100000
+                                                                            ],
+                                                           "drawdownType":  "static",
+                                                           "payoutFrequency":  "Bi-weekly (first payout in 14 days)",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  0,
+                                                           "profitTarget":  {
+                                                                                "phase1":  0.08,
+                                                                                "phase2":  0.05
+                                                                            },
+                                                           "consistencyRule":  "None on Classic accounts",
+                                                           "scalingPlan":  "Up to ,000,000 (25% every 3 months)"
+                                                       },
+                                     "no_time_limit_2step":  {
+                                                                 "payoutSplit":  "80-95%",
+                                                                 "id":  "no_time_limit_2step",
+                                                                 "maxDrawdown":  0.08,
+                                                                 "leverageNum":  100,
+                                                                 "name":  "No Time Limit (2-Step Challenge)",
+                                                                 "overnightHolding":  true,
+                                                                 "dailyLoss":  0.04,
+                                                                 "weekendHolding":  true,
+                                                                 "newsNote":  "News trading allowed",
+                                                                 "phases":  "2-Step No Time Limit",
+                                                                 "prohibitedStrategies":  [
+                                                                                              "HFT"
+                                                                                          ],
+                                                                 "eaAllowed":  true,
+                                                                 "drawdownNote":  "Low target 2-step with 8% Phase 1 and 4% Phase 2",
+                                                                 "leverage":  "1:100",
+                                                                 "maxTradingDays":  null,
+                                                                 "accountSizes":  [
+                                                                                      5000,
+                                                                                      10000,
+                                                                                      25000,
+                                                                                      50000,
+                                                                                      100000
+                                                                                  ],
+                                                                 "drawdownType":  "static",
+                                                                 "payoutFrequency":  "Bi-weekly",
+                                                                 "newsTrading":  "allowed",
+                                                                 "minTradingDays":  0,
+                                                                 "profitTarget":  {
+                                                                                      "phase1":  0.08,
+                                                                                      "phase2":  0.04
+                                                                                  },
+                                                                 "consistencyRule":  "None",
+                                                                 "scalingPlan":  "Up to ,000,000"
+                                                             },
+                                     "goat_1step":  {
+                                                        "payoutSplit":  "80%",
+                                                        "id":  "goat_1step",
+                                                        "maxDrawdown":  0.06,
+                                                        "leverageNum":  50,
+                                                        "name":  "1-Step Evaluation",
+                                                        "overnightHolding":  true,
+                                                        "dailyLoss":  0.04,
+                                                        "weekendHolding":  true,
+                                                        "newsNote":  "News trading allowed",
+                                                        "phases":  "1-Step Evaluation",
+                                                        "prohibitedStrategies":  [
+                                                                                     "HFT"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  "Trailing drawdown to threshold",
+                                                        "leverage":  "1:50",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             5000,
+                                                                             10000,
+                                                                             25000,
+                                                                             50000,
+                                                                             100000
+                                                                         ],
+                                                        "drawdownType":  "trailing",
+                                                        "payoutFrequency":  "Bi-weekly",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  0,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.1
+                                                                         },
+                                                        "consistencyRule":  "None",
+                                                        "scalingPlan":  "Up to ,000,000"
+                                                    },
+                                     "goat_instant":  {
+                                                          "payoutSplit":  "70-90%",
+                                                          "id":  "goat_instant",
+                                                          "maxDrawdown":  0.05,
+                                                          "leverageNum":  30,
+                                                          "name":  "Instant Funding (No Evaluation)",
+                                                          "overnightHolding":  true,
+                                                          "dailyLoss":  0,
+                                                          "weekendHolding":  true,
+                                                          "newsNote":  "News allowed",
+                                                          "phases":  "Instant Funding",
+                                                          "prohibitedStrategies":  [
+                                                                                       "HFT"
+                                                                                   ],
+                                                          "eaAllowed":  true,
+                                                          "drawdownNote":  "Instant funding with trailing drawdown and instant profit share",
+                                                          "leverage":  "1:30",
+                                                          "maxTradingDays":  null,
+                                                          "accountSizes":  [
+                                                                               5000,
+                                                                               10000,
+                                                                               25000,
+                                                                               50000
+                                                                           ],
+                                                          "drawdownType":  "trailing",
+                                                          "payoutFrequency":  "Bi-weekly",
+                                                          "newsTrading":  "allowed",
+                                                          "minTradingDays":  0,
+                                                          "profitTarget":  {
+                                                                               "phase1":  0.08
+                                                                           },
+                                                          "consistencyRule":  "None",
+                                                          "scalingPlan":  "Up to ,000,000"
+                                                      }
+                                 },
+                       "website":  "goatfundedtrader.com",
+                       "category":  "Forex \u0026 CFDs",
+                       "shortName":  "Goat Funded"
+                   },
+    "fxify":  {
+                  "id":  "fxify",
+                  "name":  "FXIFY",
+                  "color":  "#6366f1",
+                  "plans":  {
+                                "fxify_2step":  {
+                                                    "payoutSplit":  "80-90%",
+                                                    "id":  "fxify_2step",
+                                                    "maxDrawdown":  0.1,
+                                                    "leverageNum":  100,
+                                                    "name":  "2-Step Assessment",
+                                                    "overnightHolding":  true,
+                                                    "dailyLoss":  0.05,
+                                                    "weekendHolding":  true,
+                                                    "newsNote":  "News trading permitted",
+                                                    "phases":  "2-Step Assessment",
+                                                    "prohibitedStrategies":  [
+                                                                                 "HFT",
+                                                                                 "Latency Arbitrage"
+                                                                             ],
+                                                    "eaAllowed":  true,
+                                                    "drawdownNote":  "Customizable drawdown: choose between 6% or 10% max drawdown at checkout",
+                                                    "leverage":  "1:100",
+                                                    "maxTradingDays":  null,
+                                                    "accountSizes":  [
+                                                                         10000,
+                                                                         25000,
+                                                                         50000,
+                                                                         100000,
+                                                                         200000
+                                                                     ],
+                                                    "drawdownType":  "static",
+                                                    "payoutFrequency":  "On-demand payouts available (first payout eligible immediately after funded trade)",
+                                                    "newsTrading":  "allowed",
+                                                    "minTradingDays":  0,
+                                                    "profitTarget":  {
+                                                                         "phase1":  0.08,
+                                                                         "phase2":  0.05
+                                                                     },
+                                                    "consistencyRule":  "None on standard plan",
+                                                    "scalingPlan":  "Up to ,000,000"
+                                                },
+                                "fxify_1step":  {
+                                                    "payoutSplit":  "80-90%",
+                                                    "id":  "fxify_1step",
+                                                    "maxDrawdown":  0.06,
+                                                    "leverageNum":  50,
+                                                    "name":  "1-Step Assessment",
+                                                    "overnightHolding":  true,
+                                                    "dailyLoss":  0.04,
+                                                    "weekendHolding":  true,
+                                                    "newsNote":  "News trading allowed",
+                                                    "phases":  "1-Step Assessment",
+                                                    "prohibitedStrategies":  [
+                                                                                 "HFT"
+                                                                             ],
+                                                    "eaAllowed":  true,
+                                                    "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                    "leverage":  "1:50",
+                                                    "maxTradingDays":  null,
+                                                    "accountSizes":  [
+                                                                         10000,
+                                                                         25000,
+                                                                         50000,
+                                                                         100000
+                                                                     ],
+                                                    "drawdownType":  "trailing",
+                                                    "payoutFrequency":  "Bi-weekly",
+                                                    "newsTrading":  "allowed",
+                                                    "minTradingDays":  0,
+                                                    "profitTarget":  {
+                                                                         "phase1":  0.1
+                                                                     },
+                                                    "consistencyRule":  "Standard",
+                                                    "scalingPlan":  "Up to ,000,000"
+                                                },
+                                "fxify_3step":  {
+                                                    "payoutSplit":  "80-90%",
+                                                    "id":  "fxify_3step",
+                                                    "maxDrawdown":  0.06,
+                                                    "leverageNum":  100,
+                                                    "name":  "3-Step Assessment",
+                                                    "overnightHolding":  true,
+                                                    "dailyLoss":  0.03,
+                                                    "weekendHolding":  true,
+                                                    "newsNote":  "News trading allowed",
+                                                    "phases":  "3-Step Assessment",
+                                                    "prohibitedStrategies":  [
+                                                                                 "HFT"
+                                                                             ],
+                                                    "eaAllowed":  true,
+                                                    "drawdownNote":  "Budget friendly 3-step evaluation with 5% target per step",
+                                                    "leverage":  "1:100",
+                                                    "maxTradingDays":  null,
+                                                    "accountSizes":  [
+                                                                         10000,
+                                                                         25000,
+                                                                         50000,
+                                                                         100000
+                                                                     ],
+                                                    "drawdownType":  "static",
+                                                    "payoutFrequency":  "Bi-weekly",
+                                                    "newsTrading":  "allowed",
+                                                    "minTradingDays":  0,
+                                                    "profitTarget":  {
+                                                                         "phase3":  0.05,
+                                                                         "phase1":  0.05,
+                                                                         "phase2":  0.05
+                                                                     },
+                                                    "consistencyRule":  "Standard",
+                                                    "scalingPlan":  "Up to ,000,000"
+                                                }
+                            },
+                  "website":  "fxify.com",
+                  "category":  "Forex \u0026 CFDs",
+                  "shortName":  "FXIFY"
+              },
+    "myfundedfx":  {
+                       "id":  "myfundedfx",
+                       "name":  "MyFundedFX",
+                       "color":  "#0ea5e9",
+                       "plans":  {
+                                     "normal_2step":  {
+                                                          "payoutSplit":  "80-90%",
+                                                          "id":  "normal_2step",
+                                                          "maxDrawdown":  0.08,
+                                                          "leverageNum":  100,
+                                                          "name":  "Normal (2-Step Challenge)",
+                                                          "overnightHolding":  true,
+                                                          "dailyLoss":  0.05,
+                                                          "weekendHolding":  true,
+                                                          "newsNote":  "News trading allowed on all stages",
+                                                          "phases":  "2-Step Normal",
+                                                          "prohibitedStrategies":  [
+                                                                                       "HFT",
+                                                                                       "Account Sharing"
+                                                                                   ],
+                                                          "eaAllowed":  true,
+                                                          "drawdownNote":  "Daily loss calculated on balance or equity at 5 PM EST",
+                                                          "leverage":  "1:100",
+                                                          "maxTradingDays":  null,
+                                                          "accountSizes":  [
+                                                                               5000,
+                                                                               10000,
+                                                                               25000,
+                                                                               50000,
+                                                                               100000,
+                                                                               200000
+                                                                           ],
+                                                          "drawdownType":  "static",
+                                                          "payoutFrequency":  "Bi-weekly",
+                                                          "newsTrading":  "allowed",
+                                                          "minTradingDays":  1,
+                                                          "profitTarget":  {
+                                                                               "phase1":  0.08,
+                                                                               "phase2":  0.05
+                                                                           },
+                                                          "consistencyRule":  "None on Normal evaluation",
+                                                          "scalingPlan":  "Up to ,500,000"
+                                                      },
+                                     "pro_2step":  {
+                                                       "payoutSplit":  "80-90%",
+                                                       "id":  "pro_2step",
+                                                       "maxDrawdown":  0.1,
+                                                       "leverageNum":  100,
+                                                       "name":  "Pro (2-Step Challenge)",
+                                                       "overnightHolding":  true,
+                                                       "dailyLoss":  0.05,
+                                                       "weekendHolding":  true,
+                                                       "newsNote":  "News trading allowed",
+                                                       "phases":  "2-Step Pro",
+                                                       "prohibitedStrategies":  [
+                                                                                    "HFT"
+                                                                                ],
+                                                       "eaAllowed":  true,
+                                                       "drawdownNote":  "10% max static drawdown with zero minimum trading days",
+                                                       "leverage":  "1:100",
+                                                       "maxTradingDays":  null,
+                                                       "accountSizes":  [
+                                                                            5000,
+                                                                            10000,
+                                                                            25000,
+                                                                            50000,
+                                                                            100000,
+                                                                            200000
+                                                                        ],
+                                                       "drawdownType":  "static",
+                                                       "payoutFrequency":  "Bi-weekly",
+                                                       "newsTrading":  "allowed",
+                                                       "minTradingDays":  0,
+                                                       "profitTarget":  {
+                                                                            "phase1":  0.08,
+                                                                            "phase2":  0.05
+                                                                        },
+                                                       "consistencyRule":  "None",
+                                                       "scalingPlan":  "Up to ,500,000"
+                                                   },
+                                     "one_step":  {
+                                                      "payoutSplit":  "80%",
+                                                      "id":  "one_step",
+                                                      "maxDrawdown":  0.06,
+                                                      "leverageNum":  50,
+                                                      "name":  "1-Step Challenge",
+                                                      "overnightHolding":  true,
+                                                      "dailyLoss":  0.04,
+                                                      "weekendHolding":  true,
+                                                      "newsNote":  "News trading permitted",
+                                                      "phases":  "1-Step Challenge",
+                                                      "prohibitedStrategies":  [
+                                                                                   "HFT"
+                                                                               ],
+                                                      "eaAllowed":  true,
+                                                      "drawdownNote":  "Trailing drawdown to starting balance",
+                                                      "leverage":  "1:50",
+                                                      "maxTradingDays":  null,
+                                                      "accountSizes":  [
+                                                                           5000,
+                                                                           10000,
+                                                                           25000,
+                                                                           50000,
+                                                                           100000
+                                                                       ],
+                                                      "drawdownType":  "trailing",
+                                                      "payoutFrequency":  "Bi-weekly",
+                                                      "newsTrading":  "allowed",
+                                                      "minTradingDays":  0,
+                                                      "profitTarget":  {
+                                                                           "phase1":  0.1
+                                                                       },
+                                                      "consistencyRule":  "None",
+                                                      "scalingPlan":  "Up to ,500,000"
+                                                  }
+                                 },
+                       "website":  "myfundedfx.com",
+                       "category":  "Forex \u0026 CFDs",
+                       "shortName":  "MyFundedFX"
+                   },
+    "larkfunding":  {
+                        "id":  "larkfunding",
+                        "name":  "Lark Funding",
+                        "color":  "#e11d48",
+                        "plans":  {
+                                      "lark_1step":  {
                                                          "payoutSplit":  "80-90%",
-                                                         "id":  "alpha_pro",
+                                                         "id":  "lark_1step",
+                                                         "maxDrawdown":  0.05,
+                                                         "leverageNum":  30,
+                                                         "name":  "1-Step Challenge",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.03,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News trading allowed",
+                                                         "phases":  "1-Step Challenge",
+                                                         "prohibitedStrategies":  [
+                                                                                      "HFT",
+                                                                                      "Martingale"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "Trailing max drawdown with 10% target",
+                                                         "leverage":  "1:30",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              10000,
+                                                                              25000,
+                                                                              50000,
+                                                                              100000
+                                                                          ],
+                                                         "drawdownType":  "trailing",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.1
+                                                                          },
+                                                         "consistencyRule":  "No single trade profit \u003e 40% of total at payout",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     },
+                                      "lark_2step":  {
+                                                         "payoutSplit":  "80-90%",
+                                                         "id":  "lark_2step",
                                                          "maxDrawdown":  0.1,
                                                          "leverageNum":  100,
-                                                         "name":  "Alpha Pro (2-Step Challenge)",
+                                                         "name":  "2-Step Challenge",
                                                          "overnightHolding":  true,
                                                          "dailyLoss":  0.05,
                                                          "weekendHolding":  true,
-                                                         "newsNote":  "News trading allowed on all Alpha Pro accounts",
+                                                         "newsNote":  "News trading permitted",
                                                          "phases":  "2-Step Challenge",
                                                          "prohibitedStrategies":  [
-                                                                                      "HFT",
-                                                                                      "Arbitrage",
-                                                                                      "Account Sharing"
+                                                                                      "HFT"
                                                                                   ],
                                                          "eaAllowed":  true,
-                                                         "drawdownNote":  "Static equity-based drawdown; 0% commission raw spreads",
+                                                         "drawdownNote":  "Static balance-based drawdown, no trailing",
                                                          "leverage":  "1:100",
                                                          "maxTradingDays":  null,
                                                          "accountSizes":  [
@@ -933,208 +1904,1650 @@
                                                                               "phase1":  0.08,
                                                                               "phase2":  0.05
                                                                           },
-                                                         "consistencyRule":  "None",
-                                                         "scalingPlan":  "Up to ,000,000 (Capital doubled every 10% gain)"
+                                                         "consistencyRule":  "Standard risk guidelines",
+                                                         "scalingPlan":  "Up to ,000,000"
                                                      },
-                                       "alpha_1step":  {
-                                                           "payoutSplit":  "80-90%",
-                                                           "id":  "alpha_1step",
-                                                           "maxDrawdown":  0.06,
-                                                           "leverageNum":  30,
-                                                           "name":  "Alpha 1-Step",
-                                                           "overnightHolding":  true,
-                                                           "dailyLoss":  0.03,
-                                                           "weekendHolding":  true,
-                                                           "newsNote":  "News trading allowed",
-                                                           "phases":  "1-Step Challenge",
-                                                           "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
+                                      "lark_3step":  {
+                                                         "payoutSplit":  "80-90%",
+                                                         "id":  "lark_3step",
+                                                         "maxDrawdown":  0.06,
+                                                         "leverageNum":  100,
+                                                         "name":  "3-Step Challenge",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.04,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News allowed",
+                                                         "phases":  "3-Step Challenge",
+                                                         "prohibitedStrategies":  [
+                                                                                      "HFT"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "3-Step challenge with 5% target per step",
+                                                         "leverage":  "1:100",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              10000,
+                                                                              25000,
+                                                                              50000,
+                                                                              100000
+                                                                          ],
+                                                         "drawdownType":  "static",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase3":  0.05,
+                                                                              "phase1":  0.05,
+                                                                              "phase2":  0.05
+                                                                          },
+                                                         "consistencyRule":  "Standard",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     }
+                                  },
+                        "website":  "larkfunding.com",
+                        "category":  "Forex \u0026 CFDs",
+                        "shortName":  "Lark Funding"
+                    },
+    "instantfunding":  {
+                           "id":  "instantfunding",
+                           "name":  "Instant Funding",
+                           "color":  "#059669",
+                           "plans":  {
+                                         "instant_direct":  {
+                                                                "payoutSplit":  "70-90%",
+                                                                "id":  "instant_direct",
+                                                                "maxDrawdown":  0.1,
+                                                                "leverageNum":  100,
+                                                                "name":  "Instant Funding (No Evaluation)",
+                                                                "overnightHolding":  true,
+                                                                "dailyLoss":  0,
+                                                                "weekendHolding":  true,
+                                                                "newsNote":  "News trading fully permitted",
+                                                                "phases":  "Direct Funding",
+                                                                "prohibitedStrategies":  [
+                                                                                             "HFT",
+                                                                                             "Latency Arbitrage"
+                                                                                         ],
+                                                                "eaAllowed":  true,
+                                                                "drawdownNote":  "No challenge required: trade with real capital from day one, 10% max drawdown",
+                                                                "leverage":  "1:100",
+                                                                "maxTradingDays":  null,
+                                                                "accountSizes":  [
+                                                                                     1250,
+                                                                                     2500,
+                                                                                     5000,
+                                                                                     10000,
+                                                                                     20000,
+                                                                                     40000,
+                                                                                     80000
+                                                                                 ],
+                                                                "drawdownType":  "static",
+                                                                "payoutFrequency":  "First payout after 14 days, then weekly",
+                                                                "newsTrading":  "allowed",
+                                                                "minTradingDays":  0,
+                                                                "profitTarget":  {
+                                                                                     "phase1":  0.1
+                                                                                 },
+                                                                "consistencyRule":  "None on Instant account",
+                                                                "scalingPlan":  "Scale up to ,280,000 (100% scale at 10% target)"
+                                                            },
+                                         "instant_1step":  {
+                                                               "payoutSplit":  "80-90%",
+                                                               "id":  "instant_1step",
+                                                               "maxDrawdown":  0.1,
+                                                               "leverageNum":  100,
+                                                               "name":  "1-Step Challenge",
+                                                               "overnightHolding":  true,
+                                                               "dailyLoss":  0,
+                                                               "weekendHolding":  true,
+                                                               "newsNote":  "News allowed",
+                                                               "phases":  "1-Step Evaluation",
+                                                               "prohibitedStrategies":  [
+                                                                                            "HFT"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  "10% target with 10% static drawdown, no daily loss",
+                                                               "leverage":  "1:100",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    5000,
+                                                                                    10000,
+                                                                                    25000,
+                                                                                    50000,
+                                                                                    100000
+                                                                                ],
+                                                               "drawdownType":  "static",
+                                                               "payoutFrequency":  "Bi-weekly",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  1,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.1
+                                                                                },
+                                                               "consistencyRule":  "None",
+                                                               "scalingPlan":  "Up to ,280,000"
+                                                           },
+                                         "instant_2step":  {
+                                                               "payoutSplit":  "80-90%",
+                                                               "id":  "instant_2step",
+                                                               "maxDrawdown":  0.1,
+                                                               "leverageNum":  100,
+                                                               "name":  "2-Step Challenge",
+                                                               "overnightHolding":  true,
+                                                               "dailyLoss":  0.05,
+                                                               "weekendHolding":  true,
+                                                               "newsNote":  "News allowed",
+                                                               "phases":  "2-Step Evaluation",
+                                                               "prohibitedStrategies":  [
+                                                                                            "HFT"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  "5% daily loss, 10% max static drawdown",
+                                                               "leverage":  "1:100",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    5000,
+                                                                                    10000,
+                                                                                    25000,
+                                                                                    50000,
+                                                                                    100000
+                                                                                ],
+                                                               "drawdownType":  "static",
+                                                               "payoutFrequency":  "Bi-weekly",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  1,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.08,
+                                                                                    "phase2":  0.05
+                                                                                },
+                                                               "consistencyRule":  "None",
+                                                               "scalingPlan":  "Up to ,280,000"
+                                                           }
+                                     },
+                           "website":  "instantfunding.com",
+                           "category":  "Instant Funding Specialists",
+                           "shortName":  "Instant Funding"
+                       },
+    "fundedtradingplus":  {
+                              "id":  "fundedtradingplus",
+                              "name":  "Funded Trading Plus",
+                              "color":  "#2563eb",
+                              "plans":  {
+                                            "experienced_1step":  {
+                                                                      "payoutSplit":  "80-100%",
+                                                                      "id":  "experienced_1step",
+                                                                      "maxDrawdown":  0.06,
+                                                                      "leverageNum":  30,
+                                                                      "name":  "Experienced Trader (1-Step Challenge)",
+                                                                      "overnightHolding":  true,
+                                                                      "dailyLoss":  0,
+                                                                      "weekendHolding":  true,
+                                                                      "newsNote":  "News trading allowed without restrictions",
+                                                                      "phases":  "1-Step Experienced",
+                                                                      "prohibitedStrategies":  [
+                                                                                                   "HFT",
+                                                                                                   "Latency Arbitrage"
+                                                                                               ],
+                                                                      "eaAllowed":  true,
+                                                                      "drawdownNote":  "Trailing drawdown calculated to initial balance. NO DAILY LOSS LIMIT!",
+                                                                      "leverage":  "1:30",
+                                                                      "maxTradingDays":  null,
+                                                                      "accountSizes":  [
+                                                                                           12500,
+                                                                                           25000,
+                                                                                           50000,
+                                                                                           100000,
+                                                                                           200000
+                                                                                       ],
+                                                                      "drawdownType":  "trailing",
+                                                                      "payoutFrequency":  "On-demand payouts (any time with 0 minimum days)",
+                                                                      "newsTrading":  "allowed",
+                                                                      "minTradingDays":  0,
+                                                                      "profitTarget":  {
+                                                                                           "phase1":  0.1
+                                                                                       },
+                                                                      "consistencyRule":  "None",
+                                                                      "scalingPlan":  "Up to ,000,000 (doubles account size at 10% target)"
+                                                                  },
+                                            "advanced_2step":  {
+                                                                   "payoutSplit":  "80-100%",
+                                                                   "id":  "advanced_2step",
+                                                                   "maxDrawdown":  0.1,
+                                                                   "leverageNum":  30,
+                                                                   "name":  "Advanced Trader (2-Step Challenge)",
+                                                                   "overnightHolding":  true,
+                                                                   "dailyLoss":  0.05,
+                                                                   "weekendHolding":  true,
+                                                                   "newsNote":  "News trading allowed",
+                                                                   "phases":  "2-Step Advanced",
+                                                                   "prohibitedStrategies":  [
+                                                                                                "HFT"
+                                                                                            ],
+                                                                   "eaAllowed":  true,
+                                                                   "drawdownNote":  "Balance-based drawdown, no time limit",
+                                                                   "leverage":  "1:30",
+                                                                   "maxTradingDays":  null,
+                                                                   "accountSizes":  [
+                                                                                        25000,
+                                                                                        50000,
+                                                                                        100000,
+                                                                                        200000
                                                                                     ],
-                                                           "eaAllowed":  true,
-                                                           "drawdownNote":  "Trailing drawdown calculated on high water mark",
-                                                           "leverage":  "1:30",
-                                                           "maxTradingDays":  null,
-                                                           "accountSizes":  [
-                                                                                10000,
-                                                                                25000,
-                                                                                50000,
-                                                                                100000,
-                                                                                200000
-                                                                            ],
-                                                           "drawdownType":  "trailing",
-                                                           "payoutFrequency":  "Bi-weekly",
-                                                           "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
-                                                           "profitTarget":  {
-                                                                                "phase1":  0.1
-                                                                            },
-                                                           "consistencyRule":  "None",
-                                                           "scalingPlan":  "Up to ,000,000"
-                                                       },
-                                       "alpha_swing":  {
+                                                                   "drawdownType":  "static",
+                                                                   "payoutFrequency":  "On-demand payouts",
+                                                                   "newsTrading":  "allowed",
+                                                                   "minTradingDays":  0,
+                                                                   "profitTarget":  {
+                                                                                        "phase1":  0.1,
+                                                                                        "phase2":  0.05
+                                                                                    },
+                                                                   "consistencyRule":  "None",
+                                                                   "scalingPlan":  "Up to ,000,000"
+                                                               },
+                                            "premium_2step":  {
+                                                                  "payoutSplit":  "80-100%",
+                                                                  "id":  "premium_2step",
+                                                                  "maxDrawdown":  0.08,
+                                                                  "leverageNum":  30,
+                                                                  "name":  "Premium Trader (2-Step Challenge)",
+                                                                  "overnightHolding":  true,
+                                                                  "dailyLoss":  0.04,
+                                                                  "weekendHolding":  true,
+                                                                  "newsNote":  "News trading allowed",
+                                                                  "phases":  "2-Step Premium",
+                                                                  "prohibitedStrategies":  [
+                                                                                               "HFT"
+                                                                                           ],
+                                                                  "eaAllowed":  true,
+                                                                  "drawdownNote":  "Low target: 8% Phase 1 and 5% Phase 2",
+                                                                  "leverage":  "1:30",
+                                                                  "maxTradingDays":  null,
+                                                                  "accountSizes":  [
+                                                                                       25000,
+                                                                                       50000,
+                                                                                       100000
+                                                                                   ],
+                                                                  "drawdownType":  "static",
+                                                                  "payoutFrequency":  "On-demand payouts",
+                                                                  "newsTrading":  "allowed",
+                                                                  "minTradingDays":  0,
+                                                                  "profitTarget":  {
+                                                                                       "phase1":  0.08,
+                                                                                       "phase2":  0.05
+                                                                                   },
+                                                                  "consistencyRule":  "None",
+                                                                  "scalingPlan":  "Up to ,000,000"
+                                                              },
+                                            "master_instant":  {
+                                                                   "payoutSplit":  "70-90%",
+                                                                   "id":  "master_instant",
+                                                                   "maxDrawdown":  0.05,
+                                                                   "leverageNum":  30,
+                                                                   "name":  "Master Trader (Instant Funding)",
+                                                                   "overnightHolding":  true,
+                                                                   "dailyLoss":  0,
+                                                                   "weekendHolding":  true,
+                                                                   "newsNote":  "News allowed",
+                                                                   "phases":  "Instant Master",
+                                                                   "prohibitedStrategies":  [
+                                                                                                "HFT"
+                                                                                            ],
+                                                                   "eaAllowed":  true,
+                                                                   "drawdownNote":  "Instant live funding without any evaluation",
+                                                                   "leverage":  "1:30",
+                                                                   "maxTradingDays":  null,
+                                                                   "accountSizes":  [
+                                                                                        5000,
+                                                                                        10000,
+                                                                                        25000,
+                                                                                        50000,
+                                                                                        100000
+                                                                                    ],
+                                                                   "drawdownType":  "trailing",
+                                                                   "payoutFrequency":  "On-demand payouts",
+                                                                   "newsTrading":  "allowed",
+                                                                   "minTradingDays":  0,
+                                                                   "profitTarget":  {
+                                                                                        "phase1":  0.05
+                                                                                    },
+                                                                   "consistencyRule":  "None",
+                                                                   "scalingPlan":  "Up to ,500,000"
+                                                               }
+                                        },
+                              "website":  "fundedtradingplus.com",
+                              "category":  "Forex \u0026 CFDs",
+                              "shortName":  "Funded Trading Plus"
+                          },
+    "maventrading":  {
+                         "id":  "maventrading",
+                         "name":  "Maven Trading",
+                         "color":  "#0284c7",
+                         "plans":  {
+                                       "maven_2step":  {
                                                            "payoutSplit":  "80-90%",
-                                                           "id":  "alpha_swing",
+                                                           "id":  "maven_2step",
                                                            "maxDrawdown":  0.1,
-                                                           "leverageNum":  30,
-                                                           "name":  "Alpha Swing (2-Step)",
+                                                           "leverageNum":  100,
+                                                           "name":  "2-Step Challenge",
                                                            "overnightHolding":  true,
                                                            "dailyLoss":  0.05,
                                                            "weekendHolding":  true,
-                                                           "newsNote":  "Full news and weekend trading permitted",
+                                                           "newsNote":  "News trading permitted",
                                                            "phases":  "2-Step Challenge",
                                                            "prohibitedStrategies":  [
                                                                                         "HFT",
-                                                                                        "Arbitrage"
+                                                                                        "Reverse Arbitrage"
                                                                                     ],
                                                            "eaAllowed":  true,
-                                                           "drawdownNote":  "Static equity-based drawdown",
-                                                           "leverage":  "1:30",
+                                                           "drawdownNote":  "EOD drawdown or classic balance-based option",
+                                                           "leverage":  "1:100",
                                                            "maxTradingDays":  null,
                                                            "accountSizes":  [
+                                                                                5000,
                                                                                 10000,
-                                                                                25000,
+                                                                                20000,
                                                                                 50000,
-                                                                                100000,
-                                                                                200000
+                                                                                100000
                                                                             ],
                                                            "drawdownType":  "static",
                                                            "payoutFrequency":  "Bi-weekly",
                                                            "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
+                                                           "minTradingDays":  1,
                                                            "profitTarget":  {
-                                                                                "phase1":  0.08,
+                                                                                "phase1":  0.09,
                                                                                 "phase2":  0.05
                                                                             },
-                                                           "consistencyRule":  "None",
+                                                           "consistencyRule":  "No all-in strategies",
+                                                           "scalingPlan":  "Up to ,000,000"
+                                                       },
+                                       "maven_1step":  {
+                                                           "payoutSplit":  "80%",
+                                                           "id":  "maven_1step",
+                                                           "maxDrawdown":  0.06,
+                                                           "leverageNum":  50,
+                                                           "name":  "1-Step Challenge",
+                                                           "overnightHolding":  true,
+                                                           "dailyLoss":  0.03,
+                                                           "weekendHolding":  true,
+                                                           "newsNote":  "News allowed",
+                                                           "phases":  "1-Step Challenge",
+                                                           "prohibitedStrategies":  [
+                                                                                        "HFT"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                           "leverage":  "1:50",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                5000,
+                                                                                10000,
+                                                                                20000,
+                                                                                50000,
+                                                                                100000
+                                                                            ],
+                                                           "drawdownType":  "trailing",
+                                                           "payoutFrequency":  "Bi-weekly",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  1,
+                                                           "profitTarget":  {
+                                                                                "phase1":  0.1
+                                                                            },
+                                                           "consistencyRule":  "Standard",
+                                                           "scalingPlan":  "Up to ,000,000"
+                                                       },
+                                       "maven_swing":  {
+                                                           "payoutSplit":  "80-90%",
+                                                           "id":  "maven_swing",
+                                                           "maxDrawdown":  0.1,
+                                                           "leverageNum":  30,
+                                                           "name":  "Swing (2-Step Challenge)",
+                                                           "overnightHolding":  true,
+                                                           "dailyLoss":  0.05,
+                                                           "weekendHolding":  true,
+                                                           "newsNote":  "Unrestricted news trading",
+                                                           "phases":  "2-Step Swing",
+                                                           "prohibitedStrategies":  [
+                                                                                        "HFT"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "Allows long holding through weekends and high-impact macro news",
+                                                           "leverage":  "1:30",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                10000,
+                                                                                20000,
+                                                                                50000,
+                                                                                100000
+                                                                            ],
+                                                           "drawdownType":  "static",
+                                                           "payoutFrequency":  "Bi-weekly",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  1,
+                                                           "profitTarget":  {
+                                                                                "phase1":  0.09,
+                                                                                "phase2":  0.05
+                                                                            },
+                                                           "consistencyRule":  "Standard",
                                                            "scalingPlan":  "Up to ,000,000"
                                                        }
                                    },
-                         "website":  "alphacapitalgroup.uk",
+                         "website":  "maventrading.com",
                          "category":  "Forex \u0026 CFDs",
-                         "shortName":  "Alpha Capital"
+                         "shortName":  "Maven Trading"
                      },
-    "e8markets":  {
-                      "id":  "e8markets",
-                      "name":  "E8 Markets",
-                      "color":  "#8b5cf6",
+    "aquafunded":  {
+                       "id":  "aquafunded",
+                       "name":  "AquaFunded",
+                       "color":  "#0ea5e9",
+                       "plans":  {
+                                     "standard_2step":  {
+                                                            "payoutSplit":  "90%",
+                                                            "id":  "standard_2step",
+                                                            "maxDrawdown":  0.08,
+                                                            "leverageNum":  100,
+                                                            "name":  "Standard (2-Step Challenge)",
+                                                            "overnightHolding":  true,
+                                                            "dailyLoss":  0.05,
+                                                            "weekendHolding":  true,
+                                                            "newsNote":  "News trading allowed on all stages",
+                                                            "phases":  "2-Step Standard",
+                                                            "prohibitedStrategies":  [
+                                                                                         "HFT",
+                                                                                         "Latency Arbitrage"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  "Static drawdown based on initial balance",
+                                                            "leverage":  "1:100",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 10000,
+                                                                                 25000,
+                                                                                 50000,
+                                                                                 100000,
+                                                                                 200000
+                                                                             ],
+                                                            "drawdownType":  "static",
+                                                            "payoutFrequency":  "Bi-weekly (first payout in 14 days)",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  0,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.08,
+                                                                                 "phase2":  0.05
+                                                                             },
+                                                            "consistencyRule":  "None on Standard",
+                                                            "scalingPlan":  "Up to ,000,000"
+                                                        },
+                                     "one_step":  {
+                                                      "payoutSplit":  "90%",
+                                                      "id":  "one_step",
+                                                      "maxDrawdown":  0.06,
+                                                      "leverageNum":  30,
+                                                      "name":  "1-Step Challenge",
+                                                      "overnightHolding":  true,
+                                                      "dailyLoss":  0.03,
+                                                      "weekendHolding":  true,
+                                                      "newsNote":  "News trading allowed",
+                                                      "phases":  "1-Step Challenge",
+                                                      "prohibitedStrategies":  [
+                                                                                   "HFT"
+                                                                               ],
+                                                      "eaAllowed":  true,
+                                                      "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                      "leverage":  "1:30",
+                                                      "maxTradingDays":  null,
+                                                      "accountSizes":  [
+                                                                           10000,
+                                                                           25000,
+                                                                           50000,
+                                                                           100000
+                                                                       ],
+                                                      "drawdownType":  "trailing",
+                                                      "payoutFrequency":  "Bi-weekly",
+                                                      "newsTrading":  "allowed",
+                                                      "minTradingDays":  0,
+                                                      "profitTarget":  {
+                                                                           "phase1":  0.09
+                                                                       },
+                                                      "consistencyRule":  "None",
+                                                      "scalingPlan":  "Up to ,000,000"
+                                                  },
+                                     "flash_2step":  {
+                                                         "payoutSplit":  "90%",
+                                                         "id":  "flash_2step",
+                                                         "maxDrawdown":  0.1,
+                                                         "leverageNum":  100,
+                                                         "name":  "Flash (2-Step Fast Payouts)",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.05,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News allowed",
+                                                         "phases":  "2-Step Flash",
+                                                         "prohibitedStrategies":  [
+                                                                                      "HFT"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "Fastest 24-hr payouts with raw institutional spreads",
+                                                         "leverage":  "1:100",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              10000,
+                                                                              25000,
+                                                                              50000,
+                                                                              100000,
+                                                                              200000
+                                                                          ],
+                                                         "drawdownType":  "static",
+                                                         "payoutFrequency":  "Weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.08,
+                                                                              "phase2":  0.05
+                                                                          },
+                                                         "consistencyRule":  "None",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     }
+                                 },
+                       "website":  "aquafunded.com",
+                       "category":  "Forex \u0026 CFDs",
+                       "shortName":  "AquaFunded"
+                   },
+    "funderpro":  {
+                      "id":  "funderpro",
+                      "name":  "FunderPro",
+                      "color":  "#22c55e",
                       "plans":  {
-                                    "classic_2step":  {
-                                                          "payoutSplit":  "80-100%",
-                                                          "id":  "classic_2step",
-                                                          "maxDrawdown":  0.08,
-                                                          "leverageNum":  50,
-                                                          "name":  "E8 Classic (2-Step Challenge)",
+                                    "regular_2step":  {
+                                                          "payoutSplit":  "80%",
+                                                          "id":  "regular_2step",
+                                                          "maxDrawdown":  0.1,
+                                                          "leverageNum":  100,
+                                                          "name":  "Regular (2-Step Challenge)",
                                                           "overnightHolding":  true,
                                                           "dailyLoss":  0.05,
-                                                          "weekendHolding":  true,
-                                                          "newsNote":  "News trading allowed without restrictions",
-                                                          "phases":  "2-Step Challenge",
+                                                          "weekendHolding":  false,
+                                                          "newsNote":  "News trading permitted",
+                                                          "phases":  "2-Step Regular",
                                                           "prohibitedStrategies":  [
                                                                                        "HFT",
-                                                                                       "Latency Arbitrage"
+                                                                                       "Grid Trading",
+                                                                                       "Martingale"
                                                                                    ],
                                                           "eaAllowed":  true,
-                                                          "drawdownNote":  "Configurable drawdown up to 14% via E8 customization",
-                                                          "leverage":  "1:50",
+                                                          "drawdownNote":  "Balance-based drawdown, STP broker execution with real capital",
+                                                          "leverage":  "1:100",
                                                           "maxTradingDays":  null,
                                                           "accountSizes":  [
-                                                                               10000,
                                                                                25000,
                                                                                50000,
                                                                                100000,
                                                                                200000
                                                                            ],
                                                           "drawdownType":  "static",
-                                                          "payoutFrequency":  "Bi-weekly (first payout in 14 days, then 8 days)",
+                                                          "payoutFrequency":  "Weekly payouts",
                                                           "newsTrading":  "allowed",
-                                                          "minTradingDays":  0,
+                                                          "minTradingDays":  5,
                                                           "profitTarget":  {
-                                                                               "phase1":  0.08,
-                                                                               "phase2":  0.04
+                                                                               "phase1":  0.1,
+                                                                               "phase2":  0.08
                                                                            },
                                                           "consistencyRule":  "None",
-                                                          "scalingPlan":  "Up to ,000,000+"
+                                                          "scalingPlan":  "Up to ,000,000"
                                                       },
-                                    "track_3step":  {
-                                                        "payoutSplit":  "80-100%",
-                                                        "id":  "track_3step",
-                                                        "maxDrawdown":  0.08,
-                                                        "leverageNum":  50,
-                                                        "name":  "E8 Track (3-Step Challenge)",
+                                    "swing_2step":  {
+                                                        "payoutSplit":  "80%",
+                                                        "id":  "swing_2step",
+                                                        "maxDrawdown":  0.1,
+                                                        "leverageNum":  30,
+                                                        "name":  "Swing (2-Step Challenge)",
                                                         "overnightHolding":  true,
                                                         "dailyLoss":  0.05,
                                                         "weekendHolding":  true,
                                                         "newsNote":  "News trading allowed",
-                                                        "phases":  "3-Step Challenge",
+                                                        "phases":  "2-Step Swing",
                                                         "prohibitedStrategies":  [
                                                                                      "HFT",
-                                                                                     "Latency Arbitrage"
+                                                                                     "Martingale"
                                                                                  ],
                                                         "eaAllowed":  true,
-                                                        "drawdownNote":  "Static balance-based calculation",
-                                                        "leverage":  "1:50",
+                                                        "drawdownNote":  "Weekend holding allowed, raw institutional spreads",
+                                                        "leverage":  "1:30",
                                                         "maxTradingDays":  null,
                                                         "accountSizes":  [
-                                                                             10000,
                                                                              25000,
                                                                              50000,
                                                                              100000,
                                                                              200000
                                                                          ],
                                                         "drawdownType":  "static",
-                                                        "payoutFrequency":  "Bi-weekly",
+                                                        "payoutFrequency":  "Weekly payouts",
                                                         "newsTrading":  "allowed",
-                                                        "minTradingDays":  0,
+                                                        "minTradingDays":  5,
                                                         "profitTarget":  {
-                                                                             "phase3":  0.04,
-                                                                             "phase1":  0.08,
-                                                                             "phase2":  0.04
+                                                                             "phase1":  0.1,
+                                                                             "phase2":  0.08
                                                                          },
                                                         "consistencyRule":  "None",
                                                         "scalingPlan":  "Up to ,000,000"
                                                     },
                                     "one_step":  {
-                                                     "payoutSplit":  "80-100%",
+                                                     "payoutSplit":  "80%",
                                                      "id":  "one_step",
-                                                     "maxDrawdown":  0.06,
-                                                     "leverageNum":  30,
-                                                     "name":  "E8 One (1-Step Challenge)",
+                                                     "maxDrawdown":  0.07,
+                                                     "leverageNum":  50,
+                                                     "name":  "1-Step Evaluation",
                                                      "overnightHolding":  true,
                                                      "dailyLoss":  0.04,
                                                      "weekendHolding":  true,
-                                                     "newsNote":  "News trading allowed",
-                                                     "phases":  "1-Step Challenge",
+                                                     "newsNote":  "News allowed",
+                                                     "phases":  "1-Step Evaluation",
                                                      "prohibitedStrategies":  [
-                                                                                  "HFT",
-                                                                                  "Arbitrage"
+                                                                                  "HFT"
                                                                               ],
                                                      "eaAllowed":  true,
-                                                     "drawdownNote":  "Trailing relative drawdown",
-                                                     "leverage":  "1:30",
+                                                     "drawdownNote":  "1-Step evaluation with 10% target",
+                                                     "leverage":  "1:50",
                                                      "maxTradingDays":  null,
                                                      "accountSizes":  [
-                                                                          10000,
                                                                           25000,
                                                                           50000,
                                                                           100000
                                                                       ],
                                                      "drawdownType":  "trailing",
-                                                     "payoutFrequency":  "Bi-weekly",
+                                                     "payoutFrequency":  "Weekly",
                                                      "newsTrading":  "allowed",
-                                                     "minTradingDays":  0,
+                                                     "minTradingDays":  3,
                                                      "profitTarget":  {
-                                                                          "phase1":  0.08
+                                                                          "phase1":  0.1
                                                                       },
                                                      "consistencyRule":  "None",
                                                      "scalingPlan":  "Up to ,000,000"
-                                                 },
-                                    "premier_2step":  {
-                                                          "payoutSplit":  "80-100%",
-                                                          "id":  "premier_2step",
+                                                 }
+                                },
+                      "website":  "funderpro.com",
+                      "category":  "Forex \u0026 CFDs",
+                      "shortName":  "FunderPro"
+                  },
+    "toptiertrader":  {
+                          "id":  "toptiertrader",
+                          "name":  "TopTier Trader",
+                          "color":  "#eab308",
+                          "plans":  {
+                                        "toptier_challenge_2step":  {
+                                                                        "payoutSplit":  "80-90%",
+                                                                        "id":  "toptier_challenge_2step",
+                                                                        "maxDrawdown":  0.1,
+                                                                        "leverageNum":  100,
+                                                                        "name":  "TopTier Challenge (2-Step)",
+                                                                        "overnightHolding":  true,
+                                                                        "dailyLoss":  0.05,
+                                                                        "weekendHolding":  true,
+                                                                        "newsNote":  "News trading permitted",
+                                                                        "phases":  "2-Step Challenge",
+                                                                        "prohibitedStrategies":  [
+                                                                                                     "HFT",
+                                                                                                     "Arbitrage"
+                                                                                                 ],
+                                                                        "eaAllowed":  true,
+                                                                        "drawdownNote":  "Balance-based drawdown, no minimum trading days",
+                                                                        "leverage":  "1:100",
+                                                                        "maxTradingDays":  null,
+                                                                        "accountSizes":  [
+                                                                                             10000,
+                                                                                             25000,
+                                                                                             50000,
+                                                                                             100000,
+                                                                                             200000
+                                                                                         ],
+                                                                        "drawdownType":  "static",
+                                                                        "payoutFrequency":  "Bi-weekly",
+                                                                        "newsTrading":  "allowed",
+                                                                        "minTradingDays":  0,
+                                                                        "profitTarget":  {
+                                                                                             "phase1":  0.1,
+                                                                                             "phase2":  0.05
+                                                                                         },
+                                                                        "consistencyRule":  "None on standard challenge",
+                                                                        "scalingPlan":  "Up to ,000,000"
+                                                                    },
+                                        "toptier_plus_2step":  {
+                                                                   "payoutSplit":  "85-90%",
+                                                                   "id":  "toptier_plus_2step",
+                                                                   "maxDrawdown":  0.1,
+                                                                   "leverageNum":  100,
+                                                                   "name":  "TopTier Plus (2-Step TradeLocker)",
+                                                                   "overnightHolding":  true,
+                                                                   "dailyLoss":  0.05,
+                                                                   "weekendHolding":  true,
+                                                                   "newsNote":  "News allowed",
+                                                                   "phases":  "2-Step TopTier Plus",
+                                                                   "prohibitedStrategies":  [
+                                                                                                "HFT"
+                                                                                            ],
+                                                                   "eaAllowed":  true,
+                                                                   "drawdownNote":  "Execution on TradeLocker with custom risk metrics",
+                                                                   "leverage":  "1:100",
+                                                                   "maxTradingDays":  null,
+                                                                   "accountSizes":  [
+                                                                                        10000,
+                                                                                        25000,
+                                                                                        50000,
+                                                                                        100000,
+                                                                                        200000
+                                                                                    ],
+                                                                   "drawdownType":  "static",
+                                                                   "payoutFrequency":  "Bi-weekly",
+                                                                   "newsTrading":  "allowed",
+                                                                   "minTradingDays":  0,
+                                                                   "profitTarget":  {
+                                                                                        "phase1":  0.08,
+                                                                                        "phase2":  0.05
+                                                                                    },
+                                                                   "consistencyRule":  "None",
+                                                                   "scalingPlan":  "Up to ,000,000"
+                                                               },
+                                        "toptier_1step":  {
+                                                              "payoutSplit":  "80%",
+                                                              "id":  "toptier_1step",
+                                                              "maxDrawdown":  0.06,
+                                                              "leverageNum":  50,
+                                                              "name":  "1-Step Challenge",
+                                                              "overnightHolding":  true,
+                                                              "dailyLoss":  0.04,
+                                                              "weekendHolding":  true,
+                                                              "newsNote":  "News allowed",
+                                                              "phases":  "1-Step Challenge",
+                                                              "prohibitedStrategies":  [
+                                                                                           "HFT"
+                                                                                       ],
+                                                              "eaAllowed":  true,
+                                                              "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                              "leverage":  "1:50",
+                                                              "maxTradingDays":  null,
+                                                              "accountSizes":  [
+                                                                                   10000,
+                                                                                   25000,
+                                                                                   50000,
+                                                                                   100000
+                                                                               ],
+                                                              "drawdownType":  "trailing",
+                                                              "payoutFrequency":  "Bi-weekly",
+                                                              "newsTrading":  "allowed",
+                                                              "minTradingDays":  0,
+                                                              "profitTarget":  {
+                                                                                   "phase1":  0.09
+                                                                               },
+                                                              "consistencyRule":  "None",
+                                                              "scalingPlan":  "Up to ,000,000"
+                                                          }
+                                    },
+                          "website":  "toptiertrader.com",
+                          "category":  "Forex \u0026 CFDs",
+                          "shortName":  "TopTier Trader"
+                      },
+    "citytradersimperium":  {
+                                "id":  "citytradersimperium",
+                                "name":  "City Traders Imperium",
+                                "color":  "#a855f7",
+                                "plans":  {
+                                              "day_trading_2step":  {
+                                                                        "payoutSplit":  "70-100%",
+                                                                        "id":  "day_trading_2step",
+                                                                        "maxDrawdown":  0.1,
+                                                                        "leverageNum":  33,
+                                                                        "name":  "Day Trading (2-Step Challenge)",
+                                                                        "overnightHolding":  true,
+                                                                        "dailyLoss":  0.04,
+                                                                        "weekendHolding":  true,
+                                                                        "newsNote":  "News trading permitted",
+                                                                        "phases":  "2-Step Day Trading",
+                                                                        "prohibitedStrategies":  [
+                                                                                                     "Martingale",
+                                                                                                     "Grid without SL"
+                                                                                                 ],
+                                                                        "eaAllowed":  true,
+                                                                        "drawdownNote":  "Static drawdown from starting balance, up to 100% profit split",
+                                                                        "leverage":  "1:33",
+                                                                        "maxTradingDays":  null,
+                                                                        "accountSizes":  [
+                                                                                             10000,
+                                                                                             25000,
+                                                                                             50000,
+                                                                                             100000
+                                                                                         ],
+                                                                        "drawdownType":  "static",
+                                                                        "payoutFrequency":  "Monthly (scales to bi-weekly)",
+                                                                        "newsTrading":  "allowed",
+                                                                        "minTradingDays":  5,
+                                                                        "profitTarget":  {
+                                                                                             "phase1":  0.1,
+                                                                                             "phase2":  0.05
+                                                                                         },
+                                                                        "consistencyRule":  "Must maintain risk-to-reward discipline",
+                                                                        "scalingPlan":  "Up to ,000,000 (doubles account size at 10% target)"
+                                                                    },
+                                              "direct_funding":  {
+                                                                     "payoutSplit":  "70-100%",
+                                                                     "id":  "direct_funding",
+                                                                     "maxDrawdown":  0.05,
+                                                                     "leverageNum":  10,
+                                                                     "name":  "Direct Funding (Instant Capital)",
+                                                                     "overnightHolding":  true,
+                                                                     "dailyLoss":  0,
+                                                                     "weekendHolding":  true,
+                                                                     "newsNote":  "News trading allowed",
+                                                                     "phases":  "Direct Funding",
+                                                                     "prohibitedStrategies":  [
+                                                                                                  "Trading without Stop Loss",
+                                                                                                  "HFT"
+                                                                                              ],
+                                                                     "eaAllowed":  true,
+                                                                     "drawdownNote":  "Instant funded account with 5% static max drawdown, no daily loss limit",
+                                                                     "leverage":  "1:10",
+                                                                     "maxTradingDays":  null,
+                                                                     "accountSizes":  [
+                                                                                          10000,
+                                                                                          20000,
+                                                                                          40000,
+                                                                                          70000
+                                                                                      ],
+                                                                     "drawdownType":  "static",
+                                                                     "payoutFrequency":  "Monthly",
+                                                                     "newsTrading":  "allowed",
+                                                                     "minTradingDays":  0,
+                                                                     "profitTarget":  {
+                                                                                          "phase1":  0.1
+                                                                                      },
+                                                                     "consistencyRule":  "Strict stop loss required on all positions",
+                                                                     "scalingPlan":  "Up to ,000,000"
+                                                                 },
+                                              "evaluation_1step":  {
+                                                                       "payoutSplit":  "70-90%",
+                                                                       "id":  "evaluation_1step",
+                                                                       "maxDrawdown":  0.06,
+                                                                       "leverageNum":  33,
+                                                                       "name":  "1-Step Evaluation",
+                                                                       "overnightHolding":  true,
+                                                                       "dailyLoss":  0.04,
+                                                                       "weekendHolding":  true,
+                                                                       "newsNote":  "News allowed",
+                                                                       "phases":  "1-Step Evaluation",
+                                                                       "prohibitedStrategies":  [
+                                                                                                    "HFT"
+                                                                                                ],
+                                                                       "eaAllowed":  true,
+                                                                       "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                                       "leverage":  "1:33",
+                                                                       "maxTradingDays":  null,
+                                                                       "accountSizes":  [
+                                                                                            10000,
+                                                                                            25000,
+                                                                                            50000,
+                                                                                            100000
+                                                                                        ],
+                                                                       "drawdownType":  "trailing",
+                                                                       "payoutFrequency":  "Monthly",
+                                                                       "newsTrading":  "allowed",
+                                                                       "minTradingDays":  5,
+                                                                       "profitTarget":  {
+                                                                                            "phase1":  0.09
+                                                                                        },
+                                                                       "consistencyRule":  "Standard",
+                                                                       "scalingPlan":  "Up to ,000,000"
+                                                                   }
+                                          },
+                                "website":  "citytradersimperium.com",
+                                "category":  "Forex \u0026 CFDs",
+                                "shortName":  "CTI"
+                            },
+    "thetradingpit":  {
+                          "id":  "thetradingpit",
+                          "name":  "The Trading Pit",
+                          "color":  "#f97316",
+                          "plans":  {
+                                        "cfd_challenges":  {
+                                                               "payoutSplit":  "70-80%",
+                                                               "id":  "cfd_challenges",
+                                                               "maxDrawdown":  0.1,
+                                                               "leverageNum":  30,
+                                                               "name":  "CFD Multi-Tier Challenge (Standard)",
+                                                               "overnightHolding":  true,
+                                                               "dailyLoss":  0.04,
+                                                               "weekendHolding":  true,
+                                                               "newsNote":  "News trading allowed",
+                                                               "phases":  "2-Step Standard",
+                                                               "prohibitedStrategies":  [
+                                                                                            "HFT",
+                                                                                            "Martingale"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  "Multi-tier scaling up to ,000,000 with real broker integration",
+                                                               "leverage":  "1:30",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    10000,
+                                                                                    20000,
+                                                                                    50000,
+                                                                                    100000
+                                                                                ],
+                                                               "drawdownType":  "trailing",
+                                                               "payoutFrequency":  "Monthly",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  3,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.1,
+                                                                                    "phase2":  0.06
+                                                                                },
+                                                               "consistencyRule":  "Risk per trade limit: max 2% per position",
+                                                               "scalingPlan":  "Scale up to ,000,000"
+                                                           },
+                                        "futures_challenges":  {
+                                                                   "payoutSplit":  "80%",
+                                                                   "id":  "futures_challenges",
+                                                                   "maxDrawdown":  0.04,
+                                                                   "leverageNum":  100,
+                                                                   "name":  "Futures Challenges (CME / Eurex)",
+                                                                   "overnightHolding":  false,
+                                                                   "dailyLoss":  0.02,
+                                                                   "weekendHolding":  false,
+                                                                   "newsNote":  "News trading allowed",
+                                                                   "phases":  "1-Step Futures",
+                                                                   "prohibitedStrategies":  [
+                                                                                                "Holding overnight"
+                                                                                            ],
+                                                                   "eaAllowed":  true,
+                                                                   "drawdownNote":  "E-mini and Micro contracts via Rithmic",
+                                                                   "leverage":  "1:100",
+                                                                   "maxTradingDays":  null,
+                                                                   "accountSizes":  [
+                                                                                        50000,
+                                                                                        100000,
+                                                                                        150000
+                                                                                    ],
+                                                                   "drawdownType":  "trailing",
+                                                                   "payoutFrequency":  "Monthly",
+                                                                   "newsTrading":  "allowed",
+                                                                   "minTradingDays":  5,
+                                                                   "profitTarget":  {
+                                                                                        "phase1":  0.06
+                                                                                    },
+                                                                   "consistencyRule":  "Max contracts per account size",
+                                                                   "scalingPlan":  "Up to ,000,000"
+                                                               },
+                                        "vip_executive":  {
+                                                              "payoutSplit":  "85%",
+                                                              "id":  "vip_executive",
+                                                              "maxDrawdown":  0.1,
+                                                              "leverageNum":  30,
+                                                              "name":  "VIP Executive Challenge",
+                                                              "overnightHolding":  true,
+                                                              "dailyLoss":  0.05,
+                                                              "weekendHolding":  true,
+                                                              "newsNote":  "News allowed",
+                                                              "phases":  "2-Step VIP",
+                                                              "prohibitedStrategies":  [
+                                                                                           "HFT"
+                                                                                       ],
+                                                              "eaAllowed":  true,
+                                                              "drawdownNote":  "Direct institutional execution with 85% profit split",
+                                                              "leverage":  "1:30",
+                                                              "maxTradingDays":  null,
+                                                              "accountSizes":  [
+                                                                                   100000,
+                                                                                   200000
+                                                                               ],
+                                                              "drawdownType":  "static",
+                                                              "payoutFrequency":  "Bi-weekly",
+                                                              "newsTrading":  "allowed",
+                                                              "minTradingDays":  3,
+                                                              "profitTarget":  {
+                                                                                   "phase1":  0.08,
+                                                                                   "phase2":  0.05
+                                                                               },
+                                                              "consistencyRule":  "Institutional risk",
+                                                              "scalingPlan":  "Up to ,000,000"
+                                                          }
+                                    },
+                          "website":  "thetradingpit.com",
+                          "category":  "Forex \u0026 CFDs",
+                          "shortName":  "The Trading Pit"
+                      },
+    "cryptofundtrader":  {
+                             "id":  "cryptofundtrader",
+                             "name":  "Crypto Fund Trader",
+                             "color":  "#f59e0b",
+                             "plans":  {
+                                           "cft_2step":  {
+                                                             "payoutSplit":  "80-90%",
+                                                             "id":  "cft_2step",
+                                                             "maxDrawdown":  0.1,
+                                                             "leverageNum":  100,
+                                                             "name":  "2-Step Evaluation (Crypto \u0026 FX)",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.05,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "Full news trading allowed 24/7",
+                                                             "phases":  "2-Step Evaluation",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT",
+                                                                                          "Latency Arbitrage"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Balance-based drawdown, trade 100+ crypto pairs, indices, FX",
+                                                             "leverage":  "1:100",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  5000,
+                                                                                  10000,
+                                                                                  25000,
+                                                                                  50000,
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "static",
+                                                             "payoutFrequency":  "Bi-weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  0,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.08,
+                                                                                  "phase2":  0.04
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         },
+                                           "cft_1step":  {
+                                                             "payoutSplit":  "80%",
+                                                             "id":  "cft_1step",
+                                                             "maxDrawdown":  0.06,
+                                                             "leverageNum":  50,
+                                                             "name":  "1-Step Evaluation",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.04,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News trading permitted",
+                                                             "phases":  "1-Step Evaluation",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Single-phase evaluation for crypto and multi-asset traders",
+                                                             "leverage":  "1:50",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  5000,
+                                                                                  10000,
+                                                                                  25000,
+                                                                                  50000,
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "trailing",
+                                                             "payoutFrequency":  "Bi-weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  0,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.1
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         },
+                                           "cft_instant":  {
+                                                               "payoutSplit":  "75-90%",
+                                                               "id":  "cft_instant",
+                                                               "maxDrawdown":  0.05,
+                                                               "leverageNum":  20,
+                                                               "name":  "Instant Crypto Capital",
+                                                               "overnightHolding":  true,
+                                                               "dailyLoss":  0,
+                                                               "weekendHolding":  true,
+                                                               "newsNote":  "24/7 crypto trading",
+                                                               "phases":  "Instant Capital",
+                                                               "prohibitedStrategies":  [
+                                                                                            "HFT"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  "Instant funded crypto account, no evaluation required",
+                                                               "leverage":  "1:20",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    5000,
+                                                                                    10000,
+                                                                                    25000,
+                                                                                    50000
+                                                                                ],
+                                                               "drawdownType":  "static",
+                                                               "payoutFrequency":  "Bi-weekly",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  0,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.08
+                                                                                },
+                                                               "consistencyRule":  "None",
+                                                               "scalingPlan":  "Up to ,000,000"
+                                                           }
+                                       },
+                             "website":  "cryptofundtrader.com",
+                             "category":  "Crypto Prop Firms",
+                             "shortName":  "Crypto Fund Trader"
+                         },
+    "finotivefunding":  {
+                            "id":  "finotivefunding",
+                            "name":  "Finotive Funding",
+                            "color":  "#10b981",
+                            "plans":  {
+                                          "finotive_2step":  {
+                                                                 "payoutSplit":  "75-95%",
+                                                                 "id":  "finotive_2step",
+                                                                 "maxDrawdown":  0.1,
+                                                                 "leverageNum":  100,
+                                                                 "name":  "Standard (2-Step Challenge)",
+                                                                 "overnightHolding":  true,
+                                                                 "dailyLoss":  0.05,
+                                                                 "weekendHolding":  true,
+                                                                 "newsNote":  "News trading permitted",
+                                                                 "phases":  "2-Step Standard",
+                                                                 "prohibitedStrategies":  [
+                                                                                              "HFT",
+                                                                                              "Arbitrage"
+                                                                                          ],
+                                                                 "eaAllowed":  true,
+                                                                 "drawdownNote":  "Balance-based drawdown, lowest profit targets in industry",
+                                                                 "leverage":  "1:100",
+                                                                 "maxTradingDays":  null,
+                                                                 "accountSizes":  [
+                                                                                      5000,
+                                                                                      10000,
+                                                                                      25000,
+                                                                                      50000,
+                                                                                      100000
+                                                                                  ],
+                                                                 "drawdownType":  "static",
+                                                                 "payoutFrequency":  "First payout after 14 days, then weekly",
+                                                                 "newsTrading":  "allowed",
+                                                                 "minTradingDays":  0,
+                                                                 "profitTarget":  {
+                                                                                      "phase1":  0.075,
+                                                                                      "phase2":  0.05
+                                                                                  },
+                                                                 "consistencyRule":  "None",
+                                                                 "scalingPlan":  "Up to ,200,000"
+                                                             },
+                                          "finotive_1step":  {
+                                                                 "payoutSplit":  "75-95%",
+                                                                 "id":  "finotive_1step",
+                                                                 "maxDrawdown":  0.075,
+                                                                 "leverageNum":  50,
+                                                                 "name":  "1-Step Challenge",
+                                                                 "overnightHolding":  true,
+                                                                 "dailyLoss":  0.04,
+                                                                 "weekendHolding":  true,
+                                                                 "newsNote":  "News trading allowed",
+                                                                 "phases":  "1-Step Challenge",
+                                                                 "prohibitedStrategies":  [
+                                                                                              "HFT"
+                                                                                          ],
+                                                                 "eaAllowed":  true,
+                                                                 "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                                 "leverage":  "1:50",
+                                                                 "maxTradingDays":  null,
+                                                                 "accountSizes":  [
+                                                                                      5000,
+                                                                                      10000,
+                                                                                      25000,
+                                                                                      50000,
+                                                                                      100000
+                                                                                  ],
+                                                                 "drawdownType":  "trailing",
+                                                                 "payoutFrequency":  "Weekly",
+                                                                 "newsTrading":  "allowed",
+                                                                 "minTradingDays":  0,
+                                                                 "profitTarget":  {
+                                                                                      "phase1":  0.1
+                                                                                  },
+                                                                 "consistencyRule":  "None",
+                                                                 "scalingPlan":  "Up to ,200,000"
+                                                             },
+                                          "finotive_pro_instant":  {
+                                                                       "payoutSplit":  "75-95%",
+                                                                       "id":  "finotive_pro_instant",
+                                                                       "maxDrawdown":  0.08,
+                                                                       "leverageNum":  30,
+                                                                       "name":  "Pro (Instant Funding)",
+                                                                       "overnightHolding":  true,
+                                                                       "dailyLoss":  0,
+                                                                       "weekendHolding":  true,
+                                                                       "newsNote":  "News allowed",
+                                                                       "phases":  "Instant Capital",
+                                                                       "prohibitedStrategies":  [
+                                                                                                    "HFT"
+                                                                                                ],
+                                                                       "eaAllowed":  true,
+                                                                       "drawdownNote":  "No challenge required: live capital up to  instantly",
+                                                                       "leverage":  "1:30",
+                                                                       "maxTradingDays":  null,
+                                                                       "accountSizes":  [
+                                                                                            5000,
+                                                                                            10000,
+                                                                                            25000,
+                                                                                            50000,
+                                                                                            100000,
+                                                                                            200000
+                                                                                        ],
+                                                                       "drawdownType":  "static",
+                                                                       "payoutFrequency":  "Weekly payouts",
+                                                                       "newsTrading":  "allowed",
+                                                                       "minTradingDays":  0,
+                                                                       "profitTarget":  {
+                                                                                            "phase1":  0.08
+                                                                                        },
+                                                                       "consistencyRule":  "None",
+                                                                       "scalingPlan":  "Scale up to ,200,000"
+                                                                   },
+                                          "finotive_aggressive":  {
+                                                                      "payoutSplit":  "75-95%",
+                                                                      "id":  "finotive_aggressive",
+                                                                      "maxDrawdown":  0.15,
+                                                                      "leverageNum":  100,
+                                                                      "name":  "Aggressive (2-Step Challenge)",
+                                                                      "overnightHolding":  true,
+                                                                      "dailyLoss":  0.08,
+                                                                      "weekendHolding":  true,
+                                                                      "newsNote":  "News allowed",
+                                                                      "phases":  "2-Step Aggressive",
+                                                                      "prohibitedStrategies":  [
+                                                                                                   "HFT"
+                                                                                               ],
+                                                                      "eaAllowed":  true,
+                                                                      "drawdownNote":  "15% max drawdown buffer for swing and aggressive traders",
+                                                                      "leverage":  "1:100",
+                                                                      "maxTradingDays":  null,
+                                                                      "accountSizes":  [
+                                                                                           10000,
+                                                                                           25000,
+                                                                                           50000,
+                                                                                           100000
+                                                                                       ],
+                                                                      "drawdownType":  "static",
+                                                                      "payoutFrequency":  "Weekly",
+                                                                      "newsTrading":  "allowed",
+                                                                      "minTradingDays":  0,
+                                                                      "profitTarget":  {
+                                                                                           "phase1":  0.12,
+                                                                                           "phase2":  0.08
+                                                                                       },
+                                                                      "consistencyRule":  "None",
+                                                                      "scalingPlan":  "Up to ,200,000"
+                                                                  }
+                                      },
+                            "website":  "finotivefunding.com",
+                            "category":  "Forex \u0026 CFDs",
+                            "shortName":  "Finotive Funding"
+                        },
+    "fasttrackfunder":  {
+                            "id":  "fasttrackfunder",
+                            "name":  "Fast Track Funder",
+                            "color":  "#3b82f6",
+                            "plans":  {
+                                          "fast_track_2step":  {
+                                                                   "payoutSplit":  "80-90%",
+                                                                   "id":  "fast_track_2step",
+                                                                   "maxDrawdown":  0.1,
+                                                                   "leverageNum":  100,
+                                                                   "name":  "Fast Track (2-Step Challenge)",
+                                                                   "overnightHolding":  true,
+                                                                   "dailyLoss":  0.05,
+                                                                   "weekendHolding":  true,
+                                                                   "newsNote":  "News trading permitted",
+                                                                   "phases":  "2-Step Challenge",
+                                                                   "prohibitedStrategies":  [
+                                                                                                "HFT",
+                                                                                                "Arbitrage"
+                                                                                            ],
+                                                                   "eaAllowed":  true,
+                                                                   "drawdownNote":  "Static balance-based drawdown with 8% Phase 1 and 5% Phase 2",
+                                                                   "leverage":  "1:100",
+                                                                   "maxTradingDays":  null,
+                                                                   "accountSizes":  [
+                                                                                        10000,
+                                                                                        25000,
+                                                                                        50000,
+                                                                                        100000
+                                                                                    ],
+                                                                   "drawdownType":  "static",
+                                                                   "payoutFrequency":  "Bi-weekly",
+                                                                   "newsTrading":  "allowed",
+                                                                   "minTradingDays":  1,
+                                                                   "profitTarget":  {
+                                                                                        "phase1":  0.08,
+                                                                                        "phase2":  0.05
+                                                                                    },
+                                                                   "consistencyRule":  "None",
+                                                                   "scalingPlan":  "Up to ,000,000"
+                                                               },
+                                          "fast_track_instant":  {
+                                                                     "payoutSplit":  "70-80%",
+                                                                     "id":  "fast_track_instant",
+                                                                     "maxDrawdown":  0.08,
+                                                                     "leverageNum":  30,
+                                                                     "name":  "Instant Funding",
+                                                                     "overnightHolding":  true,
+                                                                     "dailyLoss":  0,
+                                                                     "weekendHolding":  true,
+                                                                     "newsNote":  "News allowed",
+                                                                     "phases":  "Instant Capital",
+                                                                     "prohibitedStrategies":  [
+                                                                                                  "HFT"
+                                                                                              ],
+                                                                     "eaAllowed":  true,
+                                                                     "drawdownNote":  "No challenge required: trade instant capital",
+                                                                     "leverage":  "1:30",
+                                                                     "maxTradingDays":  null,
+                                                                     "accountSizes":  [
+                                                                                          5000,
+                                                                                          10000,
+                                                                                          25000,
+                                                                                          50000
+                                                                                      ],
+                                                                     "drawdownType":  "static",
+                                                                     "payoutFrequency":  "Bi-weekly",
+                                                                     "newsTrading":  "allowed",
+                                                                     "minTradingDays":  0,
+                                                                     "profitTarget":  {
+                                                                                          "phase1":  0.08
+                                                                                      },
+                                                                     "consistencyRule":  "None",
+                                                                     "scalingPlan":  "Up to ,000,000"
+                                                                 }
+                                      },
+                            "website":  "fasttrackfunder.com",
+                            "category":  "Forex \u0026 CFDs",
+                            "shortName":  "Fast Track"
+                        },
+    "toponetrader":  {
+                         "id":  "toponetrader",
+                         "name":  "Top One Trader",
+                         "color":  "#ef4444",
+                         "plans":  {
+                                       "topone_2step":  {
+                                                            "payoutSplit":  "80-90%",
+                                                            "id":  "topone_2step",
+                                                            "maxDrawdown":  0.1,
+                                                            "leverageNum":  100,
+                                                            "name":  "2-Step Challenge",
+                                                            "overnightHolding":  true,
+                                                            "dailyLoss":  0.05,
+                                                            "weekendHolding":  true,
+                                                            "newsNote":  "News trading allowed",
+                                                            "phases":  "2-Step Challenge",
+                                                            "prohibitedStrategies":  [
+                                                                                         "HFT",
+                                                                                         "Arbitrage"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  "Balance-based drawdown, no minimum trading days",
+                                                            "leverage":  "1:100",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 10000,
+                                                                                 25000,
+                                                                                 50000,
+                                                                                 100000,
+                                                                                 200000
+                                                                             ],
+                                                            "drawdownType":  "static",
+                                                            "payoutFrequency":  "Bi-weekly",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  0,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.08,
+                                                                                 "phase2":  0.05
+                                                                             },
+                                                            "consistencyRule":  "None",
+                                                            "scalingPlan":  "Up to ,000,000"
+                                                        },
+                                       "topone_1step":  {
+                                                            "payoutSplit":  "80%",
+                                                            "id":  "topone_1step",
+                                                            "maxDrawdown":  0.06,
+                                                            "leverageNum":  30,
+                                                            "name":  "1-Step Challenge",
+                                                            "overnightHolding":  true,
+                                                            "dailyLoss":  0.03,
+                                                            "weekendHolding":  true,
+                                                            "newsNote":  "News trading permitted",
+                                                            "phases":  "1-Step Challenge",
+                                                            "prohibitedStrategies":  [
+                                                                                         "HFT"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                            "leverage":  "1:30",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 10000,
+                                                                                 25000,
+                                                                                 50000,
+                                                                                 100000
+                                                                             ],
+                                                            "drawdownType":  "trailing",
+                                                            "payoutFrequency":  "Bi-weekly",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  0,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.1
+                                                                             },
+                                                            "consistencyRule":  "None",
+                                                            "scalingPlan":  "Up to ,000,000"
+                                                        },
+                                       "topone_flash":  {
+                                                            "payoutSplit":  "85%",
+                                                            "id":  "topone_flash",
+                                                            "maxDrawdown":  0.08,
+                                                            "leverageNum":  100,
+                                                            "name":  "Flash Challenge (1-Day Min)",
+                                                            "overnightHolding":  true,
+                                                            "dailyLoss":  0.05,
+                                                            "weekendHolding":  true,
+                                                            "newsNote":  "News allowed",
+                                                            "phases":  "2-Step Flash",
+                                                            "prohibitedStrategies":  [
+                                                                                         "HFT"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  "Pass in as fast as 1 trading day",
+                                                            "leverage":  "1:100",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 10000,
+                                                                                 25000,
+                                                                                 50000,
+                                                                                 100000
+                                                                             ],
+                                                            "drawdownType":  "static",
+                                                            "payoutFrequency":  "Weekly",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  1,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.08,
+                                                                                 "phase2":  0.05
+                                                                             },
+                                                            "consistencyRule":  "None",
+                                                            "scalingPlan":  "Up to ,000,000"
+                                                        }
+                                   },
+                         "website":  "toponetrader.com",
+                         "category":  "Forex \u0026 CFDs",
+                         "shortName":  "Top One Trader"
+                     },
+    "novafunding":  {
+                        "id":  "novafunding",
+                        "name":  "Nova Funding",
+                        "color":  "#8b5cf6",
+                        "plans":  {
+                                      "nova_1step":  {
+                                                         "payoutSplit":  "80%",
+                                                         "id":  "nova_1step",
+                                                         "maxDrawdown":  0.08,
+                                                         "leverageNum":  100,
+                                                         "name":  "1-Step HFT Evaluation",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.04,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News trading allowed",
+                                                         "phases":  "1-Step HFT",
+                                                         "prohibitedStrategies":  [
+                                                                                      "Arbitrage"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "HFT Bot Passing Allowed! Trailing drawdown on equity",
+                                                         "leverage":  "1:100",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              10000,
+                                                                              25000,
+                                                                              50000,
+                                                                              100000,
+                                                                              200000
+                                                                          ],
+                                                         "drawdownType":  "trailing",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.1
+                                                                          },
+                                                         "consistencyRule":  "Consistency score evaluated on funded phase",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     },
+                                      "nova_2step":  {
+                                                         "payoutSplit":  "80-90%",
+                                                         "id":  "nova_2step",
+                                                         "maxDrawdown":  0.1,
+                                                         "leverageNum":  100,
+                                                         "name":  "2-Step Evaluation",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.05,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News trading allowed",
+                                                         "phases":  "2-Step Evaluation",
+                                                         "prohibitedStrategies":  [
+                                                                                      "Arbitrage"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "Static balance-based drawdown with 8% Phase 1 and 5% Phase 2",
+                                                         "leverage":  "1:100",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              10000,
+                                                                              25000,
+                                                                              50000,
+                                                                              100000,
+                                                                              200000
+                                                                          ],
+                                                         "drawdownType":  "static",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.08,
+                                                                              "phase2":  0.05
+                                                                          },
+                                                         "consistencyRule":  "Standard",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     }
+                                  },
+                        "website":  "novafunding.com",
+                        "category":  "Forex \u0026 CFDs",
+                        "shortName":  "Nova Funding"
+                    },
+    "myflashfunding":  {
+                           "id":  "myflashfunding",
+                           "name":  "MyFlashFunding",
+                           "color":  "#eab308",
+                           "plans":  {
+                                         "flash_2step":  {
+                                                             "payoutSplit":  "80%",
+                                                             "id":  "flash_2step",
+                                                             "maxDrawdown":  0.08,
+                                                             "leverageNum":  100,
+                                                             "name":  "2-Step Evaluation",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.04,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News trading allowed",
+                                                             "phases":  "2-Step Evaluation",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT",
+                                                                                          "Arbitrage"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Static balance-based drawdown with 6% profit target per phase",
+                                                             "leverage":  "1:100",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  10000,
+                                                                                  25000,
+                                                                                  50000,
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "static",
+                                                             "payoutFrequency":  "Bi-weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  1,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.06,
+                                                                                  "phase2":  0.06
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         },
+                                         "flash_1step":  {
+                                                             "payoutSplit":  "80%",
+                                                             "id":  "flash_1step",
+                                                             "maxDrawdown":  0.06,
+                                                             "leverageNum":  50,
+                                                             "name":  "1-Step Evaluation",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.04,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News allowed",
+                                                             "phases":  "1-Step Evaluation",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "1-Step challenge with 10% target",
+                                                             "leverage":  "1:50",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  10000,
+                                                                                  25000,
+                                                                                  50000,
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "trailing",
+                                                             "payoutFrequency":  "Bi-weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  1,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.1
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         }
+                                     },
+                           "website":  "myflashfunding.com",
+                           "category":  "Forex \u0026 CFDs",
+                           "shortName":  "MyFlashFunding"
+                       },
+    "atmosfunded":  {
+                        "id":  "atmosfunded",
+                        "name":  "Atmos Funded",
+                        "color":  "#06b6d4",
+                        "plans":  {
+                                      "atmos_2step":  {
+                                                          "payoutSplit":  "80-90%",
+                                                          "id":  "atmos_2step",
                                                           "maxDrawdown":  0.1,
                                                           "leverageNum":  100,
-                                                          "name":  "E8 Premier (2-Step 1:100)",
+                                                          "name":  "2-Step Challenge",
                                                           "overnightHolding":  true,
                                                           "dailyLoss":  0.05,
                                                           "weekendHolding":  true,
@@ -1145,15 +3558,14 @@
                                                                                        "Arbitrage"
                                                                                    ],
                                                           "eaAllowed":  true,
-                                                          "drawdownNote":  "Static drawdown with 1:100 leverage",
+                                                          "drawdownNote":  "Balance-based drawdown, no time limits",
                                                           "leverage":  "1:100",
                                                           "maxTradingDays":  null,
                                                           "accountSizes":  [
                                                                                10000,
                                                                                25000,
                                                                                50000,
-                                                                               100000,
-                                                                               200000
+                                                                               100000
                                                                            ],
                                                           "drawdownType":  "static",
                                                           "payoutFrequency":  "Bi-weekly",
@@ -1161,76 +3573,504 @@
                                                           "minTradingDays":  0,
                                                           "profitTarget":  {
                                                                                "phase1":  0.08,
-                                                                               "phase2":  0.04
+                                                                               "phase2":  0.05
                                                                            },
                                                           "consistencyRule":  "None",
-                                                          "scalingPlan":  "Up to ,000,000"
+                                                          "scalingPlan":  "Up to ,500,000"
+                                                      },
+                                      "atmos_1step":  {
+                                                          "payoutSplit":  "80%",
+                                                          "id":  "atmos_1step",
+                                                          "maxDrawdown":  0.06,
+                                                          "leverageNum":  30,
+                                                          "name":  "1-Step Challenge",
+                                                          "overnightHolding":  true,
+                                                          "dailyLoss":  0.04,
+                                                          "weekendHolding":  true,
+                                                          "newsNote":  "News allowed",
+                                                          "phases":  "1-Step Challenge",
+                                                          "prohibitedStrategies":  [
+                                                                                       "HFT"
+                                                                                   ],
+                                                          "eaAllowed":  true,
+                                                          "drawdownNote":  "Trailing drawdown to starting balance",
+                                                          "leverage":  "1:30",
+                                                          "maxTradingDays":  null,
+                                                          "accountSizes":  [
+                                                                               10000,
+                                                                               25000,
+                                                                               50000,
+                                                                               100000
+                                                                           ],
+                                                          "drawdownType":  "trailing",
+                                                          "payoutFrequency":  "Bi-weekly",
+                                                          "newsTrading":  "allowed",
+                                                          "minTradingDays":  0,
+                                                          "profitTarget":  {
+                                                                               "phase1":  0.1
+                                                                           },
+                                                          "consistencyRule":  "None",
+                                                          "scalingPlan":  "Up to ,500,000"
                                                       }
+                                  },
+                        "website":  "atmosfunded.com",
+                        "category":  "Forex \u0026 CFDs",
+                        "shortName":  "Atmos Funded"
+                    },
+    "holaprime":  {
+                      "id":  "holaprime",
+                      "name":  "Hola Prime",
+                      "color":  "#10b981",
+                      "plans":  {
+                                    "hola_2step":  {
+                                                       "payoutSplit":  "80-90%",
+                                                       "id":  "hola_2step",
+                                                       "maxDrawdown":  0.1,
+                                                       "leverageNum":  100,
+                                                       "name":  "2-Step Challenge",
+                                                       "overnightHolding":  true,
+                                                       "dailyLoss":  0.05,
+                                                       "weekendHolding":  true,
+                                                       "newsNote":  "News trading allowed",
+                                                       "phases":  "2-Step Challenge",
+                                                       "prohibitedStrategies":  [
+                                                                                    "HFT",
+                                                                                    "Arbitrage"
+                                                                                ],
+                                                       "eaAllowed":  true,
+                                                       "drawdownNote":  "Balance-based drawdown, no minimum days",
+                                                       "leverage":  "1:100",
+                                                       "maxTradingDays":  null,
+                                                       "accountSizes":  [
+                                                                            10000,
+                                                                            25000,
+                                                                            50000,
+                                                                            100000
+                                                                        ],
+                                                       "drawdownType":  "static",
+                                                       "payoutFrequency":  "Bi-weekly",
+                                                       "newsTrading":  "allowed",
+                                                       "minTradingDays":  0,
+                                                       "profitTarget":  {
+                                                                            "phase1":  0.08,
+                                                                            "phase2":  0.05
+                                                                        },
+                                                       "consistencyRule":  "None",
+                                                       "scalingPlan":  "Up to ,000,000"
+                                                   },
+                                    "hola_1step":  {
+                                                       "payoutSplit":  "80%",
+                                                       "id":  "hola_1step",
+                                                       "maxDrawdown":  0.06,
+                                                       "leverageNum":  30,
+                                                       "name":  "1-Step Challenge",
+                                                       "overnightHolding":  true,
+                                                       "dailyLoss":  0.04,
+                                                       "weekendHolding":  true,
+                                                       "newsNote":  "News allowed",
+                                                       "phases":  "1-Step Challenge",
+                                                       "prohibitedStrategies":  [
+                                                                                    "HFT"
+                                                                                ],
+                                                       "eaAllowed":  true,
+                                                       "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                       "leverage":  "1:30",
+                                                       "maxTradingDays":  null,
+                                                       "accountSizes":  [
+                                                                            10000,
+                                                                            25000,
+                                                                            50000,
+                                                                            100000
+                                                                        ],
+                                                       "drawdownType":  "trailing",
+                                                       "payoutFrequency":  "Bi-weekly",
+                                                       "newsTrading":  "allowed",
+                                                       "minTradingDays":  0,
+                                                       "profitTarget":  {
+                                                                            "phase1":  0.1
+                                                                        },
+                                                       "consistencyRule":  "None",
+                                                       "scalingPlan":  "Up to ,000,000"
+                                                   }
                                 },
-                      "website":  "e8markets.com",
+                      "website":  "holaprime.com",
                       "category":  "Forex \u0026 CFDs",
-                      "shortName":  "E8 Markets"
+                      "shortName":  "Hola Prime"
                   },
-    "blueguardian":  {
-                         "id":  "blueguardian",
-                         "name":  "Blue Guardian",
-                         "color":  "#3b82f6",
-                         "plans":  {
-                                       "unlimited_2step":  {
-                                                               "payoutSplit":  "85%",
-                                                               "id":  "unlimited_2step",
-                                                               "maxDrawdown":  0.08,
+    "audacitycapital":  {
+                            "id":  "audacitycapital",
+                            "name":  "Audacity Capital",
+                            "color":  "#1e293b",
+                            "plans":  {
+                                          "ability_2step":  {
+                                                                "payoutSplit":  "85%",
+                                                                "id":  "ability_2step",
+                                                                "maxDrawdown":  0.1,
+                                                                "leverageNum":  100,
+                                                                "name":  "Ability Challenge (2-Step)",
+                                                                "overnightHolding":  true,
+                                                                "dailyLoss":  0.05,
+                                                                "weekendHolding":  true,
+                                                                "newsNote":  "News trading allowed",
+                                                                "phases":  "2-Step Ability",
+                                                                "prohibitedStrategies":  [
+                                                                                             "HFT",
+                                                                                             "Martingale"
+                                                                                         ],
+                                                                "eaAllowed":  true,
+                                                                "drawdownNote":  "Institutional UK prop firm, static drawdown on balance",
+                                                                "leverage":  "1:100",
+                                                                "maxTradingDays":  null,
+                                                                "accountSizes":  [
+                                                                                     15000,
+                                                                                     30000,
+                                                                                     60000,
+                                                                                     120000
+                                                                                 ],
+                                                                "drawdownType":  "static",
+                                                                "payoutFrequency":  "Bi-weekly",
+                                                                "newsTrading":  "allowed",
+                                                                "minTradingDays":  0,
+                                                                "profitTarget":  {
+                                                                                     "phase1":  0.1,
+                                                                                     "phase2":  0.05
+                                                                                 },
+                                                                "consistencyRule":  "Standard risk parameters",
+                                                                "scalingPlan":  "Up to ,000,000"
+                                                            },
+                                          "funded_trader_direct":  {
+                                                                       "payoutSplit":  "50-70%",
+                                                                       "id":  "funded_trader_direct",
+                                                                       "maxDrawdown":  0.1,
+                                                                       "leverageNum":  30,
+                                                                       "name":  "Funded Trader Program (Direct Funding)",
+                                                                       "overnightHolding":  true,
+                                                                       "dailyLoss":  0,
+                                                                       "weekendHolding":  false,
+                                                                       "newsNote":  "News allowed",
+                                                                       "phases":  "Direct Funding",
+                                                                       "prohibitedStrategies":  [
+                                                                                                    "EAs",
+                                                                                                    "Weekend Holding"
+                                                                                                ],
+                                                                       "eaAllowed":  false,
+                                                                       "drawdownNote":  "Instant real capital with doubling scale at every 10% target",
+                                                                       "leverage":  "1:30",
+                                                                       "maxTradingDays":  null,
+                                                                       "accountSizes":  [
+                                                                                            15000,
+                                                                                            30000,
+                                                                                            60000
+                                                                                        ],
+                                                                       "drawdownType":  "static",
+                                                                       "payoutFrequency":  "Monthly",
+                                                                       "newsTrading":  "allowed",
+                                                                       "minTradingDays":  0,
+                                                                       "profitTarget":  {
+                                                                                            "phase1":  0.1
+                                                                                        },
+                                                                       "consistencyRule":  "Strict risk-reward",
+                                                                       "scalingPlan":  "Doubles capital at 10% target up to ,000"
+                                                                   }
+                                      },
+                            "website":  "audacitycapital.co.uk",
+                            "category":  "Forex \u0026 CFDs",
+                            "shortName":  "Audacity Capital"
+                        },
+    "ftuk":  {
+                 "id":  "ftuk",
+                 "name":  "FTUK",
+                 "color":  "#1e40af",
+                 "plans":  {
+                               "evaluation_2step":  {
+                                                        "payoutSplit":  "80%",
+                                                        "id":  "evaluation_2step",
+                                                        "maxDrawdown":  0.1,
+                                                        "leverageNum":  100,
+                                                        "name":  "Evaluation Program (2-Step)",
+                                                        "overnightHolding":  true,
+                                                        "dailyLoss":  0.05,
+                                                        "weekendHolding":  true,
+                                                        "newsNote":  "News trading allowed",
+                                                        "phases":  "2-Step Evaluation",
+                                                        "prohibitedStrategies":  [
+                                                                                     "HFT",
+                                                                                     "Arbitrage"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  "Static drawdown with rapid scaling every 10% target",
+                                                        "leverage":  "1:100",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             14000,
+                                                                             40000,
+                                                                             90000
+                                                                         ],
+                                                        "drawdownType":  "static",
+                                                        "payoutFrequency":  "On-demand payouts",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  0,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.1,
+                                                                             "phase2":  0.05
+                                                                         },
+                                                        "consistencyRule":  "None",
+                                                        "scalingPlan":  "Up to ,760,000"
+                                                    },
+                               "instant_funding":  {
+                                                       "payoutSplit":  "80%",
+                                                       "id":  "instant_funding",
+                                                       "maxDrawdown":  0.08,
+                                                       "leverageNum":  50,
+                                                       "name":  "Instant Funding (Direct)",
+                                                       "overnightHolding":  true,
+                                                       "dailyLoss":  0,
+                                                       "weekendHolding":  true,
+                                                       "newsNote":  "News allowed",
+                                                       "phases":  "Instant Capital",
+                                                       "prohibitedStrategies":  [
+                                                                                    "HFT"
+                                                                                ],
+                                                       "eaAllowed":  true,
+                                                       "drawdownNote":  "Instant capital from day 1, no evaluation required",
+                                                       "leverage":  "1:50",
+                                                       "maxTradingDays":  null,
+                                                       "accountSizes":  [
+                                                                            14000,
+                                                                            40000,
+                                                                            90000
+                                                                        ],
+                                                       "drawdownType":  "static",
+                                                       "payoutFrequency":  "On-demand",
+                                                       "newsTrading":  "allowed",
+                                                       "minTradingDays":  0,
+                                                       "profitTarget":  {
+                                                                            "phase1":  0.1
+                                                                        },
+                                                       "consistencyRule":  "None",
+                                                       "scalingPlan":  "Up to ,760,000"
+                                                   }
+                           },
+                 "website":  "ftuk.com",
+                 "category":  "Forex \u0026 CFDs",
+                 "shortName":  "FTUK"
+             },
+    "fidelcrest":  {
+                       "id":  "fidelcrest",
+                       "name":  "Fidelcrest",
+                       "color":  "#047857",
+                       "plans":  {
+                                     "protrader_2step":  {
+                                                             "payoutSplit":  "80-90%",
+                                                             "id":  "protrader_2step",
+                                                             "maxDrawdown":  0.1,
+                                                             "leverageNum":  100,
+                                                             "name":  "ProTrader (2-Step Challenge)",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.05,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News trading allowed",
+                                                             "phases":  "2-Step ProTrader",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT",
+                                                                                          "Arbitrage"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Accounts from  to , 1:100 leverage with raw spreads",
+                                                             "leverage":  "1:100",
+                                                             "maxTradingDays":  60,
+                                                             "accountSizes":  [
+                                                                                  150000,
+                                                                                  250000,
+                                                                                  500000,
+                                                                                  1000000
+                                                                              ],
+                                                             "drawdownType":  "static",
+                                                             "payoutFrequency":  "Bi-weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  5,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.1,
+                                                                                  "phase2":  0.05
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         },
+                                     "microtrader_2step":  {
+                                                               "payoutSplit":  "80-90%",
+                                                               "id":  "microtrader_2step",
+                                                               "maxDrawdown":  0.1,
                                                                "leverageNum":  100,
-                                                               "name":  "Unlimited (2-Step Challenge)",
+                                                               "name":  "MicroTrader (2-Step Challenge)",
                                                                "overnightHolding":  true,
-                                                               "dailyLoss":  0.04,
+                                                               "dailyLoss":  0.05,
                                                                "weekendHolding":  true,
-                                                               "newsNote":  "News trading permitted without restrictions",
-                                                               "phases":  "2-Step Challenge",
+                                                               "newsNote":  "News allowed",
+                                                               "phases":  "2-Step MicroTrader",
                                                                "prohibitedStrategies":  [
-                                                                                            "HFT",
-                                                                                            "Arbitrage",
-                                                                                            "Grid without SL"
+                                                                                            "HFT"
                                                                                         ],
                                                                "eaAllowed":  true,
-                                                               "drawdownNote":  "Static balance-based (Guardian protector equity stop available)",
+                                                               "drawdownNote":  "Smaller account sizes from  to ",
                                                                "leverage":  "1:100",
-                                                               "maxTradingDays":  null,
+                                                               "maxTradingDays":  60,
                                                                "accountSizes":  [
-                                                                                    10000,
-                                                                                    25000,
-                                                                                    50000,
-                                                                                    100000,
-                                                                                    200000
+                                                                                    15000,
+                                                                                    30000,
+                                                                                    60000
                                                                                 ],
                                                                "drawdownType":  "static",
-                                                               "payoutFrequency":  "Bi-weekly (14 days)",
+                                                               "payoutFrequency":  "Bi-weekly",
                                                                "newsTrading":  "allowed",
-                                                               "minTradingDays":  0,
+                                                               "minTradingDays":  5,
                                                                "profitTarget":  {
-                                                                                    "phase1":  0.08,
-                                                                                    "phase2":  0.04
+                                                                                    "phase1":  0.1,
+                                                                                    "phase2":  0.05
                                                                                 },
                                                                "consistencyRule":  "None",
-                                                               "scalingPlan":  "Up to ,000,000 (30% increase every 3 months)"
+                                                               "scalingPlan":  "Up to ,000,000"
                                                            },
-                                       "elite_2step":  {
-                                                           "payoutSplit":  "85%",
-                                                           "id":  "elite_2step",
+                                     "aggressive_protrader":  {
+                                                                  "payoutSplit":  "80-90%",
+                                                                  "id":  "aggressive_protrader",
+                                                                  "maxDrawdown":  0.2,
+                                                                  "leverageNum":  100,
+                                                                  "name":  "Aggressive ProTrader (2-Step)",
+                                                                  "overnightHolding":  true,
+                                                                  "dailyLoss":  0.1,
+                                                                  "weekendHolding":  true,
+                                                                  "newsNote":  "News allowed",
+                                                                  "phases":  "2-Step Aggressive",
+                                                                  "prohibitedStrategies":  [
+                                                                                               "HFT"
+                                                                                           ],
+                                                                  "eaAllowed":  true,
+                                                                  "drawdownNote":  "20% max drawdown buffer for high-volatility trading",
+                                                                  "leverage":  "1:100",
+                                                                  "maxTradingDays":  60,
+                                                                  "accountSizes":  [
+                                                                                       150000,
+                                                                                       250000,
+                                                                                       500000
+                                                                                   ],
+                                                                  "drawdownType":  "static",
+                                                                  "payoutFrequency":  "Bi-weekly",
+                                                                  "newsTrading":  "allowed",
+                                                                  "minTradingDays":  5,
+                                                                  "profitTarget":  {
+                                                                                       "phase1":  0.2,
+                                                                                       "phase2":  0.1
+                                                                                   },
+                                                                  "consistencyRule":  "None",
+                                                                  "scalingPlan":  "Up to ,000,000"
+                                                              }
+                                 },
+                       "website":  "fidelcrest.com",
+                       "category":  "Forex \u0026 CFDs",
+                       "shortName":  "Fidelcrest"
+                   },
+    "mentfunding":  {
+                        "id":  "mentfunding",
+                        "name":  "Ment Funding",
+                        "color":  "#d97706",
+                        "plans":  {
+                                      "ment_1step":  {
+                                                         "payoutSplit":  "75-90%",
+                                                         "id":  "ment_1step",
+                                                         "maxDrawdown":  0.06,
+                                                         "leverageNum":  20,
+                                                         "name":  "1-Step Static Challenge",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News trading allowed",
+                                                         "phases":  "1-Step Challenge",
+                                                         "prohibitedStrategies":  [
+                                                                                      "HFT",
+                                                                                      "Martingale"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "Static 6% drawdown on starting balance. ZERO DAILY LOSS LIMIT!",
+                                                         "leverage":  "1:20",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              25000,
+                                                                              50000,
+                                                                              100000,
+                                                                              250000
+                                                                          ],
+                                                         "drawdownType":  "static",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.1
+                                                                          },
+                                                         "consistencyRule":  "None",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     },
+                                      "ment_2step":  {
+                                                         "payoutSplit":  "80-90%",
+                                                         "id":  "ment_2step",
+                                                         "maxDrawdown":  0.08,
+                                                         "leverageNum":  50,
+                                                         "name":  "2-Step Challenge",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.04,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News allowed",
+                                                         "phases":  "2-Step Challenge",
+                                                         "prohibitedStrategies":  [
+                                                                                      "HFT"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "Static balance-based drawdown with 8% Phase 1 and 5% Phase 2",
+                                                         "leverage":  "1:50",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              25000,
+                                                                              50000,
+                                                                              100000,
+                                                                              250000
+                                                                          ],
+                                                         "drawdownType":  "static",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.08,
+                                                                              "phase2":  0.05
+                                                                          },
+                                                         "consistencyRule":  "None",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     }
+                                  },
+                        "website":  "mentfunding.com",
+                        "category":  "Forex \u0026 CFDs",
+                        "shortName":  "Ment Funding"
+                    },
+    "thinkcapital":  {
+                         "id":  "thinkcapital",
+                         "name":  "ThinkCapital",
+                         "color":  "#2563eb",
+                         "plans":  {
+                                       "think_2step":  {
+                                                           "payoutSplit":  "80-90%",
+                                                           "id":  "think_2step",
                                                            "maxDrawdown":  0.1,
                                                            "leverageNum":  100,
-                                                           "name":  "Elite (2-Step 10% Max DD)",
+                                                           "name":  "2-Step Challenge",
                                                            "overnightHolding":  true,
-                                                           "dailyLoss":  0.04,
+                                                           "dailyLoss":  0.05,
                                                            "weekendHolding":  true,
-                                                           "newsNote":  "News trading permitted",
+                                                           "newsNote":  "News trading allowed",
                                                            "phases":  "2-Step Challenge",
                                                            "prohibitedStrategies":  [
                                                                                         "HFT",
                                                                                         "Arbitrage"
                                                                                     ],
                                                            "eaAllowed":  true,
-                                                           "drawdownNote":  "Static balance-based calculation",
+                                                           "drawdownNote":  "Backed by global regulated broker ThinkMarkets",
                                                            "leverage":  "1:100",
                                                            "maxTradingDays":  null,
                                                            "accountSizes":  [
@@ -1243,32 +4083,31 @@
                                                            "drawdownType":  "static",
                                                            "payoutFrequency":  "Bi-weekly",
                                                            "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
+                                                           "minTradingDays":  3,
                                                            "profitTarget":  {
                                                                                 "phase1":  0.08,
-                                                                                "phase2":  0.04
+                                                                                "phase2":  0.05
                                                                             },
                                                            "consistencyRule":  "None",
                                                            "scalingPlan":  "Up to ,000,000"
                                                        },
-                                       "rapid_1step":  {
-                                                           "payoutSplit":  "85%",
-                                                           "id":  "rapid_1step",
+                                       "think_1step":  {
+                                                           "payoutSplit":  "80%",
+                                                           "id":  "think_1step",
                                                            "maxDrawdown":  0.06,
-                                                           "leverageNum":  50,
-                                                           "name":  "Rapid (1-Step Evaluation)",
+                                                           "leverageNum":  30,
+                                                           "name":  "1-Step Challenge",
                                                            "overnightHolding":  true,
                                                            "dailyLoss":  0.04,
                                                            "weekendHolding":  true,
-                                                           "newsNote":  "News trading permitted",
+                                                           "newsNote":  "News allowed",
                                                            "phases":  "1-Step Challenge",
                                                            "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
+                                                                                        "HFT"
                                                                                     ],
                                                            "eaAllowed":  true,
-                                                           "drawdownNote":  "Trailing relative drawdown",
-                                                           "leverage":  "1:50",
+                                                           "drawdownNote":  "Trailing drawdown to starting balance",
+                                                           "leverage":  "1:30",
                                                            "maxTradingDays":  null,
                                                            "accountSizes":  [
                                                                                 10000,
@@ -1279,30 +4118,505 @@
                                                            "drawdownType":  "trailing",
                                                            "payoutFrequency":  "Bi-weekly",
                                                            "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
+                                                           "minTradingDays":  3,
                                                            "profitTarget":  {
                                                                                 "phase1":  0.1
                                                                             },
                                                            "consistencyRule":  "None",
                                                            "scalingPlan":  "Up to ,000,000"
-                                                       },
-                                       "edge_1step":  {
-                                                          "payoutSplit":  "85%",
-                                                          "id":  "edge_1step",
-                                                          "maxDrawdown":  0.05,
+                                                       }
+                                   },
+                         "website":  "thinkcapital.com",
+                         "category":  "Forex \u0026 CFDs",
+                         "shortName":  "ThinkCapital"
+                     },
+    "fundedlion":  {
+                       "id":  "fundedlion",
+                       "name":  "FundedLion",
+                       "color":  "#d97706",
+                       "plans":  {
+                                     "lion_2step":  {
+                                                        "payoutSplit":  "80-90%",
+                                                        "id":  "lion_2step",
+                                                        "maxDrawdown":  0.1,
+                                                        "leverageNum":  100,
+                                                        "name":  "2-Step Evaluation",
+                                                        "overnightHolding":  true,
+                                                        "dailyLoss":  0.05,
+                                                        "weekendHolding":  true,
+                                                        "newsNote":  "News trading permitted",
+                                                        "phases":  "2-Step Evaluation",
+                                                        "prohibitedStrategies":  [
+                                                                                     "HFT",
+                                                                                     "Arbitrage"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  "Static balance-based drawdown with 8% Phase 1 and 5% Phase 2",
+                                                        "leverage":  "1:100",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             10000,
+                                                                             25000,
+                                                                             50000,
+                                                                             100000
+                                                                         ],
+                                                        "drawdownType":  "static",
+                                                        "payoutFrequency":  "Bi-weekly",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  0,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.08,
+                                                                             "phase2":  0.05
+                                                                         },
+                                                        "consistencyRule":  "None",
+                                                        "scalingPlan":  "Up to ,000,000"
+                                                    },
+                                     "lion_1step":  {
+                                                        "payoutSplit":  "80%",
+                                                        "id":  "lion_1step",
+                                                        "maxDrawdown":  0.06,
+                                                        "leverageNum":  30,
+                                                        "name":  "1-Step Evaluation",
+                                                        "overnightHolding":  true,
+                                                        "dailyLoss":  0.04,
+                                                        "weekendHolding":  true,
+                                                        "newsNote":  "News allowed",
+                                                        "phases":  "1-Step Evaluation",
+                                                        "prohibitedStrategies":  [
+                                                                                     "HFT"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  "Single-phase evaluation with 10% target",
+                                                        "leverage":  "1:30",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             10000,
+                                                                             25000,
+                                                                             50000,
+                                                                             100000
+                                                                         ],
+                                                        "drawdownType":  "trailing",
+                                                        "payoutFrequency":  "Bi-weekly",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  0,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.1
+                                                                         },
+                                                        "consistencyRule":  "None",
+                                                        "scalingPlan":  "Up to ,000,000"
+                                                    }
+                                 },
+                       "website":  "fundedlion.com",
+                       "category":  "Forex \u0026 CFDs",
+                       "shortName":  "FundedLion"
+                   },
+    "fundedpeak":  {
+                       "id":  "fundedpeak",
+                       "name":  "FundedPeak",
+                       "color":  "#059669",
+                       "plans":  {
+                                     "peak_2step":  {
+                                                        "payoutSplit":  "80-90%",
+                                                        "id":  "peak_2step",
+                                                        "maxDrawdown":  0.1,
+                                                        "leverageNum":  100,
+                                                        "name":  "Standard (2-Step Challenge)",
+                                                        "overnightHolding":  true,
+                                                        "dailyLoss":  0.05,
+                                                        "weekendHolding":  true,
+                                                        "newsNote":  "News trading allowed",
+                                                        "phases":  "2-Step Challenge",
+                                                        "prohibitedStrategies":  [
+                                                                                     "HFT",
+                                                                                     "Arbitrage"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  "Balance-based drawdown, no time limits",
+                                                        "leverage":  "1:100",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             10000,
+                                                                             25000,
+                                                                             50000,
+                                                                             100000
+                                                                         ],
+                                                        "drawdownType":  "static",
+                                                        "payoutFrequency":  "Bi-weekly",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  0,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.08,
+                                                                             "phase2":  0.05
+                                                                         },
+                                                        "consistencyRule":  "None",
+                                                        "scalingPlan":  "Up to ,000,000"
+                                                    },
+                                     "peak_instant":  {
+                                                          "payoutSplit":  "70-80%",
+                                                          "id":  "peak_instant",
+                                                          "maxDrawdown":  0.08,
                                                           "leverageNum":  30,
-                                                          "name":  "Edge (1-Step Low Drawdown)",
+                                                          "name":  "Instant Funding",
+                                                          "overnightHolding":  true,
+                                                          "dailyLoss":  0,
+                                                          "weekendHolding":  true,
+                                                          "newsNote":  "News allowed",
+                                                          "phases":  "Instant Capital",
+                                                          "prohibitedStrategies":  [
+                                                                                       "HFT"
+                                                                                   ],
+                                                          "eaAllowed":  true,
+                                                          "drawdownNote":  "Direct capital from day one, no evaluation",
+                                                          "leverage":  "1:30",
+                                                          "maxTradingDays":  null,
+                                                          "accountSizes":  [
+                                                                               5000,
+                                                                               10000,
+                                                                               25000,
+                                                                               50000
+                                                                           ],
+                                                          "drawdownType":  "static",
+                                                          "payoutFrequency":  "Bi-weekly",
+                                                          "newsTrading":  "allowed",
+                                                          "minTradingDays":  0,
+                                                          "profitTarget":  {
+                                                                               "phase1":  0.08
+                                                                           },
+                                                          "consistencyRule":  "None",
+                                                          "scalingPlan":  "Up to ,000,000"
+                                                      }
+                                 },
+                       "website":  "fundedpeak.com",
+                       "category":  "Forex \u0026 CFDs",
+                       "shortName":  "FundedPeak"
+                   },
+    "fundedhive":  {
+                       "id":  "fundedhive",
+                       "name":  "Funded Hive",
+                       "color":  "#f59e0b",
+                       "plans":  {
+                                     "classic_2step":  {
+                                                           "payoutSplit":  "80-90%",
+                                                           "id":  "classic_2step",
+                                                           "maxDrawdown":  0.1,
+                                                           "leverageNum":  100,
+                                                           "name":  "Classic (2-Step Challenge)",
+                                                           "overnightHolding":  true,
+                                                           "dailyLoss":  0.05,
+                                                           "weekendHolding":  true,
+                                                           "newsNote":  "Full news trading allowed with zero restrictions",
+                                                           "phases":  "2-Step Classic",
+                                                           "prohibitedStrategies":  [
+                                                                                        "HFT",
+                                                                                        "Latency Arbitrage"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "100% Static balance-based drawdown (does not trail). 100% swap-free accounts with instant smart contract USDC payouts",
+                                                           "leverage":  "1:100",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                5000,
+                                                                                10000,
+                                                                                25000,
+                                                                                50000,
+                                                                                100000,
+                                                                                200000
+                                                                            ],
+                                                           "drawdownType":  "static",
+                                                           "payoutFrequency":  "Instant smart-contract USDC payout upon request (within seconds)",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  3,
+                                                           "profitTarget":  {
+                                                                                "phase1":  0.1,
+                                                                                "phase2":  0.1
+                                                                            },
+                                                           "consistencyRule":  "None (zero consistency rules, no lot size restrictions)",
+                                                           "scalingPlan":  "Scale up to ,000,000 with 10% profit consistency"
+                                                       },
+                                     "step1_challenge":  {
+                                                             "payoutSplit":  "80-90%",
+                                                             "id":  "step1_challenge",
+                                                             "maxDrawdown":  0.06,
+                                                             "leverageNum":  50,
+                                                             "name":  "1-Step Challenge",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.04,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News trading allowed",
+                                                             "phases":  "1-Step Challenge",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Static balance-based drawdown with 10% target",
+                                                             "leverage":  "1:50",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  5000,
+                                                                                  10000,
+                                                                                  25000,
+                                                                                  50000,
+                                                                                  100000,
+                                                                                  200000
+                                                                              ],
+                                                             "drawdownType":  "static",
+                                                             "payoutFrequency":  "Instant smart contract payout",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  3,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.1
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         },
+                                     "pay_from_profits":  {
+                                                              "payoutSplit":  "80-90%",
+                                                              "id":  "pay_from_profits",
+                                                              "maxDrawdown":  0.1,
+                                                              "leverageNum":  100,
+                                                              "name":  "Pay From Profits (Pay After Pass)",
+                                                              "overnightHolding":  true,
+                                                              "dailyLoss":  0.05,
+                                                              "weekendHolding":  true,
+                                                              "newsNote":  "News trading allowed",
+                                                              "phases":  "Pay From Profits (2-Step)",
+                                                              "prohibitedStrategies":  [
+                                                                                           "HFT"
+                                                                                       ],
+                                                              "eaAllowed":  true,
+                                                              "drawdownNote":  "Zero upfront fee risk: pay small access fee per phase, remainder deducted from first payout after you pass!",
+                                                              "leverage":  "1:100",
+                                                              "maxTradingDays":  null,
+                                                              "accountSizes":  [
+                                                                                   5000,
+                                                                                   10000,
+                                                                                   25000,
+                                                                                   50000,
+                                                                                   100000,
+                                                                                   200000
+                                                                               ],
+                                                              "drawdownType":  "static",
+                                                              "payoutFrequency":  "Instant smart contract USDC payout",
+                                                              "newsTrading":  "allowed",
+                                                              "minTradingDays":  3,
+                                                              "profitTarget":  {
+                                                                                   "phase1":  0.1,
+                                                                                   "phase2":  0.1
+                                                                               },
+                                                              "consistencyRule":  "Categorized into risk management tier (Low/Moderate/Medium/High)",
+                                                              "scalingPlan":  "Up to ,000,000"
+                                                          },
+                                     "instant_growth":  {
+                                                            "payoutSplit":  "70-90%",
+                                                            "id":  "instant_growth",
+                                                            "maxDrawdown":  0.06,
+                                                            "leverageNum":  30,
+                                                            "name":  "Instant Growth (No Evaluation)",
+                                                            "overnightHolding":  true,
+                                                            "dailyLoss":  0,
+                                                            "weekendHolding":  true,
+                                                            "newsNote":  "News trading allowed",
+                                                            "phases":  "Instant Growth",
+                                                            "prohibitedStrategies":  [
+                                                                                         "HFT"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  "Performance-based instant funding! Static 6% max drawdown with NO daily drawdown rule!",
+                                                            "leverage":  "1:30",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 5000,
+                                                                                 10000,
+                                                                                 25000,
+                                                                                 50000,
+                                                                                 100000
+                                                                             ],
+                                                            "drawdownType":  "static",
+                                                            "payoutFrequency":  "Instant smart contract USDC",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  0,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.06
+                                                                             },
+                                                            "consistencyRule":  "None",
+                                                            "scalingPlan":  "Doubles account balance at each 6% target achieved up to ,000,000"
+                                                        }
+                                 },
+                       "website":  "fundedhive.com",
+                       "category":  "Web3 \u0026 Crypto Prop Firms",
+                       "shortName":  "Funded Hive"
+                   },
+    "pipfarm":  {
+                    "id":  "pipfarm",
+                    "name":  "PipFarm",
+                    "color":  "#10b981",
+                    "plans":  {
+                                  "pipfarm_1step":  {
+                                                        "payoutSplit":  "70-90%",
+                                                        "id":  "pipfarm_1step",
+                                                        "maxDrawdown":  0.06,
+                                                        "leverageNum":  30,
+                                                        "name":  "1-Step Static Trailing",
+                                                        "overnightHolding":  true,
+                                                        "dailyLoss":  0.03,
+                                                        "weekendHolding":  true,
+                                                        "newsNote":  "News trading allowed without restrictions",
+                                                        "phases":  "1-Step Static",
+                                                        "prohibitedStrategies":  [
+                                                                                     "HFT",
+                                                                                     "Latency Arbitrage"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  "Static drawdown from highest daily balance, cTrader integration, up to 90% payout",
+                                                        "leverage":  "1:30",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             5000,
+                                                                             10000,
+                                                                             25000,
+                                                                             50000,
+                                                                             100000
+                                                                         ],
+                                                        "drawdownType":  "static",
+                                                        "payoutFrequency":  "Bi-weekly",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  3,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.12
+                                                                         },
+                                                        "consistencyRule":  "None",
+                                                        "scalingPlan":  "XP reward system with scaling up to ,000,000"
+                                                    },
+                                  "pipfarm_2step":  {
+                                                        "payoutSplit":  "80-90%",
+                                                        "id":  "pipfarm_2step",
+                                                        "maxDrawdown":  0.08,
+                                                        "leverageNum":  50,
+                                                        "name":  "2-Step Evaluation",
+                                                        "overnightHolding":  true,
+                                                        "dailyLoss":  0.04,
+                                                        "weekendHolding":  true,
+                                                        "newsNote":  "News trading allowed",
+                                                        "phases":  "2-Step Evaluation",
+                                                        "prohibitedStrategies":  [
+                                                                                     "HFT"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  "8% Phase 1 and 5% Phase 2 target with static drawdown",
+                                                        "leverage":  "1:50",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             10000,
+                                                                             25000,
+                                                                             50000,
+                                                                             100000
+                                                                         ],
+                                                        "drawdownType":  "static",
+                                                        "payoutFrequency":  "Bi-weekly",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  3,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.08,
+                                                                             "phase2":  0.05
+                                                                         },
+                                                        "consistencyRule":  "None",
+                                                        "scalingPlan":  "Up to ,000,000"
+                                                    },
+                                  "pipfarm_scaling":  {
+                                                          "payoutSplit":  "90%",
+                                                          "id":  "pipfarm_scaling",
+                                                          "maxDrawdown":  0.06,
+                                                          "leverageNum":  50,
+                                                          "name":  "XP Scaling Direct Program",
                                                           "overnightHolding":  true,
                                                           "dailyLoss":  0.03,
                                                           "weekendHolding":  true,
-                                                          "newsNote":  "News trading permitted",
-                                                          "phases":  "1-Step Challenge",
+                                                          "newsNote":  "News trading allowed",
+                                                          "phases":  "XP Scaling",
+                                                          "prohibitedStrategies":  [
+                                                                                       "HFT"
+                                                                                   ],
+                                                          "eaAllowed":  true,
+                                                          "drawdownNote":  "Rank up through XP system to unlock higher leverage and larger balances",
+                                                          "leverage":  "1:50",
+                                                          "maxTradingDays":  null,
+                                                          "accountSizes":  [
+                                                                               25000,
+                                                                               50000,
+                                                                               100000
+                                                                           ],
+                                                          "drawdownType":  "static",
+                                                          "payoutFrequency":  "Bi-weekly",
+                                                          "newsTrading":  "allowed",
+                                                          "minTradingDays":  3,
+                                                          "profitTarget":  {
+                                                                               "phase1":  0.08
+                                                                           },
+                                                          "consistencyRule":  "None",
+                                                          "scalingPlan":  "Scales to ,500,000"
+                                                      }
+                              },
+                    "website":  "pipfarm.com",
+                    "category":  "Forex \u0026 CFDs",
+                    "shortName":  "PipFarm"
+                },
+    "frontier":  {
+                     "id":  "frontier",
+                     "name":  "Funding Frontier",
+                     "color":  "#6366f1",
+                     "plans":  {
+                                   "frontier_2step":  {
+                                                          "payoutSplit":  "80-90%",
+                                                          "id":  "frontier_2step",
+                                                          "maxDrawdown":  0.1,
+                                                          "leverageNum":  100,
+                                                          "name":  "2-Step Challenge",
+                                                          "overnightHolding":  true,
+                                                          "dailyLoss":  0.05,
+                                                          "weekendHolding":  true,
+                                                          "newsNote":  "News trading allowed",
+                                                          "phases":  "2-Step Challenge",
                                                           "prohibitedStrategies":  [
                                                                                        "HFT",
                                                                                        "Arbitrage"
                                                                                    ],
                                                           "eaAllowed":  true,
-                                                          "drawdownNote":  "Trailing relative drawdown",
+                                                          "drawdownNote":  "Balance-based drawdown with 8% Phase 1 and 5% Phase 2",
+                                                          "leverage":  "1:100",
+                                                          "maxTradingDays":  null,
+                                                          "accountSizes":  [
+                                                                               10000,
+                                                                               25000,
+                                                                               50000,
+                                                                               100000
+                                                                           ],
+                                                          "drawdownType":  "static",
+                                                          "payoutFrequency":  "Bi-weekly",
+                                                          "newsTrading":  "allowed",
+                                                          "minTradingDays":  0,
+                                                          "profitTarget":  {
+                                                                               "phase1":  0.08,
+                                                                               "phase2":  0.05
+                                                                           },
+                                                          "consistencyRule":  "None",
+                                                          "scalingPlan":  "Up to ,000,000"
+                                                      },
+                                   "frontier_1step":  {
+                                                          "payoutSplit":  "80%",
+                                                          "id":  "frontier_1step",
+                                                          "maxDrawdown":  0.06,
+                                                          "leverageNum":  30,
+                                                          "name":  "1-Step Challenge",
+                                                          "overnightHolding":  true,
+                                                          "dailyLoss":  0.04,
+                                                          "weekendHolding":  true,
+                                                          "newsNote":  "News allowed",
+                                                          "phases":  "1-Step Challenge",
+                                                          "prohibitedStrategies":  [
+                                                                                       "HFT"
+                                                                                   ],
+                                                          "eaAllowed":  true,
+                                                          "drawdownNote":  "Single-phase evaluation with 10% target",
                                                           "leverage":  "1:30",
                                                           "maxTradingDays":  null,
                                                           "accountSizes":  [
@@ -1321,2448 +4635,70 @@
                                                           "consistencyRule":  "None",
                                                           "scalingPlan":  "Up to ,000,000"
                                                       }
-                                   },
-                         "website":  "blueguardian.com",
-                         "category":  "Forex \u0026 CFDs",
-                         "shortName":  "Blue Guardian"
-                     },
-    "goatfunded":  {
-                       "id":  "goatfunded",
-                       "name":  "Goat Funded Trader",
-                       "color":  "#ec4899",
-                       "plans":  {
-                                     "classic_2step":  {
-                                                           "payoutSplit":  "80-95%",
-                                                           "id":  "classic_2step",
-                                                           "maxDrawdown":  0.08,
-                                                           "leverageNum":  100,
-                                                           "name":  "Classic (2-Step Challenge)",
-                                                           "overnightHolding":  true,
-                                                           "dailyLoss":  0.05,
-                                                           "weekendHolding":  true,
-                                                           "newsNote":  "News trading permitted",
-                                                           "phases":  "2-Step Challenge",
-                                                           "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
-                                                                                    ],
-                                                           "eaAllowed":  true,
-                                                           "drawdownNote":  "Static balance-based drawdown",
-                                                           "leverage":  "1:100",
-                                                           "maxTradingDays":  null,
-                                                           "accountSizes":  [
-                                                                                5000,
-                                                                                10000,
-                                                                                25000,
-                                                                                50000,
-                                                                                100000
-                                                                            ],
-                                                           "drawdownType":  "static",
-                                                           "payoutFrequency":  "Bi-weekly (first payout in 14 days)",
-                                                           "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
-                                                           "profitTarget":  {
-                                                                                "phase1":  0.08,
-                                                                                "phase2":  0.05
-                                                                            },
-                                                           "consistencyRule":  "None",
-                                                           "scalingPlan":  "Up to ,000,000 (25% increase every 3 months)"
-                                                       },
-                                     "notimelimit":  {
-                                                         "payoutSplit":  "80-95%",
-                                                         "id":  "notimelimit",
-                                                         "maxDrawdown":  0.1,
-                                                         "leverageNum":  100,
-                                                         "name":  "No Time Limit (2-Step 10% DD)",
-                                                         "overnightHolding":  true,
-                                                         "dailyLoss":  0.04,
-                                                         "weekendHolding":  true,
-                                                         "newsNote":  "News trading permitted",
-                                                         "phases":  "2-Step Challenge",
-                                                         "prohibitedStrategies":  [
-                                                                                      "HFT",
-                                                                                      "Arbitrage"
-                                                                                  ],
-                                                         "eaAllowed":  true,
-                                                         "drawdownNote":  "Static balance-based drawdown",
-                                                         "leverage":  "1:100",
-                                                         "maxTradingDays":  null,
-                                                         "accountSizes":  [
-                                                                              5000,
-                                                                              10000,
-                                                                              25000,
-                                                                              50000,
-                                                                              100000
-                                                                          ],
-                                                         "drawdownType":  "static",
-                                                         "payoutFrequency":  "Bi-weekly",
-                                                         "newsTrading":  "allowed",
-                                                         "minTradingDays":  0,
-                                                         "profitTarget":  {
-                                                                              "phase1":  0.08,
-                                                                              "phase2":  0.05
-                                                                          },
-                                                         "consistencyRule":  "None",
-                                                         "scalingPlan":  "Up to ,000,000"
-                                                     },
-                                     "one_step":  {
-                                                      "payoutSplit":  "80-95%",
-                                                      "id":  "one_step",
-                                                      "maxDrawdown":  0.07,
-                                                      "leverageNum":  30,
-                                                      "name":  "1-Step Goat",
-                                                      "overnightHolding":  true,
-                                                      "dailyLoss":  0.04,
-                                                      "weekendHolding":  true,
-                                                      "newsNote":  "News trading allowed",
-                                                      "phases":  "1-Step Challenge",
-                                                      "prohibitedStrategies":  [
-                                                                                   "HFT",
-                                                                                   "Arbitrage"
-                                                                               ],
-                                                      "eaAllowed":  true,
-                                                      "drawdownNote":  "Trailing drawdown to starting balance",
-                                                      "leverage":  "1:30",
-                                                      "maxTradingDays":  null,
-                                                      "accountSizes":  [
-                                                                           5000,
-                                                                           10000,
-                                                                           25000,
-                                                                           50000,
-                                                                           100000
-                                                                       ],
-                                                      "drawdownType":  "trailing",
-                                                      "payoutFrequency":  "Bi-weekly",
-                                                      "newsTrading":  "allowed",
-                                                      "minTradingDays":  0,
-                                                      "profitTarget":  {
-                                                                           "phase1":  0.1
-                                                                       },
-                                                      "consistencyRule":  "None",
-                                                      "scalingPlan":  "Up to ,000,000"
-                                                  }
-                                 },
-                       "website":  "goatfundedtrader.com",
-                       "category":  "Forex \u0026 CFDs",
-                       "shortName":  "Goat Funded"
-                   },
-    "fxify":  {
-                  "id":  "fxify",
-                  "name":  "FXIFY",
-                  "color":  "#14b8a6",
-                  "plans":  {
-                                "two_step":  {
-                                                 "payoutSplit":  "75-90%",
-                                                 "id":  "two_step",
-                                                 "maxDrawdown":  0.1,
-                                                 "leverageNum":  100,
-                                                 "name":  "2-Step Assessment",
-                                                 "overnightHolding":  true,
-                                                 "dailyLoss":  0.05,
-                                                 "weekendHolding":  true,
-                                                 "newsNote":  "News trading allowed with instant on-demand payouts available",
-                                                 "phases":  "2-Step Assessment",
-                                                 "prohibitedStrategies":  [
-                                                                              "HFT",
-                                                                              "Latency Arbitrage"
-                                                                          ],
-                                                 "eaAllowed":  true,
-                                                 "drawdownNote":  "Static balance-based calculation",
-                                                 "leverage":  "1:100",
-                                                 "maxTradingDays":  null,
-                                                 "accountSizes":  [
-                                                                      10000,
-                                                                      25000,
-                                                                      50000,
-                                                                      100000,
-                                                                      200000
-                                                                  ],
-                                                 "drawdownType":  "static",
-                                                 "payoutFrequency":  "On-Demand (First payout on Day 1)",
-                                                 "newsTrading":  "allowed",
-                                                 "minTradingDays":  0,
-                                                 "profitTarget":  {
-                                                                      "phase1":  0.1,
-                                                                      "phase2":  0.05
-                                                                  },
-                                                 "consistencyRule":  "None",
-                                                 "scalingPlan":  "Up to ,000,000"
-                                             },
-                                "one_step":  {
-                                                 "payoutSplit":  "75-90%",
-                                                 "id":  "one_step",
-                                                 "maxDrawdown":  0.06,
-                                                 "leverageNum":  50,
-                                                 "name":  "1-Step Assessment",
-                                                 "overnightHolding":  true,
-                                                 "dailyLoss":  0.04,
-                                                 "weekendHolding":  true,
-                                                 "newsNote":  "News trading allowed",
-                                                 "phases":  "1-Step Assessment",
-                                                 "prohibitedStrategies":  [
-                                                                              "HFT",
-                                                                              "Arbitrage"
-                                                                          ],
-                                                 "eaAllowed":  true,
-                                                 "drawdownNote":  "Trailing drawdown to initial balance",
-                                                 "leverage":  "1:50",
-                                                 "maxTradingDays":  null,
-                                                 "accountSizes":  [
-                                                                      10000,
-                                                                      25000,
-                                                                      50000,
-                                                                      100000
-                                                                  ],
-                                                 "drawdownType":  "trailing",
-                                                 "payoutFrequency":  "On-Demand",
-                                                 "newsTrading":  "allowed",
-                                                 "minTradingDays":  0,
-                                                 "profitTarget":  {
-                                                                      "phase1":  0.1
-                                                                  },
-                                                 "consistencyRule":  "None",
-                                                 "scalingPlan":  "Up to ,000,000"
-                                             },
-                                "three_step":  {
-                                                   "payoutSplit":  "75-90%",
-                                                   "id":  "three_step",
-                                                   "maxDrawdown":  0.06,
-                                                   "leverageNum":  100,
-                                                   "name":  "3-Step Assessment",
-                                                   "overnightHolding":  true,
-                                                   "dailyLoss":  0.04,
-                                                   "weekendHolding":  true,
-                                                   "newsNote":  "News trading allowed",
-                                                   "phases":  "3-Step Assessment",
-                                                   "prohibitedStrategies":  [
-                                                                                "HFT",
-                                                                                "Arbitrage"
-                                                                            ],
-                                                   "eaAllowed":  true,
-                                                   "drawdownNote":  "Static balance-based calculation",
-                                                   "leverage":  "1:100",
-                                                   "maxTradingDays":  null,
-                                                   "accountSizes":  [
-                                                                        10000,
-                                                                        25000,
-                                                                        50000,
-                                                                        100000
-                                                                    ],
-                                                   "drawdownType":  "static",
-                                                   "payoutFrequency":  "Bi-weekly",
-                                                   "newsTrading":  "allowed",
-                                                   "minTradingDays":  0,
-                                                   "profitTarget":  {
-                                                                        "phase3":  0.05,
-                                                                        "phase1":  0.05,
-                                                                        "phase2":  0.05
-                                                                    },
-                                                   "consistencyRule":  "None",
-                                                   "scalingPlan":  "Up to ,000,000"
-                                               }
-                            },
-                  "website":  "fxify.com",
-                  "category":  "Forex \u0026 CFDs",
-                  "shortName":  "FXIFY"
-              },
-    "myfundedfx":  {
-                       "id":  "myfundedfx",
-                       "name":  "MyFundedFX",
-                       "color":  "#a855f7",
-                       "plans":  {
-                                     "normal_2step":  {
-                                                          "payoutSplit":  "80%",
-                                                          "id":  "normal_2step",
-                                                          "maxDrawdown":  0.08,
-                                                          "leverageNum":  100,
-                                                          "name":  "Normal (2-Step Challenge)",
-                                                          "overnightHolding":  true,
-                                                          "dailyLoss":  0.05,
-                                                          "weekendHolding":  true,
-                                                          "newsNote":  "News trading allowed without restrictions",
-                                                          "phases":  "2-Step Challenge",
-                                                          "prohibitedStrategies":  [
-                                                                                       "HFT",
-                                                                                       "Arbitrage"
-                                                                                   ],
-                                                          "eaAllowed":  true,
-                                                          "drawdownNote":  "Static balance-based drawdown",
-                                                          "leverage":  "1:100",
-                                                          "maxTradingDays":  null,
-                                                          "accountSizes":  [
-                                                                               5000,
-                                                                               10000,
-                                                                               25000,
-                                                                               50000,
-                                                                               100000
-                                                                           ],
-                                                          "drawdownType":  "static",
-                                                          "payoutFrequency":  "Bi-weekly (first payout in 14 days)",
-                                                          "newsTrading":  "allowed",
-                                                          "minTradingDays":  1,
-                                                          "profitTarget":  {
-                                                                               "phase1":  0.08,
-                                                                               "phase2":  0.05
-                                                                           },
-                                                          "consistencyRule":  "None",
-                                                          "scalingPlan":  "Up to ,000,000"
-                                                      },
-                                     "pro_2step":  {
-                                                       "payoutSplit":  "80%",
-                                                       "id":  "pro_2step",
-                                                       "maxDrawdown":  0.1,
-                                                       "leverageNum":  100,
-                                                       "name":  "Pro (2-Step 10% Max DD)",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0.05,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading allowed",
-                                                       "phases":  "2-Step Challenge",
-                                                       "prohibitedStrategies":  [
-                                                                                    "HFT",
-                                                                                    "Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Static balance-based calculation",
-                                                       "leverage":  "1:100",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            5000,
-                                                                            10000,
-                                                                            25000,
-                                                                            50000,
-                                                                            100000
-                                                                        ],
-                                                       "drawdownType":  "static",
-                                                       "payoutFrequency":  "Bi-weekly",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  1,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.08,
-                                                                            "phase2":  0.05
-                                                                        },
-                                                       "consistencyRule":  "None",
-                                                       "scalingPlan":  "Up to ,000,000"
-                                                   },
-                                     "one_step":  {
-                                                      "payoutSplit":  "80%",
-                                                      "id":  "one_step",
-                                                      "maxDrawdown":  0.06,
-                                                      "leverageNum":  50,
-                                                      "name":  "1-Step Challenge",
-                                                      "overnightHolding":  true,
-                                                      "dailyLoss":  0.04,
-                                                      "weekendHolding":  true,
-                                                      "newsNote":  "News trading allowed",
-                                                      "phases":  "1-Step Challenge",
-                                                      "prohibitedStrategies":  [
-                                                                                   "HFT",
-                                                                                   "Arbitrage"
-                                                                               ],
-                                                      "eaAllowed":  true,
-                                                      "drawdownNote":  "Trailing drawdown to initial balance",
-                                                      "leverage":  "1:50",
-                                                      "maxTradingDays":  null,
-                                                      "accountSizes":  [
-                                                                           5000,
-                                                                           10000,
-                                                                           25000,
-                                                                           50000,
-                                                                           100000
-                                                                       ],
-                                                      "drawdownType":  "trailing",
-                                                      "payoutFrequency":  "Bi-weekly",
-                                                      "newsTrading":  "allowed",
-                                                      "minTradingDays":  1,
-                                                      "profitTarget":  {
-                                                                           "phase1":  0.1
-                                                                       },
-                                                      "consistencyRule":  "None",
-                                                      "scalingPlan":  "Up to ,000,000"
-                                                  }
-                                 },
-                       "website":  "myfundedfx.com",
-                       "category":  "Forex \u0026 CFDs",
-                       "shortName":  "MyFundedFX"
-                   },
-    "larkfunding":  {
-                        "id":  "larkfunding",
-                        "name":  "Lark Funding",
-                        "color":  "#eab308",
-                        "plans":  {
-                                      "two_step":  {
-                                                       "payoutSplit":  "80-90%",
-                                                       "id":  "two_step",
-                                                       "maxDrawdown":  0.1,
-                                                       "leverageNum":  100,
-                                                       "name":  "2-Step Challenge",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0.05,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading allowed",
-                                                       "phases":  "2-Step Challenge",
-                                                       "prohibitedStrategies":  [
-                                                                                    "HFT",
-                                                                                    "Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Static balance-based calculation",
-                                                       "leverage":  "1:100",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            10000,
-                                                                            25000,
-                                                                            50000,
-                                                                            100000,
-                                                                            200000
-                                                                        ],
-                                                       "drawdownType":  "static",
-                                                       "payoutFrequency":  "Bi-weekly",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  0,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.08,
-                                                                            "phase2":  0.05
-                                                                        },
-                                                       "consistencyRule":  "None",
-                                                       "scalingPlan":  "Up to ,000,000"
-                                                   },
-                                      "one_step":  {
-                                                       "payoutSplit":  "80-90%",
-                                                       "id":  "one_step",
-                                                       "maxDrawdown":  0.06,
-                                                       "leverageNum":  50,
-                                                       "name":  "1-Step Challenge",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0.04,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading allowed",
-                                                       "phases":  "1-Step Challenge",
-                                                       "prohibitedStrategies":  [
-                                                                                    "HFT",
-                                                                                    "Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Trailing relative drawdown",
-                                                       "leverage":  "1:50",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            10000,
-                                                                            25000,
-                                                                            50000,
-                                                                            100000
-                                                                        ],
-                                                       "drawdownType":  "trailing",
-                                                       "payoutFrequency":  "Bi-weekly",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  0,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.1
-                                                                        },
-                                                       "consistencyRule":  "None",
-                                                       "scalingPlan":  "Up to ,000,000"
-                                                   },
-                                      "three_step":  {
-                                                         "payoutSplit":  "80-90%",
-                                                         "id":  "three_step",
-                                                         "maxDrawdown":  0.05,
-                                                         "leverageNum":  100,
-                                                         "name":  "3-Step Challenge",
-                                                         "overnightHolding":  true,
-                                                         "dailyLoss":  0.05,
-                                                         "weekendHolding":  true,
-                                                         "newsNote":  "News trading allowed",
-                                                         "phases":  "3-Step Challenge",
-                                                         "prohibitedStrategies":  [
-                                                                                      "HFT",
-                                                                                      "Arbitrage"
-                                                                                  ],
-                                                         "eaAllowed":  true,
-                                                         "drawdownNote":  "Static 5% drawdown",
-                                                         "leverage":  "1:100",
-                                                         "maxTradingDays":  null,
-                                                         "accountSizes":  [
-                                                                              10000,
-                                                                              25000,
-                                                                              50000,
-                                                                              100000
-                                                                          ],
-                                                         "drawdownType":  "static",
-                                                         "payoutFrequency":  "Bi-weekly",
-                                                         "newsTrading":  "allowed",
-                                                         "minTradingDays":  0,
-                                                         "profitTarget":  {
-                                                                              "phase3":  0.05,
-                                                                              "phase1":  0.05,
-                                                                              "phase2":  0.05
-                                                                          },
-                                                         "consistencyRule":  "None",
-                                                         "scalingPlan":  "Up to ,000,000"
-                                                     }
-                                  },
-                        "website":  "larkfunding.com",
-                        "category":  "Forex \u0026 CFDs",
-                        "shortName":  "Lark Funding"
-                    },
-    "instantfunding":  {
-                           "id":  "instantfunding",
-                           "name":  "Instant Funding",
-                           "color":  "#10b981",
-                           "plans":  {
-                                         "direct_instant":  {
-                                                                "payoutSplit":  "70-90%",
-                                                                "id":  "direct_instant",
-                                                                "maxDrawdown":  0.1,
-                                                                "leverageNum":  100,
-                                                                "name":  "Instant Funding (Direct No Challenge)",
-                                                                "overnightHolding":  true,
-                                                                "dailyLoss":  0,
-                                                                "weekendHolding":  true,
-                                                                "newsNote":  "News trading permitted without restrictions",
-                                                                "phases":  "Instant Funded (No Evaluation)",
-                                                                "prohibitedStrategies":  [
-                                                                                             "HFT",
-                                                                                             "Arbitrage"
-                                                                                         ],
-                                                                "eaAllowed":  true,
-                                                                "drawdownNote":  "Smart drawdown locks at starting balance (no daily loss limit)",
-                                                                "leverage":  "1:100",
-                                                                "maxTradingDays":  null,
-                                                                "accountSizes":  [
-                                                                                     2500,
-                                                                                     5000,
-                                                                                     10000,
-                                                                                     20000,
-                                                                                     40000,
-                                                                                     80000
-                                                                                 ],
-                                                                "drawdownType":  "smart",
-                                                                "payoutFrequency":  "Bi-weekly (First payout after 14 days)",
-                                                                "newsTrading":  "allowed",
-                                                                "minTradingDays":  0,
-                                                                "profitTarget":  {
-                                                                                     "phase1":  0
-                                                                                 },
-                                                                "consistencyRule":  "None",
-                                                                "scalingPlan":  "Up to ,250,000 (100% scale up on 10% gain)"
-                                                            },
-                                         "one_phase":  {
-                                                           "payoutSplit":  "80-90%",
-                                                           "id":  "one_phase",
-                                                           "maxDrawdown":  0.08,
-                                                           "leverageNum":  100,
-                                                           "name":  "One-Phase Evaluation",
-                                                           "overnightHolding":  true,
-                                                           "dailyLoss":  0.03,
-                                                           "weekendHolding":  true,
-                                                           "newsNote":  "News trading permitted",
-                                                           "phases":  "1-Step Challenge",
-                                                           "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
-                                                                                    ],
-                                                           "eaAllowed":  true,
-                                                           "drawdownNote":  "Smart drawdown locks at initial capital",
-                                                           "leverage":  "1:100",
-                                                           "maxTradingDays":  null,
-                                                           "accountSizes":  [
-                                                                                5000,
-                                                                                10000,
-                                                                                25000,
-                                                                                50000,
-                                                                                100000
-                                                                            ],
-                                                           "drawdownType":  "smart",
-                                                           "payoutFrequency":  "Bi-weekly",
-                                                           "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
-                                                           "profitTarget":  {
-                                                                                "phase1":  0.1
-                                                                            },
-                                                           "consistencyRule":  "None",
-                                                           "scalingPlan":  "Up to ,250,000"
-                                                       },
-                                         "two_phase":  {
-                                                           "payoutSplit":  "80-90%",
-                                                           "id":  "two_phase",
-                                                           "maxDrawdown":  0.1,
-                                                           "leverageNum":  100,
-                                                           "name":  "Two-Phase Evaluation",
-                                                           "overnightHolding":  true,
-                                                           "dailyLoss":  0.04,
-                                                           "weekendHolding":  true,
-                                                           "newsNote":  "News trading permitted",
-                                                           "phases":  "2-Step Challenge",
-                                                           "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
-                                                                                    ],
-                                                           "eaAllowed":  true,
-                                                           "drawdownNote":  "Smart drawdown locks at initial balance",
-                                                           "leverage":  "1:100",
-                                                           "maxTradingDays":  null,
-                                                           "accountSizes":  [
-                                                                                5000,
-                                                                                10000,
-                                                                                25000,
-                                                                                50000,
-                                                                                100000
-                                                                            ],
-                                                           "drawdownType":  "smart",
-                                                           "payoutFrequency":  "Bi-weekly",
-                                                           "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
-                                                           "profitTarget":  {
-                                                                                "phase1":  0.08,
-                                                                                "phase2":  0.05
-                                                                            },
-                                                           "consistencyRule":  "None",
-                                                           "scalingPlan":  "Up to ,250,000"
-                                                       }
-                                     },
-                           "website":  "instantfunding.com",
-                           "category":  "Instant Funding Specialists",
-                           "shortName":  "Instant Funding"
-                       },
-    "fundedtradingplus":  {
-                              "id":  "fundedtradingplus",
-                              "name":  "Funded Trading Plus",
-                              "color":  "#f97316",
-                              "plans":  {
-                                            "experienced_1step":  {
-                                                                      "payoutSplit":  "80-100%",
-                                                                      "id":  "experienced_1step",
-                                                                      "maxDrawdown":  0.06,
-                                                                      "leverageNum":  30,
-                                                                      "name":  "Experienced Trader (1-Step No Daily Loss)",
-                                                                      "overnightHolding":  true,
-                                                                      "dailyLoss":  0,
-                                                                      "weekendHolding":  true,
-                                                                      "newsNote":  "News trading permitted",
-                                                                      "phases":  "1-Step Challenge",
-                                                                      "prohibitedStrategies":  [
-                                                                                                   "HFT",
-                                                                                                   "Arbitrage"
-                                                                                               ],
-                                                                      "eaAllowed":  true,
-                                                                      "drawdownNote":  "Trailing relative drawdown locks at initial balance (no daily loss limit)",
-                                                                      "leverage":  "1:30",
-                                                                      "maxTradingDays":  null,
-                                                                      "accountSizes":  [
-                                                                                           12500,
-                                                                                           25000,
-                                                                                           50000,
-                                                                                           100000,
-                                                                                           200000
-                                                                                       ],
-                                                                      "drawdownType":  "trailing",
-                                                                      "payoutFrequency":  "Weekly (First payout anytime once profit target met)",
-                                                                      "newsTrading":  "allowed",
-                                                                      "minTradingDays":  0,
-                                                                      "profitTarget":  {
-                                                                                           "phase1":  0.1
-                                                                                       },
-                                                                      "consistencyRule":  "None",
-                                                                      "scalingPlan":  "Up to ,500,000 (Doubles capital every 10% profit)"
-                                                                  },
-                                            "advanced_2step":  {
-                                                                   "payoutSplit":  "80-100%",
-                                                                   "id":  "advanced_2step",
-                                                                   "maxDrawdown":  0.1,
-                                                                   "leverageNum":  100,
-                                                                   "name":  "Advanced Trader (2-Step 10% DD)",
-                                                                   "overnightHolding":  true,
-                                                                   "dailyLoss":  0.05,
-                                                                   "weekendHolding":  true,
-                                                                   "newsNote":  "News trading allowed",
-                                                                   "phases":  "2-Step Challenge",
-                                                                   "prohibitedStrategies":  [
-                                                                                                "HFT",
-                                                                                                "Arbitrage"
-                                                                                            ],
-                                                                   "eaAllowed":  true,
-                                                                   "drawdownNote":  "Static balance-based calculation",
-                                                                   "leverage":  "1:100",
-                                                                   "maxTradingDays":  null,
-                                                                   "accountSizes":  [
-                                                                                        12500,
-                                                                                        25000,
-                                                                                        50000,
-                                                                                        100000,
-                                                                                        200000
-                                                                                    ],
-                                                                   "drawdownType":  "static",
-                                                                   "payoutFrequency":  "Weekly",
-                                                                   "newsTrading":  "allowed",
-                                                                   "minTradingDays":  0,
-                                                                   "profitTarget":  {
-                                                                                        "phase1":  0.1,
-                                                                                        "phase2":  0.05
-                                                                                    },
-                                                                   "consistencyRule":  "None",
-                                                                   "scalingPlan":  "Up to ,500,000"
-                                                               },
-                                            "premium_2step":  {
-                                                                  "payoutSplit":  "80-100%",
-                                                                  "id":  "premium_2step",
-                                                                  "maxDrawdown":  0.08,
-                                                                  "leverageNum":  100,
-                                                                  "name":  "Premium Trader (2-Step 8% DD)",
-                                                                  "overnightHolding":  true,
-                                                                  "dailyLoss":  0.04,
-                                                                  "weekendHolding":  true,
-                                                                  "newsNote":  "News trading allowed",
-                                                                  "phases":  "2-Step Challenge",
-                                                                  "prohibitedStrategies":  [
-                                                                                               "HFT",
-                                                                                               "Arbitrage"
-                                                                                           ],
-                                                                  "eaAllowed":  true,
-                                                                  "drawdownNote":  "Static balance-based calculation",
-                                                                  "leverage":  "1:100",
-                                                                  "maxTradingDays":  null,
-                                                                  "accountSizes":  [
-                                                                                       12500,
-                                                                                       25000,
-                                                                                       50000,
-                                                                                       100000,
-                                                                                       200000
-                                                                                   ],
-                                                                  "drawdownType":  "static",
-                                                                  "payoutFrequency":  "Weekly",
-                                                                  "newsTrading":  "allowed",
-                                                                  "minTradingDays":  0,
-                                                                  "profitTarget":  {
-                                                                                       "phase1":  0.08,
-                                                                                       "phase2":  0.05
-                                                                                   },
-                                                                  "consistencyRule":  "None",
-                                                                  "scalingPlan":  "Up to ,500,000"
-                                                              },
-                                            "master_instant":  {
-                                                                   "payoutSplit":  "70-90%",
-                                                                   "id":  "master_instant",
-                                                                   "maxDrawdown":  0.06,
-                                                                   "leverageNum":  30,
-                                                                   "name":  "Master Trader (Instant Direct)",
-                                                                   "overnightHolding":  true,
-                                                                   "dailyLoss":  0,
-                                                                   "weekendHolding":  true,
-                                                                   "newsNote":  "News trading allowed",
-                                                                   "phases":  "Instant Funded",
-                                                                   "prohibitedStrategies":  [
-                                                                                                "HFT",
-                                                                                                "Arbitrage"
-                                                                                            ],
-                                                                   "eaAllowed":  true,
-                                                                   "drawdownNote":  "Trailing drawdown (locks at starting capital)",
-                                                                   "leverage":  "1:30",
-                                                                   "maxTradingDays":  null,
-                                                                   "accountSizes":  [
-                                                                                        5000,
-                                                                                        10000,
-                                                                                        25000,
-                                                                                        50000,
-                                                                                        100000
-                                                                                    ],
-                                                                   "drawdownType":  "trailing",
-                                                                   "payoutFrequency":  "Weekly",
-                                                                   "newsTrading":  "allowed",
-                                                                   "minTradingDays":  0,
-                                                                   "profitTarget":  {
-                                                                                        "phase1":  0
-                                                                                    },
-                                                                   "consistencyRule":  "None",
-                                                                   "scalingPlan":  "Up to ,500,000"
-                                                               }
-                                        },
-                              "website":  "fundedtradingplus.com",
-                              "category":  "Forex \u0026 CFDs",
-                              "shortName":  "Funded Trading Plus"
-                          },
-    "maventrading":  {
-                         "id":  "maventrading",
-                         "name":  "Maven Trading",
-                         "color":  "#06b6d4",
-                         "plans":  {
-                                       "two_step":  {
+                               },
+                     "website":  "fundingfrontier.com",
+                     "category":  "Forex \u0026 CFDs",
+                     "shortName":  "Funding Frontier"
+                 },
+    "quantec":  {
+                    "id":  "quantec",
+                    "name":  "Quantec Trading Capital",
+                    "color":  "#0284c7",
+                    "plans":  {
+                                  "quantec_2step":  {
                                                         "payoutSplit":  "80-90%",
-                                                        "id":  "two_step",
+                                                        "id":  "quantec_2step",
                                                         "maxDrawdown":  0.1,
                                                         "leverageNum":  100,
                                                         "name":  "2-Step Challenge",
                                                         "overnightHolding":  true,
                                                         "dailyLoss":  0.05,
                                                         "weekendHolding":  true,
-                                                        "newsNote":  "News trading allowed",
+                                                        "newsNote":  "News trading permitted",
                                                         "phases":  "2-Step Challenge",
                                                         "prohibitedStrategies":  [
                                                                                      "HFT",
-                                                                                     "Arbitrage"
+                                                                                     "Latency Arbitrage"
                                                                                  ],
                                                         "eaAllowed":  true,
-                                                        "drawdownNote":  "Static balance-based calculation",
+                                                        "drawdownNote":  "Institutional execution with 8% Phase 1 and 5% Phase 2",
                                                         "leverage":  "1:100",
                                                         "maxTradingDays":  null,
                                                         "accountSizes":  [
-                                                                             5000,
                                                                              10000,
-                                                                             20000,
+                                                                             25000,
                                                                              50000,
-                                                                             100000
+                                                                             100000,
+                                                                             200000
                                                                          ],
                                                         "drawdownType":  "static",
                                                         "payoutFrequency":  "Bi-weekly",
                                                         "newsTrading":  "allowed",
-                                                        "minTradingDays":  0,
+                                                        "minTradingDays":  3,
                                                         "profitTarget":  {
-                                                                             "phase1":  0.09,
+                                                                             "phase1":  0.08,
                                                                              "phase2":  0.05
                                                                          },
-                                                        "consistencyRule":  "None",
-                                                        "scalingPlan":  "Up to ,000,000"
+                                                        "consistencyRule":  "Standard risk guidelines",
+                                                        "scalingPlan":  "Up to ,500,000"
                                                     },
-                                       "one_step":  {
-                                                        "payoutSplit":  "80-90%",
-                                                        "id":  "one_step",
+                                  "quantec_1step":  {
+                                                        "payoutSplit":  "80%",
+                                                        "id":  "quantec_1step",
                                                         "maxDrawdown":  0.06,
-                                                        "leverageNum":  30,
+                                                        "leverageNum":  50,
                                                         "name":  "1-Step Challenge",
                                                         "overnightHolding":  true,
                                                         "dailyLoss":  0.03,
                                                         "weekendHolding":  true,
-                                                        "newsNote":  "News trading allowed",
+                                                        "newsNote":  "News allowed",
                                                         "phases":  "1-Step Challenge",
                                                         "prohibitedStrategies":  [
-                                                                                     "HFT",
-                                                                                     "Arbitrage"
+                                                                                     "HFT"
                                                                                  ],
                                                         "eaAllowed":  true,
-                                                        "drawdownNote":  "Trailing drawdown to initial balance",
-                                                        "leverage":  "1:30",
-                                                        "maxTradingDays":  null,
-                                                        "accountSizes":  [
-                                                                             5000,
-                                                                             10000,
-                                                                             20000,
-                                                                             50000,
-                                                                             100000
-                                                                         ],
-                                                        "drawdownType":  "trailing",
-                                                        "payoutFrequency":  "Bi-weekly",
-                                                        "newsTrading":  "allowed",
-                                                        "minTradingDays":  0,
-                                                        "profitTarget":  {
-                                                                             "phase1":  0.09
-                                                                         },
-                                                        "consistencyRule":  "None",
-                                                        "scalingPlan":  "Up to ,000,000"
-                                                    }
-                                   },
-                         "website":  "maventrading.com",
-                         "category":  "Forex \u0026 CFDs",
-                         "shortName":  "Maven Trading"
-                     },
-    "aquafunded":  {
-                       "id":  "aquafunded",
-                       "name":  "AquaFunded",
-                       "color":  "#0284c7",
-                       "plans":  {
-                                     "standard_2step":  {
-                                                            "payoutSplit":  "80-90%",
-                                                            "id":  "standard_2step",
-                                                            "maxDrawdown":  0.08,
-                                                            "leverageNum":  100,
-                                                            "name":  "Standard 2-Step",
-                                                            "overnightHolding":  true,
-                                                            "dailyLoss":  0.05,
-                                                            "weekendHolding":  true,
-                                                            "newsNote":  "News trading allowed",
-                                                            "phases":  "2-Step Challenge",
-                                                            "prohibitedStrategies":  [
-                                                                                         "HFT",
-                                                                                         "Arbitrage"
-                                                                                     ],
-                                                            "eaAllowed":  true,
-                                                            "drawdownNote":  "Static balance-based calculation",
-                                                            "leverage":  "1:100",
-                                                            "maxTradingDays":  null,
-                                                            "accountSizes":  [
-                                                                                 10000,
-                                                                                 25000,
-                                                                                 50000,
-                                                                                 100000,
-                                                                                 200000
-                                                                             ],
-                                                            "drawdownType":  "static",
-                                                            "payoutFrequency":  "Bi-weekly",
-                                                            "newsTrading":  "allowed",
-                                                            "minTradingDays":  0,
-                                                            "profitTarget":  {
-                                                                                 "phase1":  0.08,
-                                                                                 "phase2":  0.05
-                                                                             },
-                                                            "consistencyRule":  "None",
-                                                            "scalingPlan":  "Up to ,000,000"
-                                                        },
-                                     "one_step":  {
-                                                      "payoutSplit":  "80-90%",
-                                                      "id":  "one_step",
-                                                      "maxDrawdown":  0.06,
-                                                      "leverageNum":  30,
-                                                      "name":  "1-Step Challenge",
-                                                      "overnightHolding":  true,
-                                                      "dailyLoss":  0.03,
-                                                      "weekendHolding":  true,
-                                                      "newsNote":  "News trading allowed",
-                                                      "phases":  "1-Step Challenge",
-                                                      "prohibitedStrategies":  [
-                                                                                   "HFT",
-                                                                                   "Arbitrage"
-                                                                               ],
-                                                      "eaAllowed":  true,
-                                                      "drawdownNote":  "Trailing drawdown to initial balance",
-                                                      "leverage":  "1:30",
-                                                      "maxTradingDays":  null,
-                                                      "accountSizes":  [
-                                                                           10000,
-                                                                           25000,
-                                                                           50000,
-                                                                           100000
-                                                                       ],
-                                                      "drawdownType":  "trailing",
-                                                      "payoutFrequency":  "Bi-weekly",
-                                                      "newsTrading":  "allowed",
-                                                      "minTradingDays":  0,
-                                                      "profitTarget":  {
-                                                                           "phase1":  0.09
-                                                                       },
-                                                      "consistencyRule":  "None",
-                                                      "scalingPlan":  "Up to ,000,000"
-                                                  }
-                                 },
-                       "website":  "aquafunded.com",
-                       "category":  "Forex \u0026 CFDs",
-                       "shortName":  "AquaFunded"
-                   },
-    "funderpro":  {
-                      "id":  "funderpro",
-                      "name":  "FunderPro",
-                      "color":  "#16a34a",
-                      "plans":  {
-                                    "two_step":  {
-                                                     "payoutSplit":  "80-90%",
-                                                     "id":  "two_step",
-                                                     "maxDrawdown":  0.1,
-                                                     "leverageNum":  100,
-                                                     "name":  "2-Step Challenge (Real STP Broker)",
-                                                     "overnightHolding":  true,
-                                                     "dailyLoss":  0.05,
-                                                     "weekendHolding":  true,
-                                                     "newsNote":  "News trading allowed with real STP broker execution",
-                                                     "phases":  "2-Step Challenge",
-                                                     "prohibitedStrategies":  [
-                                                                                  "HFT",
-                                                                                  "Arbitrage"
-                                                                              ],
-                                                     "eaAllowed":  true,
-                                                     "drawdownNote":  "Static balance-based calculation",
-                                                     "leverage":  "1:100",
-                                                     "maxTradingDays":  null,
-                                                     "accountSizes":  [
-                                                                          25000,
-                                                                          50000,
-                                                                          100000,
-                                                                          200000
-                                                                      ],
-                                                     "drawdownType":  "static",
-                                                     "payoutFrequency":  "Weekly",
-                                                     "newsTrading":  "allowed",
-                                                     "minTradingDays":  0,
-                                                     "profitTarget":  {
-                                                                          "phase1":  0.1,
-                                                                          "phase2":  0.05
-                                                                      },
-                                                     "consistencyRule":  "None",
-                                                     "scalingPlan":  "Up to ,000,000"
-                                                 },
-                                    "one_step":  {
-                                                     "payoutSplit":  "80-90%",
-                                                     "id":  "one_step",
-                                                     "maxDrawdown":  0.06,
-                                                     "leverageNum":  30,
-                                                     "name":  "1-Step Challenge",
-                                                     "overnightHolding":  true,
-                                                     "dailyLoss":  0.03,
-                                                     "weekendHolding":  true,
-                                                     "newsNote":  "News trading allowed",
-                                                     "phases":  "1-Step Challenge",
-                                                     "prohibitedStrategies":  [
-                                                                                  "HFT",
-                                                                                  "Arbitrage"
-                                                                              ],
-                                                     "eaAllowed":  true,
-                                                     "drawdownNote":  "Trailing drawdown",
-                                                     "leverage":  "1:30",
-                                                     "maxTradingDays":  null,
-                                                     "accountSizes":  [
-                                                                          25000,
-                                                                          50000,
-                                                                          100000
-                                                                      ],
-                                                     "drawdownType":  "trailing",
-                                                     "payoutFrequency":  "Weekly",
-                                                     "newsTrading":  "allowed",
-                                                     "minTradingDays":  0,
-                                                     "profitTarget":  {
-                                                                          "phase1":  0.1
-                                                                      },
-                                                     "consistencyRule":  "None",
-                                                     "scalingPlan":  "Up to ,000,000"
-                                                 }
-                                },
-                      "website":  "funderpro.com",
-                      "category":  "Forex \u0026 CFDs",
-                      "shortName":  "FunderPro"
-                  },
-    "toptiertrader":  {
-                          "id":  "toptiertrader",
-                          "name":  "TopTier Trader",
-                          "color":  "#f43f5e",
-                          "plans":  {
-                                        "regular_2step":  {
-                                                              "payoutSplit":  "80-90%",
-                                                              "id":  "regular_2step",
-                                                              "maxDrawdown":  0.1,
-                                                              "leverageNum":  100,
-                                                              "name":  "TopTier Challenge (2-Step)",
-                                                              "overnightHolding":  true,
-                                                              "dailyLoss":  0.05,
-                                                              "weekendHolding":  true,
-                                                              "newsNote":  "News trading allowed",
-                                                              "phases":  "2-Step Challenge",
-                                                              "prohibitedStrategies":  [
-                                                                                           "HFT",
-                                                                                           "Arbitrage"
-                                                                                       ],
-                                                              "eaAllowed":  true,
-                                                              "drawdownNote":  "Static balance-based calculation",
-                                                              "leverage":  "1:100",
-                                                              "maxTradingDays":  null,
-                                                              "accountSizes":  [
-                                                                                   10000,
-                                                                                   25000,
-                                                                                   50000,
-                                                                                   100000,
-                                                                                   200000
-                                                                               ],
-                                                              "drawdownType":  "static",
-                                                              "payoutFrequency":  "Bi-weekly",
-                                                              "newsTrading":  "allowed",
-                                                              "minTradingDays":  4,
-                                                              "profitTarget":  {
-                                                                                   "phase1":  0.1,
-                                                                                   "phase2":  0.05
-                                                                               },
-                                                              "consistencyRule":  "None",
-                                                              "scalingPlan":  "Up to ,000,000"
-                                                          },
-                                        "plus_2step":  {
-                                                           "payoutSplit":  "80-90%",
-                                                           "id":  "plus_2step",
-                                                           "maxDrawdown":  0.1,
-                                                           "leverageNum":  100,
-                                                           "name":  "TopTier Plus (2-Step)",
-                                                           "overnightHolding":  true,
-                                                           "dailyLoss":  0.05,
-                                                           "weekendHolding":  true,
-                                                           "newsNote":  "News trading permitted",
-                                                           "phases":  "2-Step Challenge",
-                                                           "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
-                                                                                    ],
-                                                           "eaAllowed":  true,
-                                                           "drawdownNote":  "Static balance-based calculation",
-                                                           "leverage":  "1:100",
-                                                           "maxTradingDays":  null,
-                                                           "accountSizes":  [
-                                                                                10000,
-                                                                                25000,
-                                                                                50000,
-                                                                                100000,
-                                                                                200000
-                                                                            ],
-                                                           "drawdownType":  "static",
-                                                           "payoutFrequency":  "Bi-weekly",
-                                                           "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
-                                                           "profitTarget":  {
-                                                                                "phase1":  0.08,
-                                                                                "phase2":  0.05
-                                                                            },
-                                                           "consistencyRule":  "None",
-                                                           "scalingPlan":  "Up to ,000,000"
-                                                       }
-                                    },
-                          "website":  "toptiertrader.com",
-                          "category":  "Forex \u0026 CFDs",
-                          "shortName":  "TopTier"
-                      },
-    "citytradersimperium":  {
-                                "id":  "citytradersimperium",
-                                "name":  "City Traders Imperium",
-                                "color":  "#84cc16",
-                                "plans":  {
-                                              "day_trading":  {
-                                                                  "payoutSplit":  "70-100%",
-                                                                  "id":  "day_trading",
-                                                                  "maxDrawdown":  0.1,
-                                                                  "leverageNum":  100,
-                                                                  "name":  "Day Trading Challenge (2-Step)",
-                                                                  "overnightHolding":  true,
-                                                                  "dailyLoss":  0.04,
-                                                                  "weekendHolding":  true,
-                                                                  "newsNote":  "News trading permitted",
-                                                                  "phases":  "2-Step Challenge",
-                                                                  "prohibitedStrategies":  [
-                                                                                               "HFT",
-                                                                                               "Arbitrage"
-                                                                                           ],
-                                                                  "eaAllowed":  true,
-                                                                  "drawdownNote":  "Static balance-based calculation",
-                                                                  "leverage":  "1:100",
-                                                                  "maxTradingDays":  null,
-                                                                  "accountSizes":  [
-                                                                                       10000,
-                                                                                       25000,
-                                                                                       50000,
-                                                                                       100000
-                                                                                   ],
-                                                                  "drawdownType":  "static",
-                                                                  "payoutFrequency":  "Monthly",
-                                                                  "newsTrading":  "allowed",
-                                                                  "minTradingDays":  5,
-                                                                  "profitTarget":  {
-                                                                                       "phase1":  0.1,
-                                                                                       "phase2":  0.05
-                                                                                   },
-                                                                  "consistencyRule":  "Must maintain risk discipline",
-                                                                  "scalingPlan":  "Up to ,000,000"
-                                                              },
-                                              "one_step":  {
-                                                               "payoutSplit":  "70-100%",
-                                                               "id":  "one_step",
-                                                               "maxDrawdown":  0.06,
-                                                               "leverageNum":  30,
-                                                               "name":  "1-Step Evaluation",
-                                                               "overnightHolding":  true,
-                                                               "dailyLoss":  0.04,
-                                                               "weekendHolding":  true,
-                                                               "newsNote":  "News trading allowed",
-                                                               "phases":  "1-Step Challenge",
-                                                               "prohibitedStrategies":  [
-                                                                                            "HFT",
-                                                                                            "Arbitrage"
-                                                                                        ],
-                                                               "eaAllowed":  true,
-                                                               "drawdownNote":  "Trailing drawdown to starting balance",
-                                                               "leverage":  "1:30",
-                                                               "maxTradingDays":  null,
-                                                               "accountSizes":  [
-                                                                                    10000,
-                                                                                    25000,
-                                                                                    50000,
-                                                                                    100000
-                                                                                ],
-                                                               "drawdownType":  "trailing",
-                                                               "payoutFrequency":  "Monthly",
-                                                               "newsTrading":  "allowed",
-                                                               "minTradingDays":  0,
-                                                               "profitTarget":  {
-                                                                                    "phase1":  0.1
-                                                                                },
-                                                               "consistencyRule":  "None",
-                                                               "scalingPlan":  "Up to ,000,000"
-                                                           },
-                                              "direct_funding":  {
-                                                                     "payoutSplit":  "70-100%",
-                                                                     "id":  "direct_funding",
-                                                                     "maxDrawdown":  0.05,
-                                                                     "leverageNum":  10,
-                                                                     "name":  "Direct Funding (Instant)",
-                                                                     "overnightHolding":  true,
-                                                                     "dailyLoss":  0,
-                                                                     "weekendHolding":  true,
-                                                                     "newsNote":  "News trading allowed",
-                                                                     "phases":  "Instant Funded",
-                                                                     "prohibitedStrategies":  [
-                                                                                                  "HFT",
-                                                                                                  "Arbitrage"
-                                                                                              ],
-                                                                     "eaAllowed":  true,
-                                                                     "drawdownNote":  "5% absolute drawdown limit",
-                                                                     "leverage":  "1:10",
-                                                                     "maxTradingDays":  null,
-                                                                     "accountSizes":  [
-                                                                                          10000,
-                                                                                          20000,
-                                                                                          40000,
-                                                                                          70000
-                                                                                      ],
-                                                                     "drawdownType":  "static",
-                                                                     "payoutFrequency":  "Monthly",
-                                                                     "newsTrading":  "allowed",
-                                                                     "minTradingDays":  0,
-                                                                     "profitTarget":  {
-                                                                                          "phase1":  0
-                                                                                      },
-                                                                     "consistencyRule":  "None",
-                                                                     "scalingPlan":  "Up to ,000,000"
-                                                                 }
-                                          },
-                                "website":  "citytradersimperium.com",
-                                "category":  "Forex \u0026 CFDs",
-                                "shortName":  "CTI"
-                            },
-    "thetradingpit":  {
-                          "id":  "thetradingpit",
-                          "name":  "The Trading Pit",
-                          "color":  "#f59e0b",
-                          "plans":  {
-                                        "cfd_executive":  {
-                                                              "payoutSplit":  "80%",
-                                                              "id":  "cfd_executive",
-                                                              "maxDrawdown":  0.1,
-                                                              "leverageNum":  100,
-                                                              "name":  "CFD Executive (2-Step)",
-                                                              "overnightHolding":  true,
-                                                              "dailyLoss":  0.05,
-                                                              "weekendHolding":  true,
-                                                              "newsNote":  "News trading allowed",
-                                                              "phases":  "2-Step Challenge",
-                                                              "prohibitedStrategies":  [
-                                                                                           "HFT",
-                                                                                           "Arbitrage"
-                                                                                       ],
-                                                              "eaAllowed":  true,
-                                                              "drawdownNote":  "Static balance-based calculation",
-                                                              "leverage":  "1:100",
-                                                              "maxTradingDays":  null,
-                                                              "accountSizes":  [
-                                                                                   10000,
-                                                                                   20000,
-                                                                                   50000,
-                                                                                   100000
-                                                                               ],
-                                                              "drawdownType":  "static",
-                                                              "payoutFrequency":  "Bi-weekly",
-                                                              "newsTrading":  "allowed",
-                                                              "minTradingDays":  3,
-                                                              "profitTarget":  {
-                                                                                   "phase1":  0.1,
-                                                                                   "phase2":  0.05
-                                                                               },
-                                                              "consistencyRule":  "None",
-                                                              "scalingPlan":  "Up to ,000,000"
-                                                          },
-                                        "cfd_vip":  {
-                                                        "payoutSplit":  "80%",
-                                                        "id":  "cfd_vip",
-                                                        "maxDrawdown":  0.08,
-                                                        "leverageNum":  100,
-                                                        "name":  "CFD VIP (2-Step 8% DD)",
-                                                        "overnightHolding":  true,
-                                                        "dailyLoss":  0.05,
-                                                        "weekendHolding":  true,
-                                                        "newsNote":  "News trading allowed",
-                                                        "phases":  "2-Step Challenge",
-                                                        "prohibitedStrategies":  [
-                                                                                     "HFT",
-                                                                                     "Arbitrage"
-                                                                                 ],
-                                                        "eaAllowed":  true,
-                                                        "drawdownNote":  "Static balance-based calculation",
-                                                        "leverage":  "1:100",
-                                                        "maxTradingDays":  null,
-                                                        "accountSizes":  [
-                                                                             10000,
-                                                                             20000,
-                                                                             50000,
-                                                                             100000
-                                                                         ],
-                                                        "drawdownType":  "static",
-                                                        "payoutFrequency":  "Bi-weekly",
-                                                        "newsTrading":  "allowed",
-                                                        "minTradingDays":  3,
-                                                        "profitTarget":  {
-                                                                             "phase1":  0.08,
-                                                                             "phase2":  0.05
-                                                                         },
-                                                        "consistencyRule":  "None",
-                                                        "scalingPlan":  "Up to ,000,000"
-                                                    },
-                                        "futures":  {
-                                                        "payoutSplit":  "80%",
-                                                        "id":  "futures",
-                                                        "maxDrawdown":  0.06,
-                                                        "leverageNum":  10,
-                                                        "name":  "Futures Challenge (CME)",
-                                                        "overnightHolding":  false,
-                                                        "dailyLoss":  0.03,
-                                                        "weekendHolding":  false,
-                                                        "newsNote":  "News trading allowed on CME futures",
-                                                        "phases":  "1-Step Evaluation",
-                                                        "prohibitedStrategies":  [
-                                                                                     "HFT",
-                                                                                     "Arbitrage"
-                                                                                 ],
-                                                        "eaAllowed":  true,
-                                                        "drawdownNote":  "Trailing drawdown to initial capital",
-                                                        "leverage":  "1:10",
-                                                        "maxTradingDays":  null,
-                                                        "accountSizes":  [
-                                                                             25000,
-                                                                             50000,
-                                                                             100000,
-                                                                             150000
-                                                                         ],
-                                                        "drawdownType":  "trailing",
-                                                        "payoutFrequency":  "Bi-weekly",
-                                                        "newsTrading":  "allowed",
-                                                        "minTradingDays":  3,
-                                                        "profitTarget":  {
-                                                                             "phase1":  0.06
-                                                                         },
-                                                        "consistencyRule":  "None",
-                                                        "scalingPlan":  "Up to ,000,000"
-                                                    }
-                                    },
-                          "website":  "thetradingpit.com",
-                          "category":  "Forex \u0026 CFDs",
-                          "shortName":  "The Trading Pit"
-                      },
-    "cryptofundtrader":  {
-                             "id":  "cryptofundtrader",
-                             "name":  "Crypto Fund Trader",
-                             "color":  "#a855f7",
-                             "plans":  {
-                                           "two_step":  {
-                                                            "payoutSplit":  "80-90%",
-                                                            "id":  "two_step",
-                                                            "maxDrawdown":  0.1,
-                                                            "leverageNum":  100,
-                                                            "name":  "2-Step Evaluation (100+ Crypto Pairs)",
-                                                            "overnightHolding":  true,
-                                                            "dailyLoss":  0.05,
-                                                            "weekendHolding":  true,
-                                                            "newsNote":  "Full crypto and news trading permitted",
-                                                            "phases":  "2-Step Challenge",
-                                                            "prohibitedStrategies":  [
-                                                                                         "HFT",
-                                                                                         "Arbitrage"
-                                                                                     ],
-                                                            "eaAllowed":  true,
-                                                            "drawdownNote":  "Static equity-based calculation",
-                                                            "leverage":  "1:100",
-                                                            "maxTradingDays":  null,
-                                                            "accountSizes":  [
-                                                                                 5000,
-                                                                                 10000,
-                                                                                 25000,
-                                                                                 50000,
-                                                                                 100000,
-                                                                                 200000
-                                                                             ],
-                                                            "drawdownType":  "static",
-                                                            "payoutFrequency":  "Bi-weekly",
-                                                            "newsTrading":  "allowed",
-                                                            "minTradingDays":  0,
-                                                            "profitTarget":  {
-                                                                                 "phase1":  0.08,
-                                                                                 "phase2":  0.04
-                                                                             },
-                                                            "consistencyRule":  "None",
-                                                            "scalingPlan":  "Up to ,000,000"
-                                                        },
-                                           "one_step":  {
-                                                            "payoutSplit":  "80-90%",
-                                                            "id":  "one_step",
-                                                            "maxDrawdown":  0.06,
-                                                            "leverageNum":  50,
-                                                            "name":  "1-Step Evaluation",
-                                                            "overnightHolding":  true,
-                                                            "dailyLoss":  0.04,
-                                                            "weekendHolding":  true,
-                                                            "newsNote":  "News trading allowed",
-                                                            "phases":  "1-Step Challenge",
-                                                            "prohibitedStrategies":  [
-                                                                                         "HFT",
-                                                                                         "Arbitrage"
-                                                                                     ],
-                                                            "eaAllowed":  true,
-                                                            "drawdownNote":  "Static balance-based calculation",
-                                                            "leverage":  "1:50",
-                                                            "maxTradingDays":  null,
-                                                            "accountSizes":  [
-                                                                                 5000,
-                                                                                 10000,
-                                                                                 25000,
-                                                                                 50000,
-                                                                                 100000
-                                                                             ],
-                                                            "drawdownType":  "static",
-                                                            "payoutFrequency":  "Bi-weekly",
-                                                            "newsTrading":  "allowed",
-                                                            "minTradingDays":  0,
-                                                            "profitTarget":  {
-                                                                                 "phase1":  0.1
-                                                                             },
-                                                            "consistencyRule":  "None",
-                                                            "scalingPlan":  "Up to ,000,000"
-                                                        }
-                                       },
-                             "website":  "cryptofundtrader.com",
-                             "category":  "Forex \u0026 CFDs",
-                             "shortName":  "Crypto Fund Trader"
-                         },
-    "fundedpeak":  {
-                       "id":  "fundedpeak",
-                       "name":  "FundedPeak",
-                       "color":  "#3b82f6",
-                       "plans":  {
-                                     "two_step":  {
-                                                      "payoutSplit":  "80-90%",
-                                                      "id":  "two_step",
-                                                      "maxDrawdown":  0.1,
-                                                      "leverageNum":  100,
-                                                      "name":  "2-Step Challenge",
-                                                      "overnightHolding":  true,
-                                                      "dailyLoss":  0.05,
-                                                      "weekendHolding":  true,
-                                                      "newsNote":  "News trading allowed",
-                                                      "phases":  "2-Step Challenge",
-                                                      "prohibitedStrategies":  [
-                                                                                   "HFT",
-                                                                                   "Arbitrage"
-                                                                               ],
-                                                      "eaAllowed":  true,
-                                                      "drawdownNote":  "Static balance-based calculation",
-                                                      "leverage":  "1:100",
-                                                      "maxTradingDays":  null,
-                                                      "accountSizes":  [
-                                                                           10000,
-                                                                           25000,
-                                                                           50000,
-                                                                           100000,
-                                                                           200000
-                                                                       ],
-                                                      "drawdownType":  "static",
-                                                      "payoutFrequency":  "Bi-weekly",
-                                                      "newsTrading":  "allowed",
-                                                      "minTradingDays":  1,
-                                                      "profitTarget":  {
-                                                                           "phase1":  0.08,
-                                                                           "phase2":  0.05
-                                                                       },
-                                                      "consistencyRule":  "None",
-                                                      "scalingPlan":  "Up to ,000,000"
-                                                  },
-                                     "one_step":  {
-                                                      "payoutSplit":  "80-90%",
-                                                      "id":  "one_step",
-                                                      "maxDrawdown":  0.06,
-                                                      "leverageNum":  50,
-                                                      "name":  "1-Step Challenge",
-                                                      "overnightHolding":  true,
-                                                      "dailyLoss":  0.04,
-                                                      "weekendHolding":  true,
-                                                      "newsNote":  "News trading allowed",
-                                                      "phases":  "1-Step Challenge",
-                                                      "prohibitedStrategies":  [
-                                                                                   "HFT",
-                                                                                   "Arbitrage"
-                                                                               ],
-                                                      "eaAllowed":  true,
-                                                      "drawdownNote":  "Trailing drawdown to initial balance",
-                                                      "leverage":  "1:50",
-                                                      "maxTradingDays":  null,
-                                                      "accountSizes":  [
-                                                                           10000,
-                                                                           25000,
-                                                                           50000,
-                                                                           100000
-                                                                       ],
-                                                      "drawdownType":  "trailing",
-                                                      "payoutFrequency":  "Bi-weekly",
-                                                      "newsTrading":  "allowed",
-                                                      "minTradingDays":  1,
-                                                      "profitTarget":  {
-                                                                           "phase1":  0.1
-                                                                       },
-                                                      "consistencyRule":  "None",
-                                                      "scalingPlan":  "Up to ,000,000"
-                                                  }
-                                 },
-                       "website":  "fundedpeak.com",
-                       "category":  "Forex \u0026 CFDs",
-                       "shortName":  "FundedPeak"
-                   },
-    "finotivefunding":  {
-                            "id":  "finotivefunding",
-                            "name":  "Finotive Funding",
-                            "color":  "#14b8a6",
-                            "plans":  {
-                                          "standard_2step":  {
-                                                                 "payoutSplit":  "80-95%",
-                                                                 "id":  "standard_2step",
-                                                                 "maxDrawdown":  0.1,
-                                                                 "leverageNum":  100,
-                                                                 "name":  "Standard (2-Step 7.5% Target)",
-                                                                 "overnightHolding":  true,
-                                                                 "dailyLoss":  0.05,
-                                                                 "weekendHolding":  true,
-                                                                 "newsNote":  "News trading allowed",
-                                                                 "phases":  "2-Step Challenge",
-                                                                 "prohibitedStrategies":  [
-                                                                                              "HFT",
-                                                                                              "Arbitrage"
-                                                                                          ],
-                                                                 "eaAllowed":  true,
-                                                                 "drawdownNote":  "Static balance-based calculation",
-                                                                 "leverage":  "1:100",
-                                                                 "maxTradingDays":  null,
-                                                                 "accountSizes":  [
-                                                                                      5000,
-                                                                                      10000,
-                                                                                      25000,
-                                                                                      50000,
-                                                                                      100000
-                                                                                  ],
-                                                                 "drawdownType":  "static",
-                                                                 "payoutFrequency":  "Bi-weekly",
-                                                                 "newsTrading":  "allowed",
-                                                                 "minTradingDays":  0,
-                                                                 "profitTarget":  {
-                                                                                      "phase1":  0.075,
-                                                                                      "phase2":  0.05
-                                                                                  },
-                                                                 "consistencyRule":  "None",
-                                                                 "scalingPlan":  "Up to ,000,000"
-                                                             },
-                                          "pro_2step":  {
-                                                            "payoutSplit":  "80-95%",
-                                                            "id":  "pro_2step",
-                                                            "maxDrawdown":  0.1,
-                                                            "leverageNum":  100,
-                                                            "name":  "Pro (2-Step 10% Target)",
-                                                            "overnightHolding":  true,
-                                                            "dailyLoss":  0.05,
-                                                            "weekendHolding":  true,
-                                                            "newsNote":  "News trading allowed",
-                                                            "phases":  "2-Step Challenge",
-                                                            "prohibitedStrategies":  [
-                                                                                         "HFT",
-                                                                                         "Arbitrage"
-                                                                                     ],
-                                                            "eaAllowed":  true,
-                                                            "drawdownNote":  "Static balance-based calculation",
-                                                            "leverage":  "1:100",
-                                                            "maxTradingDays":  null,
-                                                            "accountSizes":  [
-                                                                                 5000,
-                                                                                 10000,
-                                                                                 25000,
-                                                                                 50000,
-                                                                                 100000
-                                                                             ],
-                                                            "drawdownType":  "static",
-                                                            "payoutFrequency":  "Bi-weekly",
-                                                            "newsTrading":  "allowed",
-                                                            "minTradingDays":  0,
-                                                            "profitTarget":  {
-                                                                                 "phase1":  0.1,
-                                                                                 "phase2":  0.05
-                                                                             },
-                                                            "consistencyRule":  "None",
-                                                            "scalingPlan":  "Up to ,000,000"
-                                                        },
-                                          "one_step":  {
-                                                           "payoutSplit":  "80-95%",
-                                                           "id":  "one_step",
-                                                           "maxDrawdown":  0.07,
-                                                           "leverageNum":  50,
-                                                           "name":  "1-Step Challenge",
-                                                           "overnightHolding":  true,
-                                                           "dailyLoss":  0.04,
-                                                           "weekendHolding":  true,
-                                                           "newsNote":  "News trading allowed",
-                                                           "phases":  "1-Step Challenge",
-                                                           "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
-                                                                                    ],
-                                                           "eaAllowed":  true,
-                                                           "drawdownNote":  "Trailing drawdown to initial capital",
-                                                           "leverage":  "1:50",
-                                                           "maxTradingDays":  null,
-                                                           "accountSizes":  [
-                                                                                5000,
-                                                                                10000,
-                                                                                25000,
-                                                                                50000,
-                                                                                100000
-                                                                            ],
-                                                           "drawdownType":  "trailing",
-                                                           "payoutFrequency":  "Bi-weekly",
-                                                           "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
-                                                           "profitTarget":  {
-                                                                                "phase1":  0.1
-                                                                            },
-                                                           "consistencyRule":  "None",
-                                                           "scalingPlan":  "Up to ,000,000"
-                                                       },
-                                          "instant":  {
-                                                          "payoutSplit":  "75-90%",
-                                                          "id":  "instant",
-                                                          "maxDrawdown":  0.08,
-                                                          "leverageNum":  100,
-                                                          "name":  "Instant Funding Direct",
-                                                          "overnightHolding":  true,
-                                                          "dailyLoss":  0,
-                                                          "weekendHolding":  true,
-                                                          "newsNote":  "News trading allowed",
-                                                          "phases":  "Instant Funded",
-                                                          "prohibitedStrategies":  [
-                                                                                       "HFT",
-                                                                                       "Arbitrage"
-                                                                                   ],
-                                                          "eaAllowed":  true,
-                                                          "drawdownNote":  "Static 8% drawdown limit (no daily limit)",
-                                                          "leverage":  "1:100",
-                                                          "maxTradingDays":  null,
-                                                          "accountSizes":  [
-                                                                               2500,
-                                                                               5000,
-                                                                               10000,
-                                                                               25000,
-                                                                               50000
-                                                                           ],
-                                                          "drawdownType":  "static",
-                                                          "payoutFrequency":  "Weekly",
-                                                          "newsTrading":  "allowed",
-                                                          "minTradingDays":  0,
-                                                          "profitTarget":  {
-                                                                               "phase1":  0
-                                                                           },
-                                                          "consistencyRule":  "None",
-                                                          "scalingPlan":  "Up to ,000,000"
-                                                      }
-                                      },
-                            "website":  "finotivefunding.com",
-                            "category":  "Forex \u0026 CFDs",
-                            "shortName":  "Finotive"
-                        },
-    "fasttrackfunder":  {
-                            "id":  "fasttrackfunder",
-                            "name":  "Fast Track Funder",
-                            "color":  "#eab308",
-                            "plans":  {
-                                          "two_step":  {
-                                                           "payoutSplit":  "80%",
-                                                           "id":  "two_step",
-                                                           "maxDrawdown":  0.1,
-                                                           "leverageNum":  100,
-                                                           "name":  "2-Step Challenge",
-                                                           "overnightHolding":  true,
-                                                           "dailyLoss":  0.05,
-                                                           "weekendHolding":  true,
-                                                           "newsNote":  "News trading allowed",
-                                                           "phases":  "2-Step Challenge",
-                                                           "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
-                                                                                    ],
-                                                           "eaAllowed":  true,
-                                                           "drawdownNote":  "Static balance-based calculation",
-                                                           "leverage":  "1:100",
-                                                           "maxTradingDays":  null,
-                                                           "accountSizes":  [
-                                                                                10000,
-                                                                                25000,
-                                                                                50000,
-                                                                                100000
-                                                                            ],
-                                                           "drawdownType":  "static",
-                                                           "payoutFrequency":  "Bi-weekly",
-                                                           "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
-                                                           "profitTarget":  {
-                                                                                "phase1":  0.08,
-                                                                                "phase2":  0.05
-                                                                            },
-                                                           "consistencyRule":  "None",
-                                                           "scalingPlan":  "Up to ,000,000"
-                                                       },
-                                          "one_step":  {
-                                                           "payoutSplit":  "80%",
-                                                           "id":  "one_step",
-                                                           "maxDrawdown":  0.06,
-                                                           "leverageNum":  50,
-                                                           "name":  "1-Step Challenge",
-                                                           "overnightHolding":  true,
-                                                           "dailyLoss":  0.03,
-                                                           "weekendHolding":  true,
-                                                           "newsNote":  "News trading allowed",
-                                                           "phases":  "1-Step Challenge",
-                                                           "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
-                                                                                    ],
-                                                           "eaAllowed":  true,
-                                                           "drawdownNote":  "Trailing drawdown",
-                                                           "leverage":  "1:50",
-                                                           "maxTradingDays":  null,
-                                                           "accountSizes":  [
-                                                                                10000,
-                                                                                25000,
-                                                                                50000,
-                                                                                100000
-                                                                            ],
-                                                           "drawdownType":  "trailing",
-                                                           "payoutFrequency":  "Bi-weekly",
-                                                           "newsTrading":  "allowed",
-                                                           "minTradingDays":  0,
-                                                           "profitTarget":  {
-                                                                                "phase1":  0.1
-                                                                            },
-                                                           "consistencyRule":  "None",
-                                                           "scalingPlan":  "Up to ,000,000"
-                                                       }
-                                      },
-                            "website":  "fasttrackfunder.com",
-                            "category":  "Forex \u0026 CFDs",
-                            "shortName":  "Fast Track"
-                        },
-    "toponetrader":  {
-                         "id":  "toponetrader",
-                         "name":  "Top One Trader",
-                         "color":  "#8b5cf6",
-                         "plans":  {
-                                       "classic_2step":  {
-                                                             "payoutSplit":  "80-90%",
-                                                             "id":  "classic_2step",
-                                                             "maxDrawdown":  0.08,
-                                                             "leverageNum":  100,
-                                                             "name":  "2-Step Classic",
-                                                             "overnightHolding":  true,
-                                                             "dailyLoss":  0.05,
-                                                             "weekendHolding":  true,
-                                                             "newsNote":  "News trading allowed",
-                                                             "phases":  "2-Step Challenge",
-                                                             "prohibitedStrategies":  [
-                                                                                          "HFT",
-                                                                                          "Arbitrage"
-                                                                                      ],
-                                                             "eaAllowed":  true,
-                                                             "drawdownNote":  "Static balance-based calculation",
-                                                             "leverage":  "1:100",
-                                                             "maxTradingDays":  null,
-                                                             "accountSizes":  [
-                                                                                  10000,
-                                                                                  25000,
-                                                                                  50000,
-                                                                                  100000,
-                                                                                  200000
-                                                                              ],
-                                                             "drawdownType":  "static",
-                                                             "payoutFrequency":  "Bi-weekly",
-                                                             "newsTrading":  "allowed",
-                                                             "minTradingDays":  1,
-                                                             "profitTarget":  {
-                                                                                  "phase1":  0.08,
-                                                                                  "phase2":  0.05
-                                                                              },
-                                                             "consistencyRule":  "None",
-                                                             "scalingPlan":  "Up to ,000,000"
-                                                         },
-                                       "flash_1step":  {
-                                                           "payoutSplit":  "80-90%",
-                                                           "id":  "flash_1step",
-                                                           "maxDrawdown":  0.06,
-                                                           "leverageNum":  30,
-                                                           "name":  "1-Step Flash",
-                                                           "overnightHolding":  true,
-                                                           "dailyLoss":  0.04,
-                                                           "weekendHolding":  true,
-                                                           "newsNote":  "News trading allowed",
-                                                           "phases":  "1-Step Challenge",
-                                                           "prohibitedStrategies":  [
-                                                                                        "HFT",
-                                                                                        "Arbitrage"
-                                                                                    ],
-                                                           "eaAllowed":  true,
-                                                           "drawdownNote":  "Trailing drawdown to initial capital",
-                                                           "leverage":  "1:30",
-                                                           "maxTradingDays":  null,
-                                                           "accountSizes":  [
-                                                                                10000,
-                                                                                25000,
-                                                                                50000,
-                                                                                100000
-                                                                            ],
-                                                           "drawdownType":  "trailing",
-                                                           "payoutFrequency":  "Bi-weekly",
-                                                           "newsTrading":  "allowed",
-                                                           "minTradingDays":  1,
-                                                           "profitTarget":  {
-                                                                                "phase1":  0.09
-                                                                            },
-                                                           "consistencyRule":  "None",
-                                                           "scalingPlan":  "Up to ,000,000"
-                                                       }
-                                   },
-                         "website":  "toponetrader.com",
-                         "category":  "Forex \u0026 CFDs",
-                         "shortName":  "Top One Trader"
-                     },
-    "novafunding":  {
-                        "id":  "novafunding",
-                        "name":  "Nova Funding",
-                        "color":  "#ec4899",
-                        "plans":  {
-                                      "one_step":  {
-                                                       "payoutSplit":  "80%",
-                                                       "id":  "one_step",
-                                                       "maxDrawdown":  0.08,
-                                                       "leverageNum":  100,
-                                                       "name":  "1-Step Evaluation (HFT Pass Allowed)",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0.04,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading permitted without restrictions",
-                                                       "phases":  "1-Step Challenge",
-                                                       "prohibitedStrategies":  [
-                                                                                    "Latency Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Trailing drawdown calculated on high water mark",
-                                                       "leverage":  "1:100",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            25000,
-                                                                            50000,
-                                                                            100000,
-                                                                            200000
-                                                                        ],
-                                                       "drawdownType":  "trailing",
-                                                       "payoutFrequency":  "Bi-weekly (14 days)",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  0,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.1
-                                                                        },
-                                                       "consistencyRule":  "Consistency rule applies during funded phase (max 20% lot deviation)",
-                                                       "scalingPlan":  "Up to ,000,000"
-                                                   }
-                                  },
-                        "website":  "novafunding.com",
-                        "category":  "Forex \u0026 CFDs",
-                        "shortName":  "Nova Funding"
-                    },
-    "myflashfunding":  {
-                           "id":  "myflashfunding",
-                           "name":  "MyFlashFunding",
-                           "color":  "#f97316",
-                           "plans":  {
-                                         "two_step":  {
-                                                          "payoutSplit":  "80-90%",
-                                                          "id":  "two_step",
-                                                          "maxDrawdown":  0.08,
-                                                          "leverageNum":  100,
-                                                          "name":  "2-Step Evaluation (6%/6% Target)",
-                                                          "overnightHolding":  true,
-                                                          "dailyLoss":  0.04,
-                                                          "weekendHolding":  true,
-                                                          "newsNote":  "News trading allowed",
-                                                          "phases":  "2-Step Challenge",
-                                                          "prohibitedStrategies":  [
-                                                                                       "HFT",
-                                                                                       "Arbitrage"
-                                                                                   ],
-                                                          "eaAllowed":  true,
-                                                          "drawdownNote":  "Static balance-based calculation",
-                                                          "leverage":  "1:100",
-                                                          "maxTradingDays":  null,
-                                                          "accountSizes":  [
-                                                                               10000,
-                                                                               25000,
-                                                                               50000,
-                                                                               100000,
-                                                                               200000
-                                                                           ],
-                                                          "drawdownType":  "static",
-                                                          "payoutFrequency":  "Bi-weekly",
-                                                          "newsTrading":  "allowed",
-                                                          "minTradingDays":  1,
-                                                          "profitTarget":  {
-                                                                               "phase1":  0.06,
-                                                                               "phase2":  0.06
-                                                                           },
-                                                          "consistencyRule":  "None",
-                                                          "scalingPlan":  "Up to ,000,000"
-                                                      },
-                                         "one_step":  {
-                                                          "payoutSplit":  "80-90%",
-                                                          "id":  "one_step",
-                                                          "maxDrawdown":  0.06,
-                                                          "leverageNum":  50,
-                                                          "name":  "1-Step Evaluation",
-                                                          "overnightHolding":  true,
-                                                          "dailyLoss":  0.04,
-                                                          "weekendHolding":  true,
-                                                          "newsNote":  "News trading allowed",
-                                                          "phases":  "1-Step Challenge",
-                                                          "prohibitedStrategies":  [
-                                                                                       "HFT",
-                                                                                       "Arbitrage"
-                                                                                   ],
-                                                          "eaAllowed":  true,
-                                                          "drawdownNote":  "Trailing drawdown to starting balance",
-                                                          "leverage":  "1:50",
-                                                          "maxTradingDays":  null,
-                                                          "accountSizes":  [
-                                                                               10000,
-                                                                               25000,
-                                                                               50000,
-                                                                               100000
-                                                                           ],
-                                                          "drawdownType":  "trailing",
-                                                          "payoutFrequency":  "Bi-weekly",
-                                                          "newsTrading":  "allowed",
-                                                          "minTradingDays":  1,
-                                                          "profitTarget":  {
-                                                                               "phase1":  0.09
-                                                                           },
-                                                          "consistencyRule":  "None",
-                                                          "scalingPlan":  "Up to ,000,000"
-                                                      }
-                                     },
-                           "website":  "myflashfunding.com",
-                           "category":  "Forex \u0026 CFDs",
-                           "shortName":  "MyFlashFunding"
-                       },
-    "atmosfunded":  {
-                        "id":  "atmosfunded",
-                        "name":  "Atmos Funded",
-                        "color":  "#06b6d4",
-                        "plans":  {
-                                      "two_step":  {
-                                                       "payoutSplit":  "80-90%",
-                                                       "id":  "two_step",
-                                                       "maxDrawdown":  0.1,
-                                                       "leverageNum":  100,
-                                                       "name":  "2-Step Evaluation",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0.05,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading allowed",
-                                                       "phases":  "2-Step Challenge",
-                                                       "prohibitedStrategies":  [
-                                                                                    "HFT",
-                                                                                    "Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Static balance-based calculation",
-                                                       "leverage":  "1:100",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            10000,
-                                                                            25000,
-                                                                            50000,
-                                                                            100000
-                                                                        ],
-                                                       "drawdownType":  "static",
-                                                       "payoutFrequency":  "Bi-weekly",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  0,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.08,
-                                                                            "phase2":  0.05
-                                                                        },
-                                                       "consistencyRule":  "None",
-                                                       "scalingPlan":  "Up to ,000,000"
-                                                   },
-                                      "one_step":  {
-                                                       "payoutSplit":  "80-90%",
-                                                       "id":  "one_step",
-                                                       "maxDrawdown":  0.06,
-                                                       "leverageNum":  30,
-                                                       "name":  "1-Step Evaluation",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0.03,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading allowed",
-                                                       "phases":  "1-Step Challenge",
-                                                       "prohibitedStrategies":  [
-                                                                                    "HFT",
-                                                                                    "Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Trailing drawdown",
-                                                       "leverage":  "1:30",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            10000,
-                                                                            25000,
-                                                                            50000,
-                                                                            100000
-                                                                        ],
-                                                       "drawdownType":  "trailing",
-                                                       "payoutFrequency":  "Bi-weekly",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  0,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.1
-                                                                        },
-                                                       "consistencyRule":  "None",
-                                                       "scalingPlan":  "Up to ,000,000"
-                                                   }
-                                  },
-                        "website":  "atmosfunded.com",
-                        "category":  "Forex \u0026 CFDs",
-                        "shortName":  "Atmos Funded"
-                    },
-    "holaprime":  {
-                      "id":  "holaprime",
-                      "name":  "Hola Prime",
-                      "color":  "#10b981",
-                      "plans":  {
-                                    "two_step":  {
-                                                     "payoutSplit":  "80-90%",
-                                                     "id":  "two_step",
-                                                     "maxDrawdown":  0.1,
-                                                     "leverageNum":  100,
-                                                     "name":  "2-Step Evaluation",
-                                                     "overnightHolding":  true,
-                                                     "dailyLoss":  0.05,
-                                                     "weekendHolding":  true,
-                                                     "newsNote":  "News trading allowed",
-                                                     "phases":  "2-Step Challenge",
-                                                     "prohibitedStrategies":  [
-                                                                                  "HFT",
-                                                                                  "Arbitrage"
-                                                                              ],
-                                                     "eaAllowed":  true,
-                                                     "drawdownNote":  "Static balance-based calculation",
-                                                     "leverage":  "1:100",
-                                                     "maxTradingDays":  null,
-                                                     "accountSizes":  [
-                                                                          10000,
-                                                                          25000,
-                                                                          50000,
-                                                                          100000
-                                                                      ],
-                                                     "drawdownType":  "static",
-                                                     "payoutFrequency":  "Bi-weekly",
-                                                     "newsTrading":  "allowed",
-                                                     "minTradingDays":  1,
-                                                     "profitTarget":  {
-                                                                          "phase1":  0.08,
-                                                                          "phase2":  0.05
-                                                                      },
-                                                     "consistencyRule":  "None",
-                                                     "scalingPlan":  "Up to ,000,000"
-                                                 },
-                                    "one_step":  {
-                                                     "payoutSplit":  "80-90%",
-                                                     "id":  "one_step",
-                                                     "maxDrawdown":  0.06,
-                                                     "leverageNum":  50,
-                                                     "name":  "1-Step Evaluation",
-                                                     "overnightHolding":  true,
-                                                     "dailyLoss":  0.04,
-                                                     "weekendHolding":  true,
-                                                     "newsNote":  "News trading allowed",
-                                                     "phases":  "1-Step Challenge",
-                                                     "prohibitedStrategies":  [
-                                                                                  "HFT",
-                                                                                  "Arbitrage"
-                                                                              ],
-                                                     "eaAllowed":  true,
-                                                     "drawdownNote":  "Trailing drawdown",
-                                                     "leverage":  "1:50",
-                                                     "maxTradingDays":  null,
-                                                     "accountSizes":  [
-                                                                          10000,
-                                                                          25000,
-                                                                          50000,
-                                                                          100000
-                                                                      ],
-                                                     "drawdownType":  "trailing",
-                                                     "payoutFrequency":  "Bi-weekly",
-                                                     "newsTrading":  "allowed",
-                                                     "minTradingDays":  1,
-                                                     "profitTarget":  {
-                                                                          "phase1":  0.1
-                                                                      },
-                                                     "consistencyRule":  "None",
-                                                     "scalingPlan":  "Up to ,000,000"
-                                                 }
-                                },
-                      "website":  "holaprime.com",
-                      "category":  "Forex \u0026 CFDs",
-                      "shortName":  "Hola Prime"
-                  },
-    "audacitycapital":  {
-                            "id":  "audacitycapital",
-                            "name":  "Audacity Capital",
-                            "color":  "#3b82f6",
-                            "plans":  {
-                                          "ability_2step":  {
-                                                                "payoutSplit":  "85%",
-                                                                "id":  "ability_2step",
-                                                                "maxDrawdown":  0.1,
-                                                                "leverageNum":  100,
-                                                                "name":  "Ability Challenge (2-Step)",
-                                                                "overnightHolding":  true,
-                                                                "dailyLoss":  0.05,
-                                                                "weekendHolding":  true,
-                                                                "newsNote":  "News trading allowed",
-                                                                "phases":  "2-Step Challenge",
-                                                                "prohibitedStrategies":  [
-                                                                                             "HFT",
-                                                                                             "Arbitrage"
-                                                                                         ],
-                                                                "eaAllowed":  true,
-                                                                "drawdownNote":  "Static balance-based calculation",
-                                                                "leverage":  "1:100",
-                                                                "maxTradingDays":  null,
-                                                                "accountSizes":  [
-                                                                                     15000,
-                                                                                     30000,
-                                                                                     60000,
-                                                                                     120000
-                                                                                 ],
-                                                                "drawdownType":  "static",
-                                                                "payoutFrequency":  "Monthly",
-                                                                "newsTrading":  "allowed",
-                                                                "minTradingDays":  0,
-                                                                "profitTarget":  {
-                                                                                     "phase1":  0.1,
-                                                                                     "phase2":  0.05
-                                                                                 },
-                                                                "consistencyRule":  "None",
-                                                                "scalingPlan":  "Up to ,000,000"
-                                                            },
-                                          "funded_trader":  {
-                                                                "payoutSplit":  "50-80%",
-                                                                "id":  "funded_trader",
-                                                                "maxDrawdown":  0.1,
-                                                                "leverageNum":  30,
-                                                                "name":  "Funded Trader Program (Direct)",
-                                                                "overnightHolding":  true,
-                                                                "dailyLoss":  0,
-                                                                "weekendHolding":  true,
-                                                                "newsNote":  "News trading permitted",
-                                                                "phases":  "Instant Scaling Program",
-                                                                "prohibitedStrategies":  [
-                                                                                             "HFT",
-                                                                                             "Arbitrage"
-                                                                                         ],
-                                                                "eaAllowed":  true,
-                                                                "drawdownNote":  "10% absolute drawdown limit",
-                                                                "leverage":  "1:30",
-                                                                "maxTradingDays":  null,
-                                                                "accountSizes":  [
-                                                                                     15000,
-                                                                                     30000,
-                                                                                     60000,
-                                                                                     120000
-                                                                                 ],
-                                                                "drawdownType":  "static",
-                                                                "payoutFrequency":  "Monthly",
-                                                                "newsTrading":  "allowed",
-                                                                "minTradingDays":  0,
-                                                                "profitTarget":  {
-                                                                                     "phase1":  0.1
-                                                                                 },
-                                                                "consistencyRule":  "None",
-                                                                "scalingPlan":  "Doubles every 10% gain up to ,000"
-                                                            }
-                                      },
-                            "website":  "audacitycapital.co.uk",
-                            "category":  "Forex \u0026 CFDs",
-                            "shortName":  "Audacity Capital"
-                        },
-    "ftuk":  {
-                 "id":  "ftuk",
-                 "name":  "FTUK",
-                 "color":  "#6366f1",
-                 "plans":  {
-                               "evaluation_2step":  {
-                                                        "payoutSplit":  "80%",
-                                                        "id":  "evaluation_2step",
-                                                        "maxDrawdown":  0.1,
-                                                        "leverageNum":  100,
-                                                        "name":  "Evaluation (2-Step Challenge)",
-                                                        "overnightHolding":  true,
-                                                        "dailyLoss":  0.05,
-                                                        "weekendHolding":  true,
-                                                        "newsNote":  "News trading allowed",
-                                                        "phases":  "2-Step Challenge",
-                                                        "prohibitedStrategies":  [
-                                                                                     "HFT",
-                                                                                     "Arbitrage"
-                                                                                 ],
-                                                        "eaAllowed":  true,
-                                                        "drawdownNote":  "Static balance-based calculation",
-                                                        "leverage":  "1:100",
-                                                        "maxTradingDays":  null,
-                                                        "accountSizes":  [
-                                                                             14000,
-                                                                             40000,
-                                                                             60000,
-                                                                             90000
-                                                                         ],
-                                                        "drawdownType":  "static",
-                                                        "payoutFrequency":  "Bi-weekly",
-                                                        "newsTrading":  "allowed",
-                                                        "minTradingDays":  0,
-                                                        "profitTarget":  {
-                                                                             "phase1":  0.1,
-                                                                             "phase2":  0.05
-                                                                         },
-                                                        "consistencyRule":  "None",
-                                                        "scalingPlan":  "Up to ,760,000 (Account doubles every 10% gain)"
-                                                    },
-                               "instant":  {
-                                               "payoutSplit":  "80%",
-                                               "id":  "instant",
-                                               "maxDrawdown":  0.08,
-                                               "leverageNum":  50,
-                                               "name":  "Instant Funding Direct",
-                                               "overnightHolding":  true,
-                                               "dailyLoss":  0,
-                                               "weekendHolding":  true,
-                                               "newsNote":  "News trading permitted",
-                                               "phases":  "Instant Funded",
-                                               "prohibitedStrategies":  [
-                                                                            "HFT",
-                                                                            "Arbitrage"
-                                                                        ],
-                                               "eaAllowed":  true,
-                                               "drawdownNote":  "Static 8% drawdown limit (no daily loss limit)",
-                                               "leverage":  "1:50",
-                                               "maxTradingDays":  null,
-                                               "accountSizes":  [
-                                                                    14000,
-                                                                    40000,
-                                                                    60000,
-                                                                    90000
-                                                                ],
-                                               "drawdownType":  "static",
-                                               "payoutFrequency":  "Bi-weekly",
-                                               "newsTrading":  "allowed",
-                                               "minTradingDays":  0,
-                                               "profitTarget":  {
-                                                                    "phase1":  0
-                                                                },
-                                               "consistencyRule":  "None",
-                                               "scalingPlan":  "Up to ,760,000"
-                                           }
-                           },
-                 "website":  "ftuk.com",
-                 "category":  "Instant Funding Specialists",
-                 "shortName":  "FTUK"
-             },
-    "fidelcrest":  {
-                       "id":  "fidelcrest",
-                       "name":  "Fidelcrest",
-                       "color":  "#14b8a6",
-                       "plans":  {
-                                     "pro_2step":  {
-                                                       "payoutSplit":  "80-90%",
-                                                       "id":  "pro_2step",
-                                                       "maxDrawdown":  0.1,
-                                                       "leverageNum":  100,
-                                                       "name":  "Pro Trader (2-Step 10% DD)",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0.05,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading allowed",
-                                                       "phases":  "2-Step Challenge",
-                                                       "prohibitedStrategies":  [
-                                                                                    "HFT",
-                                                                                    "Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Static balance-based calculation",
-                                                       "leverage":  "1:100",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            50000,
-                                                                            100000,
-                                                                            250000,
-                                                                            500000
-                                                                        ],
-                                                       "drawdownType":  "static",
-                                                       "payoutFrequency":  "Bi-weekly",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  5,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.1,
-                                                                            "phase2":  0.05
-                                                                        },
-                                                       "consistencyRule":  "None",
-                                                       "scalingPlan":  "Up to ,000,000"
-                                                   },
-                                     "micro_2step":  {
-                                                         "payoutSplit":  "80-90%",
-                                                         "id":  "micro_2step",
-                                                         "maxDrawdown":  0.2,
-                                                         "leverageNum":  100,
-                                                         "name":  "Micro Trader (2-Step Aggressive 20% DD)",
-                                                         "overnightHolding":  true,
-                                                         "dailyLoss":  0.1,
-                                                         "weekendHolding":  true,
-                                                         "newsNote":  "News trading allowed",
-                                                         "phases":  "2-Step Challenge",
-                                                         "prohibitedStrategies":  [
-                                                                                      "HFT",
-                                                                                      "Arbitrage"
-                                                                                  ],
-                                                         "eaAllowed":  true,
-                                                         "drawdownNote":  "Aggressive static 20% drawdown limit",
-                                                         "leverage":  "1:100",
-                                                         "maxTradingDays":  null,
-                                                         "accountSizes":  [
-                                                                              10000,
-                                                                              15000,
-                                                                              25000,
-                                                                              50000
-                                                                          ],
-                                                         "drawdownType":  "static",
-                                                         "payoutFrequency":  "Bi-weekly",
-                                                         "newsTrading":  "allowed",
-                                                         "minTradingDays":  5,
-                                                         "profitTarget":  {
-                                                                              "phase1":  0.15,
-                                                                              "phase2":  0.15
-                                                                          },
-                                                         "consistencyRule":  "None",
-                                                         "scalingPlan":  "Up to ,000,000"
-                                                     }
-                                 },
-                       "website":  "fidelcrest.com",
-                       "category":  "Forex \u0026 CFDs",
-                       "shortName":  "Fidelcrest"
-                   },
-    "mentfunding":  {
-                        "id":  "mentfunding",
-                        "name":  "Ment Funding",
-                        "color":  "#8b5cf6",
-                        "plans":  {
-                                      "one_step":  {
-                                                       "payoutSplit":  "75-90%",
-                                                       "id":  "one_step",
-                                                       "maxDrawdown":  0.06,
-                                                       "leverageNum":  20,
-                                                       "name":  "1-Step Evaluation (No Daily Limit)",
-                                                       "overnightHolding":  true,
-                                                       "dailyLoss":  0,
-                                                       "weekendHolding":  true,
-                                                       "newsNote":  "News trading allowed",
-                                                       "phases":  "1-Step Challenge",
-                                                       "prohibitedStrategies":  [
-                                                                                    "HFT",
-                                                                                    "Arbitrage"
-                                                                                ],
-                                                       "eaAllowed":  true,
-                                                       "drawdownNote":  "Trailing drawdown to initial capital (no daily loss limit)",
-                                                       "leverage":  "1:20",
-                                                       "maxTradingDays":  null,
-                                                       "accountSizes":  [
-                                                                            25000,
-                                                                            50000,
-                                                                            100000,
-                                                                            250000
-                                                                        ],
-                                                       "drawdownType":  "trailing",
-                                                       "payoutFrequency":  "Bi-weekly",
-                                                       "newsTrading":  "allowed",
-                                                       "minTradingDays":  0,
-                                                       "profitTarget":  {
-                                                                            "phase1":  0.1
-                                                                        },
-                                                       "consistencyRule":  "None",
-                                                       "scalingPlan":  "Up to ,000,000"
-                                                   }
-                                  },
-                        "website":  "mentfunding.com",
-                        "category":  "Forex \u0026 CFDs",
-                        "shortName":  "Ment Funding"
-                    },
-    "thinkcapital":  {
-                         "id":  "thinkcapital",
-                         "name":  "ThinkCapital",
-                         "color":  "#0ea5e9",
-                         "plans":  {
-                                       "two_step":  {
-                                                        "payoutSplit":  "80-90%",
-                                                        "id":  "two_step",
-                                                        "maxDrawdown":  0.1,
-                                                        "leverageNum":  100,
-                                                        "name":  "2-Step Evaluation",
-                                                        "overnightHolding":  true,
-                                                        "dailyLoss":  0.05,
-                                                        "weekendHolding":  true,
-                                                        "newsNote":  "News trading allowed",
-                                                        "phases":  "2-Step Challenge",
-                                                        "prohibitedStrategies":  [
-                                                                                     "HFT",
-                                                                                     "Arbitrage"
-                                                                                 ],
-                                                        "eaAllowed":  true,
-                                                        "drawdownNote":  "Static balance-based calculation",
-                                                        "leverage":  "1:100",
-                                                        "maxTradingDays":  null,
-                                                        "accountSizes":  [
-                                                                             10000,
-                                                                             25000,
-                                                                             50000,
-                                                                             100000
-                                                                         ],
-                                                        "drawdownType":  "static",
-                                                        "payoutFrequency":  "Bi-weekly",
-                                                        "newsTrading":  "allowed",
-                                                        "minTradingDays":  3,
-                                                        "profitTarget":  {
-                                                                             "phase1":  0.08,
-                                                                             "phase2":  0.05
-                                                                         },
-                                                        "consistencyRule":  "None",
-                                                        "scalingPlan":  "Up to ,000,000"
-                                                    },
-                                       "one_step":  {
-                                                        "payoutSplit":  "80-90%",
-                                                        "id":  "one_step",
-                                                        "maxDrawdown":  0.06,
-                                                        "leverageNum":  30,
-                                                        "name":  "1-Step Evaluation",
-                                                        "overnightHolding":  true,
-                                                        "dailyLoss":  0.04,
-                                                        "weekendHolding":  true,
-                                                        "newsNote":  "News trading allowed",
-                                                        "phases":  "1-Step Challenge",
-                                                        "prohibitedStrategies":  [
-                                                                                     "HFT",
-                                                                                     "Arbitrage"
-                                                                                 ],
-                                                        "eaAllowed":  true,
-                                                        "drawdownNote":  "Trailing drawdown",
-                                                        "leverage":  "1:30",
+                                                        "drawdownNote":  "Trailing drawdown calculated to initial balance",
+                                                        "leverage":  "1:50",
                                                         "maxTradingDays":  null,
                                                         "accountSizes":  [
                                                                              10000,
@@ -3777,22 +4713,591 @@
                                                         "profitTarget":  {
                                                                              "phase1":  0.1
                                                                          },
-                                                        "consistencyRule":  "None",
-                                                        "scalingPlan":  "Up to ,000,000"
-                                                    }
+                                                        "consistencyRule":  "Standard",
+                                                        "scalingPlan":  "Up to ,500,000"
+                                                    },
+                                  "quantec_direct":  {
+                                                         "payoutSplit":  "75-85%",
+                                                         "id":  "quantec_direct",
+                                                         "maxDrawdown":  0.06,
+                                                         "leverageNum":  30,
+                                                         "name":  "Direct Funding (Instant Capital)",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News allowed",
+                                                         "phases":  "Direct Funding",
+                                                         "prohibitedStrategies":  [
+                                                                                      "HFT"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  "Instant institutional capital allocation",
+                                                         "leverage":  "1:30",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              10000,
+                                                                              25000,
+                                                                              50000
+                                                                          ],
+                                                         "drawdownType":  "static",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.08
+                                                                          },
+                                                         "consistencyRule":  "Standard",
+                                                         "scalingPlan":  "Up to ,500,000"
+                                                     }
+                              },
+                    "website":  "quantectrading.com",
+                    "category":  "Forex \u0026 CFDs",
+                    "shortName":  "Quantec"
+                },
+    "fundingforest":  {
+                          "id":  "fundingforest",
+                          "name":  "Funding Forest",
+                          "color":  "#15803d",
+                          "plans":  {
+                                        "forest_2step":  {
+                                                             "payoutSplit":  "80-90%",
+                                                             "id":  "forest_2step",
+                                                             "maxDrawdown":  0.1,
+                                                             "leverageNum":  100,
+                                                             "name":  "2-Step Challenge",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.05,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News trading allowed",
+                                                             "phases":  "2-Step Challenge",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT",
+                                                                                          "Arbitrage"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Static balance-based drawdown with 8% Phase 1 and 5% Phase 2",
+                                                             "leverage":  "1:100",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  10000,
+                                                                                  25000,
+                                                                                  50000,
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "static",
+                                                             "payoutFrequency":  "Bi-weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  0,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.08,
+                                                                                  "phase2":  0.05
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         },
+                                        "forest_1step":  {
+                                                             "payoutSplit":  "80%",
+                                                             "id":  "forest_1step",
+                                                             "maxDrawdown":  0.06,
+                                                             "leverageNum":  30,
+                                                             "name":  "1-Step Challenge",
+                                                             "overnightHolding":  true,
+                                                             "dailyLoss":  0.04,
+                                                             "weekendHolding":  true,
+                                                             "newsNote":  "News allowed",
+                                                             "phases":  "1-Step Challenge",
+                                                             "prohibitedStrategies":  [
+                                                                                          "HFT"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Single-phase evaluation with 10% target",
+                                                             "leverage":  "1:30",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  10000,
+                                                                                  25000,
+                                                                                  50000,
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "trailing",
+                                                             "payoutFrequency":  "Bi-weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  0,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.1
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         }
+                                    },
+                          "website":  "fundingforest.com",
+                          "category":  "Forex \u0026 CFDs",
+                          "shortName":  "Funding Forest"
+                      },
+    "smartproptrader":  {
+                            "id":  "smartproptrader",
+                            "name":  "Smart Prop Trader",
+                            "color":  "#0ea5e9",
+                            "plans":  {
+                                          "spt_standard_2step":  {
+                                                                     "payoutSplit":  "85-90%",
+                                                                     "id":  "spt_standard_2step",
+                                                                     "maxDrawdown":  0.08,
+                                                                     "leverageNum":  100,
+                                                                     "name":  "Standard (2-Step Challenge)",
+                                                                     "overnightHolding":  true,
+                                                                     "dailyLoss":  0.04,
+                                                                     "weekendHolding":  true,
+                                                                     "newsNote":  "News trading allowed",
+                                                                     "phases":  "2-Step Standard",
+                                                                     "prohibitedStrategies":  [
+                                                                                                  "HFT",
+                                                                                                  "Arbitrage"
+                                                                                              ],
+                                                                     "eaAllowed":  true,
+                                                                     "drawdownNote":  "Lowest price in market, 7% Phase 1 and 5% Phase 2 target",
+                                                                     "leverage":  "1:100",
+                                                                     "maxTradingDays":  null,
+                                                                     "accountSizes":  [
+                                                                                          10000,
+                                                                                          25000,
+                                                                                          50000,
+                                                                                          100000,
+                                                                                          200000
+                                                                                      ],
+                                                                     "drawdownType":  "static",
+                                                                     "payoutFrequency":  "Bi-weekly",
+                                                                     "newsTrading":  "allowed",
+                                                                     "minTradingDays":  0,
+                                                                     "profitTarget":  {
+                                                                                          "phase1":  0.07,
+                                                                                          "phase2":  0.05
+                                                                                      },
+                                                                     "consistencyRule":  "None",
+                                                                     "scalingPlan":  "Up to ,500,000"
+                                                                 },
+                                          "spt_pro_2step":  {
+                                                                "payoutSplit":  "90%",
+                                                                "id":  "spt_pro_2step",
+                                                                "maxDrawdown":  0.1,
+                                                                "leverageNum":  100,
+                                                                "name":  "Pro (2-Step Challenge)",
+                                                                "overnightHolding":  true,
+                                                                "dailyLoss":  0.05,
+                                                                "weekendHolding":  true,
+                                                                "newsNote":  "News allowed",
+                                                                "phases":  "2-Step Pro",
+                                                                "prohibitedStrategies":  [
+                                                                                             "HFT"
+                                                                                         ],
+                                                                "eaAllowed":  true,
+                                                                "drawdownNote":  "10% max drawdown buffer for higher flexibility",
+                                                                "leverage":  "1:100",
+                                                                "maxTradingDays":  null,
+                                                                "accountSizes":  [
+                                                                                     10000,
+                                                                                     25000,
+                                                                                     50000,
+                                                                                     100000,
+                                                                                     200000
+                                                                                 ],
+                                                                "drawdownType":  "static",
+                                                                "payoutFrequency":  "Bi-weekly",
+                                                                "newsTrading":  "allowed",
+                                                                "minTradingDays":  0,
+                                                                "profitTarget":  {
+                                                                                     "phase1":  0.08,
+                                                                                     "phase2":  0.05
+                                                                                 },
+                                                                "consistencyRule":  "None",
+                                                                "scalingPlan":  "Up to ,500,000"
+                                                            }
+                                      },
+                            "website":  "smartproptrader.com",
+                            "category":  "Forex \u0026 CFDs",
+                            "shortName":  "Smart Prop Trader"
+                        },
+    "rebelfunding":  {
+                         "id":  "rebelfunding",
+                         "name":  "Rebel Funding",
+                         "color":  "#ef4444",
+                         "plans":  {
+                                       "rebel_4step":  {
+                                                           "payoutSplit":  "80-90%",
+                                                           "id":  "rebel_4step",
+                                                           "maxDrawdown":  0.08,
+                                                           "leverageNum":  50,
+                                                           "name":  "4-Step Program (Copper to Gold)",
+                                                           "overnightHolding":  true,
+                                                           "dailyLoss":  0.04,
+                                                           "weekendHolding":  true,
+                                                           "newsNote":  "News trading permitted",
+                                                           "phases":  "4-Step Program",
+                                                           "prohibitedStrategies":  [
+                                                                                        "HFT",
+                                                                                        "Martingale"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "Low target program: only 5% profit target per phase across 4 micro phases",
+                                                           "leverage":  "1:50",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                10000,
+                                                                                20000,
+                                                                                40000,
+                                                                                80000
+                                                                            ],
+                                                           "drawdownType":  "static",
+                                                           "payoutFrequency":  "Bi-weekly",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  2,
+                                                           "profitTarget":  {
+                                                                                "phase1":  0.05,
+                                                                                "phase2":  0.05
+                                                                            },
+                                                           "consistencyRule":  "Standard risk control",
+                                                           "scalingPlan":  "Up to ,000,000"
+                                                       },
+                                       "rebel_2step":  {
+                                                           "payoutSplit":  "80-90%",
+                                                           "id":  "rebel_2step",
+                                                           "maxDrawdown":  0.1,
+                                                           "leverageNum":  100,
+                                                           "name":  "2-Step Challenge",
+                                                           "overnightHolding":  true,
+                                                           "dailyLoss":  0.05,
+                                                           "weekendHolding":  true,
+                                                           "newsNote":  "News allowed",
+                                                           "phases":  "2-Step Challenge",
+                                                           "prohibitedStrategies":  [
+                                                                                        "HFT"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "Standard 2-step evaluation with 8% Phase 1 and 5% Phase 2",
+                                                           "leverage":  "1:100",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                10000,
+                                                                                25000,
+                                                                                50000,
+                                                                                100000
+                                                                            ],
+                                                           "drawdownType":  "static",
+                                                           "payoutFrequency":  "Bi-weekly",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  2,
+                                                           "profitTarget":  {
+                                                                                "phase1":  0.08,
+                                                                                "phase2":  0.05
+                                                                            },
+                                                           "consistencyRule":  "None",
+                                                           "scalingPlan":  "Up to ,000,000"
+                                                       }
                                    },
-                         "website":  "thinkcapital.com",
+                         "website":  "rebelfunding.com",
                          "category":  "Forex \u0026 CFDs",
-                         "shortName":  "ThinkCapital"
+                         "shortName":  "Rebel Funding"
                      },
-    "fundedlion":  {
-                       "id":  "fundedlion",
-                       "name":  "FundedLion",
-                       "color":  "#f59e0b",
+    "sabiotrade":  {
+                       "id":  "sabiotrade",
+                       "name":  "Sabio Trade",
+                       "color":  "#8b5cf6",
                        "plans":  {
-                                     "two_step":  {
+                                     "sabio_1step":  {
+                                                         "payoutSplit":  "80-90%",
+                                                         "id":  "sabio_1step",
+                                                         "maxDrawdown":  0.06,
+                                                         "leverageNum":  30,
+                                                         "name":  "1-Step Assessment",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.03,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News trading allowed",
+                                                         "phases":  "1-Step Assessment",
+                                                         "prohibitedStrategies":  [
+                                                                                      "EAs",
+                                                                                      "HFT"
+                                                                                  ],
+                                                         "eaAllowed":  false,
+                                                         "drawdownNote":  "Proprietary bespoke ecosystem with 10% target and up to 90% payout",
+                                                         "leverage":  "1:30",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              10000,
+                                                                              25000,
+                                                                              50000,
+                                                                              100000,
+                                                                              200000
+                                                                          ],
+                                                         "drawdownType":  "trailing",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.1
+                                                                          },
+                                                         "consistencyRule":  "None",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     },
+                                     "sabio_2step":  {
+                                                         "payoutSplit":  "80-90%",
+                                                         "id":  "sabio_2step",
+                                                         "maxDrawdown":  0.08,
+                                                         "leverageNum":  50,
+                                                         "name":  "2-Step Evaluation",
+                                                         "overnightHolding":  true,
+                                                         "dailyLoss":  0.04,
+                                                         "weekendHolding":  true,
+                                                         "newsNote":  "News allowed",
+                                                         "phases":  "2-Step Evaluation",
+                                                         "prohibitedStrategies":  [
+                                                                                      "EAs",
+                                                                                      "HFT"
+                                                                                  ],
+                                                         "eaAllowed":  false,
+                                                         "drawdownNote":  "Static balance-based drawdown with 8% Phase 1 and 4% Phase 2",
+                                                         "leverage":  "1:50",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              10000,
+                                                                              25000,
+                                                                              50000,
+                                                                              100000,
+                                                                              200000
+                                                                          ],
+                                                         "drawdownType":  "static",
+                                                         "payoutFrequency":  "Bi-weekly",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  0,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.08,
+                                                                              "phase2":  0.04
+                                                                          },
+                                                         "consistencyRule":  "None",
+                                                         "scalingPlan":  "Up to ,000,000"
+                                                     }
+                                 },
+                       "website":  "sabiotrade.com",
+                       "category":  "Forex \u0026 CFDs",
+                       "shortName":  "Sabio Trade"
+                   },
+    "oanda":  {
+                  "id":  "oanda",
+                  "name":  "OANDA Prop Trader",
+                  "color":  "#0f172a",
+                  "plans":  {
+                                "oanda_2step":  {
+                                                    "payoutSplit":  "80%",
+                                                    "id":  "oanda_2step",
+                                                    "maxDrawdown":  0.1,
+                                                    "leverageNum":  100,
+                                                    "name":  "Challenge (2-Step)",
+                                                    "overnightHolding":  true,
+                                                    "dailyLoss":  0.05,
+                                                    "weekendHolding":  true,
+                                                    "newsNote":  "News trading allowed",
+                                                    "phases":  "2-Step Challenge",
+                                                    "prohibitedStrategies":  [
+                                                                                 "HFT",
+                                                                                 "Latency Arbitrage"
+                                                                             ],
+                                                    "eaAllowed":  true,
+                                                    "drawdownNote":  "Backed by Tier-1 regulated global broker OANDA with deep institutional liquidity",
+                                                    "leverage":  "1:100",
+                                                    "maxTradingDays":  null,
+                                                    "accountSizes":  [
+                                                                         10000,
+                                                                         25000,
+                                                                         50000,
+                                                                         100000,
+                                                                         200000
+                                                                     ],
+                                                    "drawdownType":  "static",
+                                                    "payoutFrequency":  "Bi-weekly",
+                                                    "newsTrading":  "allowed",
+                                                    "minTradingDays":  3,
+                                                    "profitTarget":  {
+                                                                         "phase1":  0.1,
+                                                                         "phase2":  0.05
+                                                                     },
+                                                    "consistencyRule":  "Standard broker risk control",
+                                                    "scalingPlan":  "Up to ,000,000"
+                                                },
+                                "oanda_1step":  {
+                                                    "payoutSplit":  "80%",
+                                                    "id":  "oanda_1step",
+                                                    "maxDrawdown":  0.06,
+                                                    "leverageNum":  50,
+                                                    "name":  "1-Step Evaluation",
+                                                    "overnightHolding":  true,
+                                                    "dailyLoss":  0.04,
+                                                    "weekendHolding":  true,
+                                                    "newsNote":  "News allowed",
+                                                    "phases":  "1-Step Evaluation",
+                                                    "prohibitedStrategies":  [
+                                                                                 "HFT"
+                                                                             ],
+                                                    "eaAllowed":  true,
+                                                    "drawdownNote":  "Single-phase evaluation with 10% target",
+                                                    "leverage":  "1:50",
+                                                    "maxTradingDays":  null,
+                                                    "accountSizes":  [
+                                                                         10000,
+                                                                         25000,
+                                                                         50000,
+                                                                         100000
+                                                                     ],
+                                                    "drawdownType":  "trailing",
+                                                    "payoutFrequency":  "Bi-weekly",
+                                                    "newsTrading":  "allowed",
+                                                    "minTradingDays":  3,
+                                                    "profitTarget":  {
+                                                                         "phase1":  0.1
+                                                                     },
+                                                    "consistencyRule":  "Standard",
+                                                    "scalingPlan":  "Up to ,000,000"
+                                                }
+                            },
+                  "website":  "oanda.com",
+                  "category":  "Forex \u0026 CFDs",
+                  "shortName":  "OANDA Prop"
+              },
+    "axiselect":  {
+                      "id":  "axiselect",
+                      "name":  "Axi Select",
+                      "color":  "#dc2626",
+                      "plans":  {
+                                    "axi_select_allocation":  {
+                                                                  "payoutSplit":  "70-90%",
+                                                                  "id":  "axi_select_allocation",
+                                                                  "maxDrawdown":  0.1,
+                                                                  "leverageNum":  100,
+                                                                  "name":  "Edge Score Capital Allocation",
+                                                                  "overnightHolding":  true,
+                                                                  "dailyLoss":  0.05,
+                                                                  "weekendHolding":  true,
+                                                                  "newsNote":  "News trading permitted without restriction",
+                                                                  "phases":  "Edge Score Pathway",
+                                                                  "prohibitedStrategies":  [
+                                                                                               "Toxic Flow",
+                                                                                               "Arbitrage"
+                                                                                           ],
+                                                                  "eaAllowed":  true,
+                                                                  "drawdownNote":  "No challenge fee! Qualify via trading Edge Score on live Axi broker account with capital up to ,000,000",
+                                                                  "leverage":  "1:100",
+                                                                  "maxTradingDays":  null,
+                                                                  "accountSizes":  [
+                                                                                       10000,
+                                                                                       25000,
+                                                                                       50000,
+                                                                                       100000,
+                                                                                       250000,
+                                                                                       500000
+                                                                                   ],
+                                                                  "drawdownType":  "static",
+                                                                  "payoutFrequency":  "Monthly",
+                                                                  "newsTrading":  "allowed",
+                                                                  "minTradingDays":  20,
+                                                                  "profitTarget":  {
+                                                                                       "phase1":  0.05
+                                                                                   },
+                                                                  "consistencyRule":  "Maintain minimum Edge Score of 50",
+                                                                  "scalingPlan":  "Up to ,000,000 fully funded live capital"
+                                                              }
+                                },
+                      "website":  "axi.com/select",
+                      "category":  "Forex \u0026 CFDs",
+                      "shortName":  "Axi Select"
+                  },
+    "hantec":  {
+                   "id":  "hantec",
+                   "name":  "Hantec Trader",
+                   "color":  "#1e3a8a",
+                   "plans":  {
+                                 "hantec_2step":  {
+                                                      "payoutSplit":  "80-90%",
+                                                      "id":  "hantec_2step",
+                                                      "maxDrawdown":  0.1,
+                                                      "leverageNum":  100,
+                                                      "name":  "Enhanced (2-Step Challenge)",
+                                                      "overnightHolding":  true,
+                                                      "dailyLoss":  0.05,
+                                                      "weekendHolding":  true,
+                                                      "newsNote":  "News trading allowed",
+                                                      "phases":  "2-Step Enhanced",
+                                                      "prohibitedStrategies":  [
+                                                                                   "HFT",
+                                                                                   "Arbitrage"
+                                                                               ],
+                                                      "eaAllowed":  true,
+                                                      "drawdownNote":  "Backed by Hantec Markets global group, 8% Phase 1 and 5% Phase 2",
+                                                      "leverage":  "1:100",
+                                                      "maxTradingDays":  null,
+                                                      "accountSizes":  [
+                                                                           10000,
+                                                                           25000,
+                                                                           50000,
+                                                                           100000,
+                                                                           200000
+                                                                       ],
+                                                      "drawdownType":  "static",
+                                                      "payoutFrequency":  "Bi-weekly",
+                                                      "newsTrading":  "allowed",
+                                                      "minTradingDays":  0,
+                                                      "profitTarget":  {
+                                                                           "phase1":  0.08,
+                                                                           "phase2":  0.05
+                                                                       },
+                                                      "consistencyRule":  "None",
+                                                      "scalingPlan":  "Up to ,000,000"
+                                                  },
+                                 "hantec_1step":  {
                                                       "payoutSplit":  "80%",
-                                                      "id":  "two_step",
+                                                      "id":  "hantec_1step",
+                                                      "maxDrawdown":  0.06,
+                                                      "leverageNum":  50,
+                                                      "name":  "Express (1-Step Challenge)",
+                                                      "overnightHolding":  true,
+                                                      "dailyLoss":  0.04,
+                                                      "weekendHolding":  true,
+                                                      "newsNote":  "News allowed",
+                                                      "phases":  "1-Step Express",
+                                                      "prohibitedStrategies":  [
+                                                                                   "HFT"
+                                                                               ],
+                                                      "eaAllowed":  true,
+                                                      "drawdownNote":  "Single-phase challenge with 10% target",
+                                                      "leverage":  "1:50",
+                                                      "maxTradingDays":  null,
+                                                      "accountSizes":  [
+                                                                           10000,
+                                                                           25000,
+                                                                           50000,
+                                                                           100000
+                                                                       ],
+                                                      "drawdownType":  "trailing",
+                                                      "payoutFrequency":  "Bi-weekly",
+                                                      "newsTrading":  "allowed",
+                                                      "minTradingDays":  0,
+                                                      "profitTarget":  {
+                                                                           "phase1":  0.1
+                                                                       },
+                                                      "consistencyRule":  "None",
+                                                      "scalingPlan":  "Up to ,000,000"
+                                                  }
+                             },
+                   "website":  "hantextrader.com",
+                   "category":  "Forex \u0026 CFDs",
+                   "shortName":  "Hantec Trader"
+               },
+    "dnafunded":  {
+                      "id":  "dnafunded",
+                      "name":  "DNA Funded",
+                      "color":  "#14b8a6",
+                      "plans":  {
+                                    "dna_2step":  {
+                                                      "payoutSplit":  "80-90%",
+                                                      "id":  "dna_2step",
                                                       "maxDrawdown":  0.1,
                                                       "leverageNum":  100,
                                                       "name":  "2-Step Evaluation",
@@ -3800,13 +5305,93 @@
                                                       "dailyLoss":  0.05,
                                                       "weekendHolding":  true,
                                                       "newsNote":  "News trading allowed",
-                                                      "phases":  "2-Step Challenge",
+                                                      "phases":  "2-Step Evaluation",
                                                       "prohibitedStrategies":  [
                                                                                    "HFT",
                                                                                    "Arbitrage"
                                                                                ],
                                                       "eaAllowed":  true,
-                                                      "drawdownNote":  "Static balance-based calculation",
+                                                      "drawdownNote":  "Static balance-based drawdown with 8% Phase 1 and 5% Phase 2",
+                                                      "leverage":  "1:100",
+                                                      "maxTradingDays":  null,
+                                                      "accountSizes":  [
+                                                                           10000,
+                                                                           25000,
+                                                                           50000,
+                                                                           100000
+                                                                       ],
+                                                      "drawdownType":  "static",
+                                                      "payoutFrequency":  "Bi-weekly",
+                                                      "newsTrading":  "allowed",
+                                                      "minTradingDays":  0,
+                                                      "profitTarget":  {
+                                                                           "phase1":  0.08,
+                                                                           "phase2":  0.05
+                                                                       },
+                                                      "consistencyRule":  "None",
+                                                      "scalingPlan":  "Up to ,500,000"
+                                                  },
+                                    "dna_1step":  {
+                                                      "payoutSplit":  "80%",
+                                                      "id":  "dna_1step",
+                                                      "maxDrawdown":  0.06,
+                                                      "leverageNum":  30,
+                                                      "name":  "1-Step Evaluation",
+                                                      "overnightHolding":  true,
+                                                      "dailyLoss":  0.03,
+                                                      "weekendHolding":  true,
+                                                      "newsNote":  "News allowed",
+                                                      "phases":  "1-Step Evaluation",
+                                                      "prohibitedStrategies":  [
+                                                                                   "HFT"
+                                                                               ],
+                                                      "eaAllowed":  true,
+                                                      "drawdownNote":  "Single-phase evaluation with 10% target",
+                                                      "leverage":  "1:30",
+                                                      "maxTradingDays":  null,
+                                                      "accountSizes":  [
+                                                                           10000,
+                                                                           25000,
+                                                                           50000,
+                                                                           100000
+                                                                       ],
+                                                      "drawdownType":  "trailing",
+                                                      "payoutFrequency":  "Bi-weekly",
+                                                      "newsTrading":  "allowed",
+                                                      "minTradingDays":  0,
+                                                      "profitTarget":  {
+                                                                           "phase1":  0.1
+                                                                       },
+                                                      "consistencyRule":  "None",
+                                                      "scalingPlan":  "Up to ,500,000"
+                                                  }
+                                },
+                      "website":  "dnafunded.com",
+                      "category":  "Forex \u0026 CFDs",
+                      "shortName":  "DNA Funded"
+                  },
+    "wefund":  {
+                   "id":  "wefund",
+                   "name":  "We-Fund",
+                   "color":  "#06b6d4",
+                   "plans":  {
+                                 "wefund_2step":  {
+                                                      "payoutSplit":  "80-90%",
+                                                      "id":  "wefund_2step",
+                                                      "maxDrawdown":  0.1,
+                                                      "leverageNum":  100,
+                                                      "name":  "2-Step Evaluation",
+                                                      "overnightHolding":  true,
+                                                      "dailyLoss":  0.05,
+                                                      "weekendHolding":  true,
+                                                      "newsNote":  "News trading allowed",
+                                                      "phases":  "2-Step Evaluation",
+                                                      "prohibitedStrategies":  [
+                                                                                   "HFT",
+                                                                                   "Arbitrage"
+                                                                               ],
+                                                      "eaAllowed":  true,
+                                                      "drawdownNote":  "Balance-based drawdown, no time limit",
                                                       "leverage":  "1:100",
                                                       "maxTradingDays":  null,
                                                       "accountSizes":  [
@@ -3826,24 +5411,23 @@
                                                       "consistencyRule":  "None",
                                                       "scalingPlan":  "Up to ,000,000"
                                                   },
-                                     "one_step":  {
+                                 "wefund_1step":  {
                                                       "payoutSplit":  "80%",
-                                                      "id":  "one_step",
+                                                      "id":  "wefund_1step",
                                                       "maxDrawdown":  0.06,
-                                                      "leverageNum":  50,
+                                                      "leverageNum":  30,
                                                       "name":  "1-Step Evaluation",
                                                       "overnightHolding":  true,
                                                       "dailyLoss":  0.04,
                                                       "weekendHolding":  true,
-                                                      "newsNote":  "News trading allowed",
-                                                      "phases":  "1-Step Challenge",
+                                                      "newsNote":  "News allowed",
+                                                      "phases":  "1-Step Evaluation",
                                                       "prohibitedStrategies":  [
-                                                                                   "HFT",
-                                                                                   "Arbitrage"
+                                                                                   "HFT"
                                                                                ],
                                                       "eaAllowed":  true,
-                                                      "drawdownNote":  "Trailing drawdown",
-                                                      "leverage":  "1:50",
+                                                      "drawdownNote":  "Single-phase evaluation with 10% target",
+                                                      "leverage":  "1:30",
                                                       "maxTradingDays":  null,
                                                       "accountSizes":  [
                                                                            10000,
@@ -3861,282 +5445,72 @@
                                                       "consistencyRule":  "None",
                                                       "scalingPlan":  "Up to ,000,000"
                                                   }
-                                 },
-                       "website":  "fundedlion.com",
-                       "category":  "Forex \u0026 CFDs",
-                       "shortName":  "FundedLion"
-                   },
-    "topstep":  {
-                    "id":  "topstep",
-                    "name":  "Topstep",
-                    "color":  "#10b981",
-                    "plans":  {
-                                  "trading_combine":  {
-                                                          "payoutSplit":  "90-100%",
-                                                          "id":  "trading_combine",
-                                                          "maxDrawdown":  0.04,
-                                                          "leverageNum":  100,
-                                                          "name":  "Trading Combine (1-Step Evaluation)",
-                                                          "overnightHolding":  false,
-                                                          "dailyLoss":  0.02,
-                                                          "weekendHolding":  false,
-                                                          "newsNote":  "News trading allowed on TopstepX / NinjaTrader",
-                                                          "phases":  "1-Step Combine",
-                                                          "prohibitedStrategies":  [
-                                                                                       "Holding into market close",
-                                                                                       "High-frequency macros"
-                                                                                   ],
-                                                          "eaAllowed":  false,
-                                                          "drawdownNote":  "Trailing maximum loss limit (locks at starting balance)",
-                                                          "leverage":  "1:100",
-                                                          "maxTradingDays":  null,
-                                                          "accountSizes":  [
-                                                                               50000,
-                                                                               100000,
-                                                                               150000
-                                                                           ],
-                                                          "drawdownType":  "trailing",
-                                                          "payoutFrequency":  "Daily (100% of first ,000, then 90%)",
-                                                          "newsTrading":  "allowed",
-                                                          "minTradingDays":  2,
-                                                          "profitTarget":  {
-                                                                               "phase1":  0.06
-                                                                           },
-                                                          "consistencyRule":  "No single day may account for 50%+ of total profit",
-                                                          "scalingPlan":  "Scale contracts with profit balance"
-                                                      }
-                              },
-                    "website":  "topstep.com",
-                    "category":  "Futures Prop Firms",
-                    "shortName":  "Topstep"
-                },
-    "apex":  {
-                 "id":  "apex",
-                 "name":  "Apex Trader Funding",
-                 "color":  "#f59e0b",
-                 "plans":  {
-                               "trailing_1step":  {
-                                                      "payoutSplit":  "90-100%",
-                                                      "id":  "trailing_1step",
-                                                      "maxDrawdown":  0.05,
-                                                      "leverageNum":  100,
-                                                      "name":  "Full Trailing (1-Step Evaluation)",
-                                                      "overnightHolding":  false,
-                                                      "dailyLoss":  0,
-                                                      "weekendHolding":  false,
-                                                      "newsNote":  "News trading permitted on CME/CBOT/NYMEX/COMEX futures",
-                                                      "phases":  "1-Step Evaluation",
-                                                      "prohibitedStrategies":  [
-                                                                                   "Holding past 4:59 PM EST"
-                                                                               ],
-                                                      "eaAllowed":  true,
-                                                      "drawdownNote":  "Intraday trailing threshold (no daily loss limit)",
-                                                      "leverage":  "1:100",
-                                                      "maxTradingDays":  null,
-                                                      "accountSizes":  [
-                                                                           25000,
-                                                                           50000,
-                                                                           75000,
-                                                                           100000,
-                                                                           150000,
-                                                                           250000,
-                                                                           300000
-                                                                       ],
-                                                      "drawdownType":  "trailing",
-                                                      "payoutFrequency":  "Twice Monthly (100% of first ,000)",
-                                                      "newsTrading":  "allowed",
-                                                      "minTradingDays":  1,
-                                                      "profitTarget":  {
-                                                                           "phase1":  0.06
-                                                                       },
-                                                      "consistencyRule":  "30% consistency rule during payout request window",
-                                                      "scalingPlan":  "Max 20 accounts per trader"
-                                                  }
-                           },
-                 "website":  "apextraderfunding.com",
-                 "category":  "Futures Prop Firms",
-                 "shortName":  "Apex"
-             },
-    "tradeday":  {
-                     "id":  "tradeday",
-                     "name":  "TradeDay",
-                     "color":  "#3b82f6",
-                     "plans":  {
-                                   "evaluation":  {
-                                                      "payoutSplit":  "90-100%",
-                                                      "id":  "evaluation",
-                                                      "maxDrawdown":  0.04,
-                                                      "leverageNum":  100,
-                                                      "name":  "TradeDay Evaluation (1-Step)",
-                                                      "overnightHolding":  false,
-                                                      "dailyLoss":  0.025,
-                                                      "weekendHolding":  false,
-                                                      "newsNote":  "News trading allowed; Tradovate / NinjaTrader integration",
-                                                      "phases":  "1-Step Evaluation",
-                                                      "prohibitedStrategies":  [
-                                                                                   "Holding into close"
-                                                                               ],
-                                                      "eaAllowed":  true,
-                                                      "drawdownNote":  "EOD trailing drawdown locks at initial balance",
-                                                      "leverage":  "1:100",
-                                                      "maxTradingDays":  null,
-                                                      "accountSizes":  [
-                                                                           10000,
-                                                                           25000,
-                                                                           50000,
-                                                                           100000,
-                                                                           150000,
-                                                                           250000
-                                                                       ],
-                                                      "drawdownType":  "trailing",
-                                                      "payoutFrequency":  "Bi-weekly",
-                                                      "newsTrading":  "allowed",
-                                                      "minTradingDays":  5,
-                                                      "profitTarget":  {
-                                                                           "phase1":  0.06
-                                                                       },
-                                                      "consistencyRule":  "Consistency guidelines apply",
-                                                      "scalingPlan":  "Up to ,000 funded capital"
-                                                  }
-                               },
-                     "website":  "tradeday.com",
-                     "category":  "Futures Prop Firms",
-                     "shortName":  "TradeDay"
-                 },
-    "myfundedfutures":  {
-                            "id":  "myfundedfutures",
-                            "name":  "My Funded Futures (MFFU)",
-                            "color":  "#0ea5e9",
-                            "plans":  {
-                                          "starter":  {
-                                                          "payoutSplit":  "90-100%",
-                                                          "id":  "starter",
-                                                          "maxDrawdown":  0.04,
-                                                          "leverageNum":  100,
-                                                          "name":  "Starter Plan (EOD Trailing)",
-                                                          "overnightHolding":  false,
-                                                          "dailyLoss":  0,
-                                                          "weekendHolding":  false,
-                                                          "newsNote":  "News trading allowed",
-                                                          "phases":  "1-Step Evaluation",
-                                                          "prohibitedStrategies":  [
-                                                                                       "Holding overnight"
-                                                                                   ],
-                                                          "eaAllowed":  true,
-                                                          "drawdownNote":  "End-of-day trailing drawdown locks at starting balance",
-                                                          "leverage":  "1:100",
-                                                          "maxTradingDays":  null,
-                                                          "accountSizes":  [
-                                                                               50000,
-                                                                               100000,
-                                                                               150000
-                                                                           ],
-                                                          "drawdownType":  "trailing",
-                                                          "payoutFrequency":  "Bi-weekly",
-                                                          "newsTrading":  "allowed",
-                                                          "minTradingDays":  1,
-                                                          "profitTarget":  {
-                                                                               "phase1":  0.06
-                                                                           },
-                                                          "consistencyRule":  "Activation fee only upon passing",
-                                                          "scalingPlan":  "Up to ,000"
-                                                      },
-                                          "expert":  {
-                                                         "payoutSplit":  "90-100%",
-                                                         "id":  "expert",
-                                                         "maxDrawdown":  0.04,
-                                                         "leverageNum":  100,
-                                                         "name":  "Expert Plan (No Activation Fee)",
-                                                         "overnightHolding":  false,
-                                                         "dailyLoss":  0,
-                                                         "weekendHolding":  false,
-                                                         "newsNote":  "News trading allowed",
-                                                         "phases":  "1-Step Evaluation",
-                                                         "prohibitedStrategies":  [
-                                                                                      "Holding overnight"
-                                                                                  ],
-                                                         "eaAllowed":  true,
-                                                         "drawdownNote":  "EOD trailing drawdown locks at starting capital",
-                                                         "leverage":  "1:100",
-                                                         "maxTradingDays":  null,
-                                                         "accountSizes":  [
-                                                                              50000,
-                                                                              100000,
-                                                                              150000
-                                                                          ],
-                                                         "drawdownType":  "trailing",
-                                                         "payoutFrequency":  "Bi-weekly",
-                                                         "newsTrading":  "allowed",
-                                                         "minTradingDays":  1,
-                                                         "profitTarget":  {
-                                                                              "phase1":  0.06
-                                                                          },
-                                                         "consistencyRule":  "None",
-                                                         "scalingPlan":  "Up to ,000"
-                                                     }
-                                      },
-                            "website":  "myfundedfutures.com",
-                            "category":  "Futures Prop Firms",
-                            "shortName":  "MFFU"
-                        },
-    "tradeify":  {
-                     "id":  "tradeify",
-                     "name":  "Tradeify",
-                     "color":  "#14b8a6",
-                     "plans":  {
-                                   "growth_1step":  {
-                                                        "payoutSplit":  "90%",
-                                                        "id":  "growth_1step",
-                                                        "maxDrawdown":  0.05,
-                                                        "leverageNum":  100,
-                                                        "name":  "Growth (1-Step Evaluation)",
-                                                        "overnightHolding":  false,
-                                                        "dailyLoss":  0.025,
-                                                        "weekendHolding":  false,
-                                                        "newsNote":  "News trading allowed",
-                                                        "phases":  "1-Step Evaluation",
-                                                        "prohibitedStrategies":  [
-                                                                                     "Holding overnight"
-                                                                                 ],
-                                                        "eaAllowed":  true,
-                                                        "drawdownNote":  "Trailing drawdown calculated on high water mark",
-                                                        "leverage":  "1:100",
-                                                        "maxTradingDays":  null,
-                                                        "accountSizes":  [
-                                                                             25000,
-                                                                             50000,
-                                                                             100000,
-                                                                             150000
-                                                                         ],
-                                                        "drawdownType":  "trailing",
-                                                        "payoutFrequency":  "Bi-weekly",
-                                                        "newsTrading":  "allowed",
-                                                        "minTradingDays":  1,
-                                                        "profitTarget":  {
-                                                                             "phase1":  0.06
-                                                                         },
-                                                        "consistencyRule":  "None",
-                                                        "scalingPlan":  "Up to ,000"
-                                                    },
-                                   "straight_to_funded":  {
-                                                              "payoutSplit":  "90%",
-                                                              "id":  "straight_to_funded",
-                                                              "maxDrawdown":  0.04,
+                             },
+                   "website":  "we-fund.io",
+                   "category":  "Forex \u0026 CFDs",
+                   "shortName":  "We-Fund"
+               },
+    "funding4ex":  {
+                       "id":  "funding4ex",
+                       "name":  "Funding4Ex",
+                       "color":  "#3b82f6",
+                       "plans":  {
+                                     "funding4ex_2step":  {
+                                                              "payoutSplit":  "80-90%",
+                                                              "id":  "funding4ex_2step",
+                                                              "maxDrawdown":  0.1,
                                                               "leverageNum":  100,
-                                                              "name":  "Straight to Funded (Instant)",
-                                                              "overnightHolding":  false,
-                                                              "dailyLoss":  0.025,
-                                                              "weekendHolding":  false,
+                                                              "name":  "2-Step Challenge",
+                                                              "overnightHolding":  true,
+                                                              "dailyLoss":  0.05,
+                                                              "weekendHolding":  true,
                                                               "newsNote":  "News trading allowed",
-                                                              "phases":  "Instant Funded",
+                                                              "phases":  "2-Step Challenge",
                                                               "prohibitedStrategies":  [
-                                                                                           "Holding overnight"
+                                                                                           "HFT",
+                                                                                           "Arbitrage"
                                                                                        ],
                                                               "eaAllowed":  true,
-                                                              "drawdownNote":  "EOD trailing drawdown locks at initial balance",
+                                                              "drawdownNote":  "Balance-based drawdown, no time limit",
                                                               "leverage":  "1:100",
                                                               "maxTradingDays":  null,
                                                               "accountSizes":  [
+                                                                                   10000,
+                                                                                   25000,
+                                                                                   50000,
+                                                                                   100000
+                                                                               ],
+                                                              "drawdownType":  "static",
+                                                              "payoutFrequency":  "Bi-weekly",
+                                                              "newsTrading":  "allowed",
+                                                              "minTradingDays":  0,
+                                                              "profitTarget":  {
+                                                                                   "phase1":  0.08,
+                                                                                   "phase2":  0.05
+                                                                               },
+                                                              "consistencyRule":  "None",
+                                                              "scalingPlan":  "Up to ,000,000"
+                                                          },
+                                     "funding4ex_1step":  {
+                                                              "payoutSplit":  "80%",
+                                                              "id":  "funding4ex_1step",
+                                                              "maxDrawdown":  0.06,
+                                                              "leverageNum":  30,
+                                                              "name":  "1-Step Challenge",
+                                                              "overnightHolding":  true,
+                                                              "dailyLoss":  0.04,
+                                                              "weekendHolding":  true,
+                                                              "newsNote":  "News allowed",
+                                                              "phases":  "1-Step Challenge",
+                                                              "prohibitedStrategies":  [
+                                                                                           "HFT"
+                                                                                       ],
+                                                              "eaAllowed":  true,
+                                                              "drawdownNote":  "1-Step evaluation with 10% target",
+                                                              "leverage":  "1:30",
+                                                              "maxTradingDays":  null,
+                                                              "accountSizes":  [
+                                                                                   10000,
                                                                                    25000,
                                                                                    50000,
                                                                                    100000
@@ -4146,77 +5520,1574 @@
                                                               "newsTrading":  "allowed",
                                                               "minTradingDays":  0,
                                                               "profitTarget":  {
-                                                                                   "phase1":  0
+                                                                                   "phase1":  0.1
                                                                                },
                                                               "consistencyRule":  "None",
-                                                              "scalingPlan":  "Up to ,000"
+                                                              "scalingPlan":  "Up to ,000,000"
                                                           }
-                               },
-                     "website":  "tradeify.co",
-                     "category":  "Futures Prop Firms",
-                     "shortName":  "Tradeify"
-                 },
-    "lucidtrading":  {
-                         "id":  "lucidtrading",
-                         "name":  "Lucid Trading",
-                         "color":  "#a855f7",
-                         "plans":  {
-                                       "one_step":  {
-                                                        "payoutSplit":  "90%",
-                                                        "id":  "one_step",
-                                                        "maxDrawdown":  0.05,
+                                 },
+                       "website":  "funding4ex.com",
+                       "category":  "Forex \u0026 CFDs",
+                       "shortName":  "Funding4Ex"
+                   },
+    "topstep":  {
+                    "id":  "topstep",
+                    "name":  "Topstep",
+                    "color":  "#16a34a",
+                    "plans":  {
+                                  "topstep_combine_50k":  {
+                                                              "payoutSplit":  "90-100%",
+                                                              "id":  "topstep_combine_50k",
+                                                              "maxDrawdown":  0.04,
+                                                              "leverageNum":  100,
+                                                              "name":  "Trading Combine 50K (5 Contracts)",
+                                                              "overnightHolding":  false,
+                                                              "dailyLoss":  0.02,
+                                                              "weekendHolding":  false,
+                                                              "newsNote":  "News trading allowed",
+                                                              "phases":  "1-Step Trading Combine",
+                                                              "prohibitedStrategies":  [
+                                                                                           "Holding overnight through close (4:10 PM - 5:00 PM CST)"
+                                                                                       ],
+                                                              "eaAllowed":  true,
+                                                              "drawdownNote":  ",000 max trailing drawdown calculated at End-of-Day (EOD). ,000 daily loss limit. Max 5 contracts",
+                                                              "leverage":  "Futures Margins",
+                                                              "maxTradingDays":  null,
+                                                              "accountSizes":  [
+                                                                                   50000
+                                                                               ],
+                                                              "drawdownType":  "trailing_eod",
+                                                              "payoutFrequency":  "First ,000 profit payout at 100%, 90% thereafter (Daily payouts on Express)",
+                                                              "newsTrading":  "allowed",
+                                                              "minTradingDays":  2,
+                                                              "profitTarget":  {
+                                                                                   "phase1":  0.06
+                                                                               },
+                                                              "consistencyRule":  "Best day profit cannot exceed 50% of total profit for payout request",
+                                                              "scalingPlan":  "Scale up to 15 contracts as balance grows"
+                                                          },
+                                  "topstep_combine_100k":  {
+                                                               "payoutSplit":  "90-100%",
+                                                               "id":  "topstep_combine_100k",
+                                                               "maxDrawdown":  0.03,
+                                                               "leverageNum":  100,
+                                                               "name":  "Trading Combine 100K (10 Contracts)",
+                                                               "overnightHolding":  false,
+                                                               "dailyLoss":  0.02,
+                                                               "weekendHolding":  false,
+                                                               "newsNote":  "News trading allowed",
+                                                               "phases":  "1-Step Trading Combine",
+                                                               "prohibitedStrategies":  [
+                                                                                            "Holding overnight through close"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  ",000 max trailing drawdown calculated EOD. ,000 daily loss limit. Max 10 contracts",
+                                                               "leverage":  "Futures Margins",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    100000
+                                                                                ],
+                                                               "drawdownType":  "trailing_eod",
+                                                               "payoutFrequency":  "Daily payout requests on Express",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  2,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.06
+                                                                                },
+                                                               "consistencyRule":  "Consistency rule: best day \u003c= 50%",
+                                                               "scalingPlan":  "Scale to max contracts"
+                                                           },
+                                  "topstep_combine_150k":  {
+                                                               "payoutSplit":  "90-100%",
+                                                               "id":  "topstep_combine_150k",
+                                                               "maxDrawdown":  0.03,
+                                                               "leverageNum":  100,
+                                                               "name":  "Trading Combine 150K (15 Contracts)",
+                                                               "overnightHolding":  false,
+                                                               "dailyLoss":  0.02,
+                                                               "weekendHolding":  false,
+                                                               "newsNote":  "News allowed",
+                                                               "phases":  "1-Step Trading Combine",
+                                                               "prohibitedStrategies":  [
+                                                                                            "Holding overnight"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  ",500 max trailing drawdown calculated EOD. ,000 daily loss limit. Max 15 contracts",
+                                                               "leverage":  "Futures Margins",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    150000
+                                                                                ],
+                                                               "drawdownType":  "trailing_eod",
+                                                               "payoutFrequency":  "Daily payouts",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  2,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.06
+                                                                                },
+                                                               "consistencyRule":  "Best day \u003c= 50%",
+                                                               "scalingPlan":  "Institutional scaling"
+                                                           },
+                                  "topstep_express":  {
+                                                          "payoutSplit":  "100% (first ), 90% thereafter",
+                                                          "id":  "topstep_express",
+                                                          "maxDrawdown":  0.03,
+                                                          "leverageNum":  100,
+                                                          "name":  "Express Funded Account (Live Simulation)",
+                                                          "overnightHolding":  false,
+                                                          "dailyLoss":  0.02,
+                                                          "weekendHolding":  false,
+                                                          "newsNote":  "News allowed",
+                                                          "phases":  "Express Funded",
+                                                          "prohibitedStrategies":  [
+                                                                                       "Holding overnight"
+                                                                                   ],
+                                                          "eaAllowed":  true,
+                                                          "drawdownNote":  "Funded stage after passing Combine with 100% payout on first ",
+                                                          "leverage":  "Futures Margins",
+                                                          "maxTradingDays":  null,
+                                                          "accountSizes":  [
+                                                                               50000,
+                                                                               100000,
+                                                                               150000
+                                                                           ],
+                                                          "drawdownType":  "trailing_eod",
+                                                          "payoutFrequency":  "Daily payouts after 5 winning days (+/day)",
+                                                          "newsTrading":  "allowed",
+                                                          "minTradingDays":  5,
+                                                          "profitTarget":  {
+                                                                               "phase1":  0.05
+                                                                           },
+                                                          "consistencyRule":  "5 winning days \u003e=  for each payout request",
+                                                          "scalingPlan":  "Scale to Live Funded Brokerage Account"
+                                                      }
+                              },
+                    "website":  "topstep.com",
+                    "category":  "Futures Prop Firms",
+                    "shortName":  "Topstep"
+                },
+    "apex":  {
+                 "id":  "apex",
+                 "name":  "Apex Trader Funding",
+                 "color":  "#2563eb",
+                 "plans":  {
+                               "apex_25k":  {
+                                                "payoutSplit":  "100% (first ), 90% thereafter",
+                                                "id":  "apex_25k",
+                                                "maxDrawdown":  0.06,
+                                                "leverageNum":  100,
+                                                "name":  "25K Full Evaluation (4 Contracts)",
+                                                "overnightHolding":  false,
+                                                "dailyLoss":  0,
+                                                "weekendHolding":  false,
+                                                "newsNote":  "News trading allowed without restrictions",
+                                                "phases":  "1-Step Evaluation",
+                                                "prohibitedStrategies":  [
+                                                                             "Overnight holding past 4:59 PM EST"
+                                                                         ],
+                                                "eaAllowed":  true,
+                                                "drawdownNote":  ",500 trailing drawdown (intraday peak-to-valley). NO DAILY LOSS LIMIT! Max 4 contracts",
+                                                "leverage":  "Futures Margins",
+                                                "maxTradingDays":  null,
+                                                "accountSizes":  [
+                                                                     25000
+                                                                 ],
+                                                "drawdownType":  "trailing_intraday",
+                                                "payoutFrequency":  "Twice monthly payouts",
+                                                "newsTrading":  "allowed",
+                                                "minTradingDays":  1,
+                                                "profitTarget":  {
+                                                                     "phase1":  0.06
+                                                                 },
+                                                "consistencyRule":  "30% consistency rule for payout requests on funded stage",
+                                                "scalingPlan":  "Trade up to 20 accounts simultaneously via trade copier"
+                                            },
+                               "apex_50k":  {
+                                                "payoutSplit":  "100% (first ), 90% thereafter",
+                                                "id":  "apex_50k",
+                                                "maxDrawdown":  0.05,
+                                                "leverageNum":  100,
+                                                "name":  "50K Full Evaluation (10 Contracts)",
+                                                "overnightHolding":  false,
+                                                "dailyLoss":  0,
+                                                "weekendHolding":  false,
+                                                "newsNote":  "News allowed",
+                                                "phases":  "1-Step Evaluation",
+                                                "prohibitedStrategies":  [
+                                                                             "Overnight holding"
+                                                                         ],
+                                                "eaAllowed":  true,
+                                                "drawdownNote":  ",500 trailing drawdown (intraday peak-to-valley). NO DAILY LOSS LIMIT! ,000 target. Max 10 contracts",
+                                                "leverage":  "Futures Margins",
+                                                "maxTradingDays":  null,
+                                                "accountSizes":  [
+                                                                     50000
+                                                                 ],
+                                                "drawdownType":  "trailing_intraday",
+                                                "payoutFrequency":  "Twice monthly",
+                                                "newsTrading":  "allowed",
+                                                "minTradingDays":  1,
+                                                "profitTarget":  {
+                                                                     "phase1":  0.06
+                                                                 },
+                                                "consistencyRule":  "30% consistency rule on PA accounts",
+                                                "scalingPlan":  "Trade 20 accounts"
+                                            },
+                               "apex_100k":  {
+                                                 "payoutSplit":  "100% (first ), 90% thereafter",
+                                                 "id":  "apex_100k",
+                                                 "maxDrawdown":  0.03,
+                                                 "leverageNum":  100,
+                                                 "name":  "100K Full Evaluation (14 Contracts)",
+                                                 "overnightHolding":  false,
+                                                 "dailyLoss":  0,
+                                                 "weekendHolding":  false,
+                                                 "newsNote":  "News allowed",
+                                                 "phases":  "1-Step Evaluation",
+                                                 "prohibitedStrategies":  [
+                                                                              "Overnight holding"
+                                                                          ],
+                                                 "eaAllowed":  true,
+                                                 "drawdownNote":  ",000 trailing drawdown. ,000 profit target. Max 14 contracts",
+                                                 "leverage":  "Futures Margins",
+                                                 "maxTradingDays":  null,
+                                                 "accountSizes":  [
+                                                                      100000
+                                                                  ],
+                                                 "drawdownType":  "trailing_intraday",
+                                                 "payoutFrequency":  "Twice monthly",
+                                                 "newsTrading":  "allowed",
+                                                 "minTradingDays":  1,
+                                                 "profitTarget":  {
+                                                                      "phase1":  0.06
+                                                                  },
+                                                 "consistencyRule":  "30% rule",
+                                                 "scalingPlan":  "Trade 20 accounts"
+                                             },
+                               "apex_150k":  {
+                                                 "payoutSplit":  "100% (first ), 90% thereafter",
+                                                 "id":  "apex_150k",
+                                                 "maxDrawdown":  0.0333,
+                                                 "leverageNum":  100,
+                                                 "name":  "150K Full Evaluation (17 Contracts)",
+                                                 "overnightHolding":  false,
+                                                 "dailyLoss":  0,
+                                                 "weekendHolding":  false,
+                                                 "newsNote":  "News allowed",
+                                                 "phases":  "1-Step Evaluation",
+                                                 "prohibitedStrategies":  [
+                                                                              "Overnight holding"
+                                                                          ],
+                                                 "eaAllowed":  true,
+                                                 "drawdownNote":  ",000 trailing drawdown. ,000 profit target. Max 17 contracts",
+                                                 "leverage":  "Futures Margins",
+                                                 "maxTradingDays":  null,
+                                                 "accountSizes":  [
+                                                                      150000
+                                                                  ],
+                                                 "drawdownType":  "trailing_intraday",
+                                                 "payoutFrequency":  "Twice monthly",
+                                                 "newsTrading":  "allowed",
+                                                 "minTradingDays":  1,
+                                                 "profitTarget":  {
+                                                                      "phase1":  0.06
+                                                                  },
+                                                 "consistencyRule":  "30% rule",
+                                                 "scalingPlan":  "Trade 20 accounts"
+                                             },
+                               "apex_250k":  {
+                                                 "payoutSplit":  "100% (first ), 90% thereafter",
+                                                 "id":  "apex_250k",
+                                                 "maxDrawdown":  0.026,
+                                                 "leverageNum":  100,
+                                                 "name":  "250K Full Evaluation (27 Contracts)",
+                                                 "overnightHolding":  false,
+                                                 "dailyLoss":  0,
+                                                 "weekendHolding":  false,
+                                                 "newsNote":  "News allowed",
+                                                 "phases":  "1-Step Evaluation",
+                                                 "prohibitedStrategies":  [
+                                                                              "Overnight holding"
+                                                                          ],
+                                                 "eaAllowed":  true,
+                                                 "drawdownNote":  ",500 trailing drawdown. ,000 profit target. Max 27 contracts",
+                                                 "leverage":  "Futures Margins",
+                                                 "maxTradingDays":  null,
+                                                 "accountSizes":  [
+                                                                      250000
+                                                                  ],
+                                                 "drawdownType":  "trailing_intraday",
+                                                 "payoutFrequency":  "Twice monthly",
+                                                 "newsTrading":  "allowed",
+                                                 "minTradingDays":  1,
+                                                 "profitTarget":  {
+                                                                      "phase1":  0.06
+                                                                  },
+                                                 "consistencyRule":  "30% rule",
+                                                 "scalingPlan":  "Trade 20 accounts"
+                                             },
+                               "apex_300k":  {
+                                                 "payoutSplit":  "100% (first ), 90% thereafter",
+                                                 "id":  "apex_300k",
+                                                 "maxDrawdown":  0.025,
+                                                 "leverageNum":  100,
+                                                 "name":  "300K Full Evaluation (35 Contracts)",
+                                                 "overnightHolding":  false,
+                                                 "dailyLoss":  0,
+                                                 "weekendHolding":  false,
+                                                 "newsNote":  "News allowed",
+                                                 "phases":  "1-Step Evaluation",
+                                                 "prohibitedStrategies":  [
+                                                                              "Overnight holding"
+                                                                          ],
+                                                 "eaAllowed":  true,
+                                                 "drawdownNote":  ",500 trailing drawdown. ,000 profit target. Max 35 contracts",
+                                                 "leverage":  "Futures Margins",
+                                                 "maxTradingDays":  null,
+                                                 "accountSizes":  [
+                                                                      300000
+                                                                  ],
+                                                 "drawdownType":  "trailing_intraday",
+                                                 "payoutFrequency":  "Twice monthly",
+                                                 "newsTrading":  "allowed",
+                                                 "minTradingDays":  1,
+                                                 "profitTarget":  {
+                                                                      "phase1":  0.0667
+                                                                  },
+                                                 "consistencyRule":  "30% rule",
+                                                 "scalingPlan":  "Trade 20 accounts"
+                                             },
+                               "apex_static_100k":  {
+                                                        "payoutSplit":  "100% (first ), 90% thereafter",
+                                                        "id":  "apex_static_100k",
+                                                        "maxDrawdown":  0.00625,
                                                         "leverageNum":  100,
-                                                        "name":  "1-Step Futures Evaluation",
+                                                        "name":  "100K Static Drawdown (NO Trailing DD!)",
                                                         "overnightHolding":  false,
-                                                        "dailyLoss":  0.025,
+                                                        "dailyLoss":  0,
                                                         "weekendHolding":  false,
                                                         "newsNote":  "News trading allowed",
+                                                        "phases":  "1-Step Static",
+                                                        "prohibitedStrategies":  [
+                                                                                     "Overnight holding"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  "STATIC  max loss. Drawdown NEVER trails your profits! Target ,000. Max 2 contracts",
+                                                        "leverage":  "Futures Margins",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             100000
+                                                                         ],
+                                                        "drawdownType":  "static",
+                                                        "payoutFrequency":  "Twice monthly",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  1,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.02
+                                                                         },
+                                                        "consistencyRule":  "30% rule",
+                                                        "scalingPlan":  "Static risk scaling"
+                                                    }
+                           },
+                 "website":  "apextraderfunding.com",
+                 "category":  "Futures Prop Firms",
+                 "shortName":  "Apex"
+             },
+    "tradeday":  {
+                     "id":  "tradeday",
+                     "name":  "TradeDay",
+                     "color":  "#0ea5e9",
+                     "plans":  {
+                                   "tradeday_10k":  {
+                                                        "payoutSplit":  "90-100%",
+                                                        "id":  "tradeday_10k",
+                                                        "maxDrawdown":  0.1,
+                                                        "leverageNum":  100,
+                                                        "name":  "10K Evaluation (1 Contract)",
+                                                        "overnightHolding":  false,
+                                                        "dailyLoss":  0.05,
+                                                        "weekendHolding":  false,
+                                                        "newsNote":  "News trading permitted",
                                                         "phases":  "1-Step Evaluation",
                                                         "prohibitedStrategies":  [
                                                                                      "Holding overnight"
                                                                                  ],
                                                         "eaAllowed":  true,
-                                                        "drawdownNote":  "Trailing drawdown to threshold",
-                                                        "leverage":  "1:100",
+                                                        "drawdownNote":  ",000 trailing drawdown (EOD).  daily loss. ,000 profit target",
+                                                        "leverage":  "Futures Margins",
                                                         "maxTradingDays":  null,
                                                         "accountSizes":  [
-                                                                             25000,
-                                                                             50000,
-                                                                             100000,
-                                                                             150000
+                                                                             10000
                                                                          ],
-                                                        "drawdownType":  "trailing",
-                                                        "payoutFrequency":  "Bi-weekly",
+                                                        "drawdownType":  "trailing_eod",
+                                                        "payoutFrequency":  "First ,000 profit payout at 100%, 90% thereafter",
                                                         "newsTrading":  "allowed",
-                                                        "minTradingDays":  1,
+                                                        "minTradingDays":  3,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.1
+                                                                         },
+                                                        "consistencyRule":  "None",
+                                                        "scalingPlan":  "Direct funding into live brokerage account (Tradovate/NinjaTrader)"
+                                                    },
+                                   "tradeday_25k":  {
+                                                        "payoutSplit":  "90-100%",
+                                                        "id":  "tradeday_25k",
+                                                        "maxDrawdown":  0.06,
+                                                        "leverageNum":  100,
+                                                        "name":  "25K Evaluation (2 Contracts)",
+                                                        "overnightHolding":  false,
+                                                        "dailyLoss":  0.04,
+                                                        "weekendHolding":  false,
+                                                        "newsNote":  "News allowed",
+                                                        "phases":  "1-Step Evaluation",
+                                                        "prohibitedStrategies":  [
+                                                                                     "Holding overnight"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  ",500 trailing drawdown (EOD). ,000 daily loss. ,500 profit target",
+                                                        "leverage":  "Futures Margins",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             25000
+                                                                         ],
+                                                        "drawdownType":  "trailing_eod",
+                                                        "payoutFrequency":  "Daily payout requests",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  3,
                                                         "profitTarget":  {
                                                                              "phase1":  0.06
                                                                          },
                                                         "consistencyRule":  "None",
-                                                        "scalingPlan":  "Up to ,000"
-                                                    }
+                                                        "scalingPlan":  "Scale contracts"
+                                                    },
+                                   "tradeday_50k":  {
+                                                        "payoutSplit":  "90-100%",
+                                                        "id":  "tradeday_50k",
+                                                        "maxDrawdown":  0.04,
+                                                        "leverageNum":  100,
+                                                        "name":  "50K Evaluation (5 Contracts)",
+                                                        "overnightHolding":  false,
+                                                        "dailyLoss":  0.025,
+                                                        "weekendHolding":  false,
+                                                        "newsNote":  "News allowed",
+                                                        "phases":  "1-Step Evaluation",
+                                                        "prohibitedStrategies":  [
+                                                                                     "Holding overnight"
+                                                                                 ],
+                                                        "eaAllowed":  true,
+                                                        "drawdownNote":  ",000 trailing drawdown (EOD). ,250 daily loss. ,000 target",
+                                                        "leverage":  "Futures Margins",
+                                                        "maxTradingDays":  null,
+                                                        "accountSizes":  [
+                                                                             50000
+                                                                         ],
+                                                        "drawdownType":  "trailing_eod",
+                                                        "payoutFrequency":  "Daily payouts",
+                                                        "newsTrading":  "allowed",
+                                                        "minTradingDays":  3,
+                                                        "profitTarget":  {
+                                                                             "phase1":  0.06
+                                                                         },
+                                                        "consistencyRule":  "None",
+                                                        "scalingPlan":  "Scale up"
+                                                    },
+                                   "tradeday_100k":  {
+                                                         "payoutSplit":  "90-100%",
+                                                         "id":  "tradeday_100k",
+                                                         "maxDrawdown":  0.03,
+                                                         "leverageNum":  100,
+                                                         "name":  "100K Evaluation (10 Contracts)",
+                                                         "overnightHolding":  false,
+                                                         "dailyLoss":  0.02,
+                                                         "weekendHolding":  false,
+                                                         "newsNote":  "News allowed",
+                                                         "phases":  "1-Step Evaluation",
+                                                         "prohibitedStrategies":  [
+                                                                                      "Holding overnight"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  ",000 trailing drawdown (EOD). ,000 daily loss. ,000 target",
+                                                         "leverage":  "Futures Margins",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              100000
+                                                                          ],
+                                                         "drawdownType":  "trailing_eod",
+                                                         "payoutFrequency":  "Daily payouts",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  3,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.06
+                                                                          },
+                                                         "consistencyRule":  "None",
+                                                         "scalingPlan":  "Live brokerage funding"
+                                                     },
+                                   "tradeday_150k":  {
+                                                         "payoutSplit":  "90-100%",
+                                                         "id":  "tradeday_150k",
+                                                         "maxDrawdown":  0.03,
+                                                         "leverageNum":  100,
+                                                         "name":  "150K Evaluation (15 Contracts)",
+                                                         "overnightHolding":  false,
+                                                         "dailyLoss":  0.02,
+                                                         "weekendHolding":  false,
+                                                         "newsNote":  "News allowed",
+                                                         "phases":  "1-Step Evaluation",
+                                                         "prohibitedStrategies":  [
+                                                                                      "Holding overnight"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  ",500 trailing drawdown (EOD). ,000 daily loss. ,000 target",
+                                                         "leverage":  "Futures Margins",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              150000
+                                                                          ],
+                                                         "drawdownType":  "trailing_eod",
+                                                         "payoutFrequency":  "Daily payouts",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  3,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.06
+                                                                          },
+                                                         "consistencyRule":  "None",
+                                                         "scalingPlan":  "Institutional scaling"
+                                                     },
+                                   "tradeday_250k":  {
+                                                         "payoutSplit":  "90-100%",
+                                                         "id":  "tradeday_250k",
+                                                         "maxDrawdown":  0.02,
+                                                         "leverageNum":  100,
+                                                         "name":  "250K Evaluation (25 Contracts)",
+                                                         "overnightHolding":  false,
+                                                         "dailyLoss":  0.02,
+                                                         "weekendHolding":  false,
+                                                         "newsNote":  "News allowed",
+                                                         "phases":  "1-Step Evaluation",
+                                                         "prohibitedStrategies":  [
+                                                                                      "Holding overnight"
+                                                                                  ],
+                                                         "eaAllowed":  true,
+                                                         "drawdownNote":  ",000 trailing drawdown (EOD). ,000 daily loss. ,000 target",
+                                                         "leverage":  "Futures Margins",
+                                                         "maxTradingDays":  null,
+                                                         "accountSizes":  [
+                                                                              250000
+                                                                          ],
+                                                         "drawdownType":  "trailing_eod",
+                                                         "payoutFrequency":  "Daily payouts",
+                                                         "newsTrading":  "allowed",
+                                                         "minTradingDays":  3,
+                                                         "profitTarget":  {
+                                                                              "phase1":  0.06
+                                                                          },
+                                                         "consistencyRule":  "None",
+                                                         "scalingPlan":  "Institutional scaling"
+                                                     }
+                               },
+                     "website":  "tradeday.com",
+                     "category":  "Futures Prop Firms",
+                     "shortName":  "TradeDay"
+                 },
+    "myfundedfutures":  {
+                            "id":  "myfundedfutures",
+                            "name":  "My Funded Futures (MFFU)",
+                            "color":  "#8b5cf6",
+                            "plans":  {
+                                          "mffu_starter_50k":  {
+                                                                   "payoutSplit":  "100% first , 90% thereafter",
+                                                                   "id":  "mffu_starter_50k",
+                                                                   "maxDrawdown":  0.04,
+                                                                   "leverageNum":  100,
+                                                                   "name":  "Starter Plan 50K (EOD Trailing DD)",
+                                                                   "overnightHolding":  false,
+                                                                   "dailyLoss":  0,
+                                                                   "weekendHolding":  false,
+                                                                   "newsNote":  "News trading allowed",
+                                                                   "phases":  "1-Step Starter",
+                                                                   "prohibitedStrategies":  [
+                                                                                                "Holding overnight"
+                                                                                            ],
+                                                                   "eaAllowed":  true,
+                                                                   "drawdownNote":  ",000 drawdown trails END OF DAY only (intraday drawdowns do not breach account!). Target ,000. 5 contracts",
+                                                                   "leverage":  "Futures Margins",
+                                                                   "maxTradingDays":  null,
+                                                                   "accountSizes":  [
+                                                                                        50000
+                                                                                    ],
+                                                                   "drawdownType":  "trailing_eod",
+                                                                   "payoutFrequency":  "Every 14 calendar days",
+                                                                   "newsTrading":  "allowed",
+                                                                   "minTradingDays":  1,
+                                                                   "profitTarget":  {
+                                                                                        "phase1":  0.06
+                                                                                    },
+                                                                   "consistencyRule":  "40% consistency rule applies on funded stage",
+                                                                   "scalingPlan":  "Scale up to ,000 across multiple accounts"
+                                                               },
+                                          "mffu_starter_100k":  {
+                                                                    "payoutSplit":  "100% first , 90% thereafter",
+                                                                    "id":  "mffu_starter_100k",
+                                                                    "maxDrawdown":  0.03,
+                                                                    "leverageNum":  100,
+                                                                    "name":  "Starter Plan 100K (EOD Trailing DD)",
+                                                                    "overnightHolding":  false,
+                                                                    "dailyLoss":  0,
+                                                                    "weekendHolding":  false,
+                                                                    "newsNote":  "News allowed",
+                                                                    "phases":  "1-Step Starter",
+                                                                    "prohibitedStrategies":  [
+                                                                                                 "Holding overnight"
+                                                                                             ],
+                                                                    "eaAllowed":  true,
+                                                                    "drawdownNote":  ",000 drawdown trails END OF DAY only. Target ,000. 10 contracts",
+                                                                    "leverage":  "Futures Margins",
+                                                                    "maxTradingDays":  null,
+                                                                    "accountSizes":  [
+                                                                                         100000
+                                                                                     ],
+                                                                    "drawdownType":  "trailing_eod",
+                                                                    "payoutFrequency":  "Bi-weekly",
+                                                                    "newsTrading":  "allowed",
+                                                                    "minTradingDays":  1,
+                                                                    "profitTarget":  {
+                                                                                         "phase1":  0.06
+                                                                                     },
+                                                                    "consistencyRule":  "40% rule",
+                                                                    "scalingPlan":  "Scale up"
+                                                                },
+                                          "mffu_starter_150k":  {
+                                                                    "payoutSplit":  "100% first , 90% thereafter",
+                                                                    "id":  "mffu_starter_150k",
+                                                                    "maxDrawdown":  0.03,
+                                                                    "leverageNum":  100,
+                                                                    "name":  "Starter Plan 150K (EOD Trailing DD)",
+                                                                    "overnightHolding":  false,
+                                                                    "dailyLoss":  0,
+                                                                    "weekendHolding":  false,
+                                                                    "newsNote":  "News allowed",
+                                                                    "phases":  "1-Step Starter",
+                                                                    "prohibitedStrategies":  [
+                                                                                                 "Holding overnight"
+                                                                                             ],
+                                                                    "eaAllowed":  true,
+                                                                    "drawdownNote":  ",500 drawdown trails END OF DAY only. Target ,000. 15 contracts",
+                                                                    "leverage":  "Futures Margins",
+                                                                    "maxTradingDays":  null,
+                                                                    "accountSizes":  [
+                                                                                         150000
+                                                                                     ],
+                                                                    "drawdownType":  "trailing_eod",
+                                                                    "payoutFrequency":  "Bi-weekly",
+                                                                    "newsTrading":  "allowed",
+                                                                    "minTradingDays":  1,
+                                                                    "profitTarget":  {
+                                                                                         "phase1":  0.06
+                                                                                     },
+                                                                    "consistencyRule":  "40% rule",
+                                                                    "scalingPlan":  "Scale up"
+                                                                },
+                                          "mffu_expert_50k":  {
+                                                                  "payoutSplit":  "100% first , 90% thereafter",
+                                                                  "id":  "mffu_expert_50k",
+                                                                  "maxDrawdown":  0.04,
+                                                                  "leverageNum":  100,
+                                                                  "name":  "Expert Plan 50K (No Activation Fee!)",
+                                                                  "overnightHolding":  false,
+                                                                  "dailyLoss":  0,
+                                                                  "weekendHolding":  false,
+                                                                  "newsNote":  "News allowed",
+                                                                  "phases":  "1-Step Expert",
+                                                                  "prohibitedStrategies":  [
+                                                                                               "Holding overnight"
+                                                                                           ],
+                                                                  "eaAllowed":  true,
+                                                                  "drawdownNote":  "Zero activation fee on passing! ,000 intraday trailing drawdown. Target ,000",
+                                                                  "leverage":  "Futures Margins",
+                                                                  "maxTradingDays":  null,
+                                                                  "accountSizes":  [
+                                                                                       50000
+                                                                                   ],
+                                                                  "drawdownType":  "trailing_intraday",
+                                                                  "payoutFrequency":  "Bi-weekly",
+                                                                  "newsTrading":  "allowed",
+                                                                  "minTradingDays":  1,
+                                                                  "profitTarget":  {
+                                                                                       "phase1":  0.06
+                                                                                   },
+                                                                  "consistencyRule":  "None on evaluation",
+                                                                  "scalingPlan":  "Scale to multiple accounts"
+                                                              },
+                                          "mffu_expert_100k":  {
+                                                                   "payoutSplit":  "100% first , 90% thereafter",
+                                                                   "id":  "mffu_expert_100k",
+                                                                   "maxDrawdown":  0.03,
+                                                                   "leverageNum":  100,
+                                                                   "name":  "Expert Plan 100K (No Activation Fee!)",
+                                                                   "overnightHolding":  false,
+                                                                   "dailyLoss":  0,
+                                                                   "weekendHolding":  false,
+                                                                   "newsNote":  "News allowed",
+                                                                   "phases":  "1-Step Expert",
+                                                                   "prohibitedStrategies":  [
+                                                                                                "Holding overnight"
+                                                                                            ],
+                                                                   "eaAllowed":  true,
+                                                                   "drawdownNote":  "Zero activation fee on passing! ,000 intraday trailing drawdown. Target ,000",
+                                                                   "leverage":  "Futures Margins",
+                                                                   "maxTradingDays":  null,
+                                                                   "accountSizes":  [
+                                                                                        100000
+                                                                                    ],
+                                                                   "drawdownType":  "trailing_intraday",
+                                                                   "payoutFrequency":  "Bi-weekly",
+                                                                   "newsTrading":  "allowed",
+                                                                   "minTradingDays":  1,
+                                                                   "profitTarget":  {
+                                                                                        "phase1":  0.06
+                                                                                    },
+                                                                   "consistencyRule":  "None on evaluation",
+                                                                   "scalingPlan":  "Scale up"
+                                                               }
+                                      },
+                            "website":  "myfundedfutures.com",
+                            "category":  "Futures Prop Firms",
+                            "shortName":  "MFFU"
+                        },
+    "tradeify":  {
+                     "id":  "tradeify",
+                     "name":  "Tradeify",
+                     "color":  "#10b981",
+                     "plans":  {
+                                   "tradeify_growth_50k":  {
+                                                               "payoutSplit":  "90%",
+                                                               "id":  "tradeify_growth_50k",
+                                                               "maxDrawdown":  0.04,
+                                                               "leverageNum":  100,
+                                                               "name":  "Growth Plan 50K (Trailing DD)",
+                                                               "overnightHolding":  false,
+                                                               "dailyLoss":  0,
+                                                               "weekendHolding":  false,
+                                                               "newsNote":  "News trading allowed",
+                                                               "phases":  "1-Step Growth",
+                                                               "prohibitedStrategies":  [
+                                                                                            "Holding overnight"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  ",000 trailing drawdown (EOD). ,000 target. Max 5 contracts",
+                                                               "leverage":  "Futures Margins",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    50000
+                                                                                ],
+                                                               "drawdownType":  "trailing_eod",
+                                                               "payoutFrequency":  "Daily payouts available",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  0,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.06
+                                                                                },
+                                                               "consistencyRule":  "None",
+                                                               "scalingPlan":  "Up to ,000,000"
+                                                           },
+                                   "tradeify_growth_100k":  {
+                                                                "payoutSplit":  "90%",
+                                                                "id":  "tradeify_growth_100k",
+                                                                "maxDrawdown":  0.03,
+                                                                "leverageNum":  100,
+                                                                "name":  "Growth Plan 100K (Trailing DD)",
+                                                                "overnightHolding":  false,
+                                                                "dailyLoss":  0,
+                                                                "weekendHolding":  false,
+                                                                "newsNote":  "News allowed",
+                                                                "phases":  "1-Step Growth",
+                                                                "prohibitedStrategies":  [
+                                                                                             "Holding overnight"
+                                                                                         ],
+                                                                "eaAllowed":  true,
+                                                                "drawdownNote":  ",000 trailing drawdown (EOD). ,000 target. Max 10 contracts",
+                                                                "leverage":  "Futures Margins",
+                                                                "maxTradingDays":  null,
+                                                                "accountSizes":  [
+                                                                                     100000
+                                                                                 ],
+                                                                "drawdownType":  "trailing_eod",
+                                                                "payoutFrequency":  "Daily payouts",
+                                                                "newsTrading":  "allowed",
+                                                                "minTradingDays":  0,
+                                                                "profitTarget":  {
+                                                                                     "phase1":  0.06
+                                                                                 },
+                                                                "consistencyRule":  "None",
+                                                                "scalingPlan":  "Up to ,000,000"
+                                                            },
+                                   "tradeify_growth_150k":  {
+                                                                "payoutSplit":  "90%",
+                                                                "id":  "tradeify_growth_150k",
+                                                                "maxDrawdown":  0.03,
+                                                                "leverageNum":  100,
+                                                                "name":  "Growth Plan 150K (Trailing DD)",
+                                                                "overnightHolding":  false,
+                                                                "dailyLoss":  0,
+                                                                "weekendHolding":  false,
+                                                                "newsNote":  "News allowed",
+                                                                "phases":  "1-Step Growth",
+                                                                "prohibitedStrategies":  [
+                                                                                             "Holding overnight"
+                                                                                         ],
+                                                                "eaAllowed":  true,
+                                                                "drawdownNote":  ",500 trailing drawdown (EOD). ,000 target. Max 15 contracts",
+                                                                "leverage":  "Futures Margins",
+                                                                "maxTradingDays":  null,
+                                                                "accountSizes":  [
+                                                                                     150000
+                                                                                 ],
+                                                                "drawdownType":  "trailing_eod",
+                                                                "payoutFrequency":  "Daily payouts",
+                                                                "newsTrading":  "allowed",
+                                                                "minTradingDays":  0,
+                                                                "profitTarget":  {
+                                                                                     "phase1":  0.06
+                                                                                 },
+                                                                "consistencyRule":  "None",
+                                                                "scalingPlan":  "Up to ,000,000"
+                                                            },
+                                   "tradeify_straight":  {
+                                                             "payoutSplit":  "90%",
+                                                             "id":  "tradeify_straight",
+                                                             "maxDrawdown":  0.04,
+                                                             "leverageNum":  100,
+                                                             "name":  "Straight to Funded (Instant Live)",
+                                                             "overnightHolding":  false,
+                                                             "dailyLoss":  0,
+                                                             "weekendHolding":  false,
+                                                             "newsNote":  "News allowed",
+                                                             "phases":  "Direct Funded",
+                                                             "prohibitedStrategies":  [
+                                                                                          "Holding overnight"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Direct live funded account without any evaluation phase",
+                                                             "leverage":  "Futures Margins",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  50000,
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "trailing_eod",
+                                                             "payoutFrequency":  "Daily payouts",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  0,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.06
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         }
+                               },
+                     "website":  "tradeify.co",
+                     "category":  "Futures Prop Firms",
+                     "shortName":  "Tradeify"
+                 },
+    "takeprofittrader":  {
+                             "id":  "takeprofittrader",
+                             "name":  "Take Profit Trader",
+                             "color":  "#f97316",
+                             "plans":  {
+                                           "tpt_pro_25k":  {
+                                                               "payoutSplit":  "80-90%",
+                                                               "id":  "tpt_pro_25k",
+                                                               "maxDrawdown":  0.06,
+                                                               "leverageNum":  100,
+                                                               "name":  "Pro 25K (Day 1 Payouts!)",
+                                                               "overnightHolding":  false,
+                                                               "dailyLoss":  0.02,
+                                                               "weekendHolding":  false,
+                                                               "newsNote":  "News trading allowed",
+                                                               "phases":  "1-Step Pro",
+                                                               "prohibitedStrategies":  [
+                                                                                            "Holding overnight"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  ",500 trailing drawdown (EOD).  daily loss limit. ,500 target. Day 1 payouts allowed on funded Pro!",
+                                                               "leverage":  "Futures Margins",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    25000
+                                                                                ],
+                                                               "drawdownType":  "trailing_eod",
+                                                               "payoutFrequency":  "Day 1 payouts available with zero buffer requirement",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  5,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.06
+                                                                                },
+                                                               "consistencyRule":  "No single day can account for more than 50% of profits",
+                                                               "scalingPlan":  "Scale up to ,000 per account"
+                                                           },
+                                           "tpt_pro_50k":  {
+                                                               "payoutSplit":  "80-90%",
+                                                               "id":  "tpt_pro_50k",
+                                                               "maxDrawdown":  0.04,
+                                                               "leverageNum":  100,
+                                                               "name":  "Pro 50K (6 Contracts)",
+                                                               "overnightHolding":  false,
+                                                               "dailyLoss":  0.022,
+                                                               "weekendHolding":  false,
+                                                               "newsNote":  "News allowed",
+                                                               "phases":  "1-Step Pro",
+                                                               "prohibitedStrategies":  [
+                                                                                            "Holding overnight"
+                                                                                        ],
+                                                               "eaAllowed":  true,
+                                                               "drawdownNote":  ",000 trailing drawdown (EOD). ,100 daily loss. ,000 target. 6 contracts",
+                                                               "leverage":  "Futures Margins",
+                                                               "maxTradingDays":  null,
+                                                               "accountSizes":  [
+                                                                                    50000
+                                                                                ],
+                                                               "drawdownType":  "trailing_eod",
+                                                               "payoutFrequency":  "Day 1 payouts",
+                                                               "newsTrading":  "allowed",
+                                                               "minTradingDays":  5,
+                                                               "profitTarget":  {
+                                                                                    "phase1":  0.06
+                                                                                },
+                                                               "consistencyRule":  "50% rule",
+                                                               "scalingPlan":  "Scale up"
+                                                           },
+                                           "tpt_pro_100k":  {
+                                                                "payoutSplit":  "80-90%",
+                                                                "id":  "tpt_pro_100k",
+                                                                "maxDrawdown":  0.03,
+                                                                "leverageNum":  100,
+                                                                "name":  "Pro 100K (12 Contracts)",
+                                                                "overnightHolding":  false,
+                                                                "dailyLoss":  0.022,
+                                                                "weekendHolding":  false,
+                                                                "newsNote":  "News allowed",
+                                                                "phases":  "1-Step Pro",
+                                                                "prohibitedStrategies":  [
+                                                                                             "Holding overnight"
+                                                                                         ],
+                                                                "eaAllowed":  true,
+                                                                "drawdownNote":  ",000 trailing drawdown (EOD). ,200 daily loss. ,000 target. 12 contracts",
+                                                                "leverage":  "Futures Margins",
+                                                                "maxTradingDays":  null,
+                                                                "accountSizes":  [
+                                                                                     100000
+                                                                                 ],
+                                                                "drawdownType":  "trailing_eod",
+                                                                "payoutFrequency":  "Day 1 payouts",
+                                                                "newsTrading":  "allowed",
+                                                                "minTradingDays":  5,
+                                                                "profitTarget":  {
+                                                                                     "phase1":  0.06
+                                                                                 },
+                                                                "consistencyRule":  "50% rule",
+                                                                "scalingPlan":  "Scale up"
+                                                            },
+                                           "tpt_pro_150k":  {
+                                                                "payoutSplit":  "80-90%",
+                                                                "id":  "tpt_pro_150k",
+                                                                "maxDrawdown":  0.03,
+                                                                "leverageNum":  100,
+                                                                "name":  "Pro 150K (15 Contracts)",
+                                                                "overnightHolding":  false,
+                                                                "dailyLoss":  0.022,
+                                                                "weekendHolding":  false,
+                                                                "newsNote":  "News allowed",
+                                                                "phases":  "1-Step Pro",
+                                                                "prohibitedStrategies":  [
+                                                                                             "Holding overnight"
+                                                                                         ],
+                                                                "eaAllowed":  true,
+                                                                "drawdownNote":  ",500 trailing drawdown (EOD). ,300 daily loss. ,000 target. 15 contracts",
+                                                                "leverage":  "Futures Margins",
+                                                                "maxTradingDays":  null,
+                                                                "accountSizes":  [
+                                                                                     150000
+                                                                                 ],
+                                                                "drawdownType":  "trailing_eod",
+                                                                "payoutFrequency":  "Day 1 payouts",
+                                                                "newsTrading":  "allowed",
+                                                                "minTradingDays":  5,
+                                                                "profitTarget":  {
+                                                                                     "phase1":  0.06
+                                                                                 },
+                                                                "consistencyRule":  "50% rule",
+                                                                "scalingPlan":  "Scale up"
+                                                            }
+                                       },
+                             "website":  "takeprofittrader.com",
+                             "category":  "Futures Prop Firms",
+                             "shortName":  "Take Profit Trader"
+                         },
+    "bulenox":  {
+                    "id":  "bulenox",
+                    "name":  "Bulenox",
+                    "color":  "#e11d48",
+                    "plans":  {
+                                  "bulenox_suite_25k":  {
+                                                            "payoutSplit":  "100% first , 90% thereafter",
+                                                            "id":  "bulenox_suite_25k",
+                                                            "maxDrawdown":  0.06,
+                                                            "leverageNum":  100,
+                                                            "name":  "Master Suite 25K (3 Contracts)",
+                                                            "overnightHolding":  false,
+                                                            "dailyLoss":  0,
+                                                            "weekendHolding":  false,
+                                                            "newsNote":  "News trading allowed",
+                                                            "phases":  "1-Step Master Suite",
+                                                            "prohibitedStrategies":  [
+                                                                                         "Holding overnight"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  ",500 trailing drawdown (EOD). ,500 profit target. 3 contracts. NO DAILY LOSS LIMIT!",
+                                                            "leverage":  "Futures Margins",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 25000
+                                                                             ],
+                                                            "drawdownType":  "trailing_eod",
+                                                            "payoutFrequency":  "Twice monthly",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  5,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.06
+                                                                             },
+                                                            "consistencyRule":  "None on evaluation",
+                                                            "scalingPlan":  "Trade up to 11 accounts simultaneously"
+                                                        },
+                                  "bulenox_suite_50k":  {
+                                                            "payoutSplit":  "100% first , 90% thereafter",
+                                                            "id":  "bulenox_suite_50k",
+                                                            "maxDrawdown":  0.05,
+                                                            "leverageNum":  100,
+                                                            "name":  "Master Suite 50K (7 Contracts)",
+                                                            "overnightHolding":  false,
+                                                            "dailyLoss":  0,
+                                                            "weekendHolding":  false,
+                                                            "newsNote":  "News allowed",
+                                                            "phases":  "1-Step Master Suite",
+                                                            "prohibitedStrategies":  [
+                                                                                         "Holding overnight"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  ",500 trailing drawdown (EOD). ,000 profit target. 7 contracts. No daily loss limit",
+                                                            "leverage":  "Futures Margins",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 50000
+                                                                             ],
+                                                            "drawdownType":  "trailing_eod",
+                                                            "payoutFrequency":  "Twice monthly",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  5,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.06
+                                                                             },
+                                                            "consistencyRule":  "None on evaluation",
+                                                            "scalingPlan":  "Trade 11 accounts"
+                                                        },
+                                  "bulenox_suite_100k":  {
+                                                             "payoutSplit":  "100% first , 90% thereafter",
+                                                             "id":  "bulenox_suite_100k",
+                                                             "maxDrawdown":  0.03,
+                                                             "leverageNum":  100,
+                                                             "name":  "Master Suite 100K (12 Contracts)",
+                                                             "overnightHolding":  false,
+                                                             "dailyLoss":  0,
+                                                             "weekendHolding":  false,
+                                                             "newsNote":  "News allowed",
+                                                             "phases":  "1-Step Master Suite",
+                                                             "prohibitedStrategies":  [
+                                                                                          "Holding overnight"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  ",000 trailing drawdown (EOD). ,000 profit target. 12 contracts",
+                                                             "leverage":  "Futures Margins",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "trailing_eod",
+                                                             "payoutFrequency":  "Twice monthly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  5,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.06
+                                                                              },
+                                                             "consistencyRule":  "None on evaluation",
+                                                             "scalingPlan":  "Trade 11 accounts"
+                                                         },
+                                  "bulenox_no_daily":  {
+                                                           "payoutSplit":  "100% first , 90% thereafter",
+                                                           "id":  "bulenox_no_daily",
+                                                           "maxDrawdown":  0.05,
+                                                           "leverageNum":  100,
+                                                           "name":  "No Daily Drawdown Option (50K / 100K)",
+                                                           "overnightHolding":  false,
+                                                           "dailyLoss":  0,
+                                                           "weekendHolding":  false,
+                                                           "newsNote":  "News allowed",
+                                                           "phases":  "1-Step No Daily",
+                                                           "prohibitedStrategies":  [
+                                                                                        "Holding overnight"
+                                                                                    ],
+                                                           "eaAllowed":  true,
+                                                           "drawdownNote":  "Guaranteed zero daily drawdown limits on all stages",
+                                                           "leverage":  "Futures Margins",
+                                                           "maxTradingDays":  null,
+                                                           "accountSizes":  [
+                                                                                50000,
+                                                                                100000
+                                                                            ],
+                                                           "drawdownType":  "trailing_eod",
+                                                           "payoutFrequency":  "Twice monthly",
+                                                           "newsTrading":  "allowed",
+                                                           "minTradingDays":  5,
+                                                           "profitTarget":  {
+                                                                                "phase1":  0.06
+                                                                            },
+                                                           "consistencyRule":  "None",
+                                                           "scalingPlan":  "Scale up"
+                                                       }
+                              },
+                    "website":  "bulenox.com",
+                    "category":  "Futures Prop Firms",
+                    "shortName":  "Bulenox"
+                },
+    "uprofit":  {
+                    "id":  "uprofit",
+                    "name":  "UProfit Trader",
+                    "color":  "#059669",
+                    "plans":  {
+                                  "uprofit_basic_25k":  {
+                                                            "payoutSplit":  "100% first , 90% thereafter",
+                                                            "id":  "uprofit_basic_25k",
+                                                            "maxDrawdown":  0.06,
+                                                            "leverageNum":  100,
+                                                            "name":  "Basic 25K Program (3 Contracts)",
+                                                            "overnightHolding":  false,
+                                                            "dailyLoss":  0.02,
+                                                            "weekendHolding":  false,
+                                                            "newsNote":  "News trading permitted",
+                                                            "phases":  "1-Step Basic",
+                                                            "prohibitedStrategies":  [
+                                                                                         "Holding overnight"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  ",500 trailing drawdown (EOD).  daily loss. ,500 target. 3 contracts",
+                                                            "leverage":  "Futures Margins",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 25000
+                                                                             ],
+                                                            "drawdownType":  "trailing_eod",
+                                                            "payoutFrequency":  "Weekly payouts after 4 winning days",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  5,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.06
+                                                                             },
+                                                            "consistencyRule":  "Consistency guidelines apply on live account",
+                                                            "scalingPlan":  "Up to ,000"
+                                                        },
+                                  "uprofit_basic_50k":  {
+                                                            "payoutSplit":  "100% first , 90% thereafter",
+                                                            "id":  "uprofit_basic_50k",
+                                                            "maxDrawdown":  0.05,
+                                                            "leverageNum":  100,
+                                                            "name":  "Basic 50K Program (6 Contracts)",
+                                                            "overnightHolding":  false,
+                                                            "dailyLoss":  0.022,
+                                                            "weekendHolding":  false,
+                                                            "newsNote":  "News allowed",
+                                                            "phases":  "1-Step Basic",
+                                                            "prohibitedStrategies":  [
+                                                                                         "Holding overnight"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  ",500 trailing drawdown (EOD). ,100 daily loss. ,500 target. 6 contracts",
+                                                            "leverage":  "Futures Margins",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 50000
+                                                                             ],
+                                                            "drawdownType":  "trailing_eod",
+                                                            "payoutFrequency":  "Weekly",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  5,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.05
+                                                                             },
+                                                            "consistencyRule":  "Standard",
+                                                            "scalingPlan":  "Up to ,000"
+                                                        },
+                                  "uprofit_basic_100k":  {
+                                                             "payoutSplit":  "100% first , 90% thereafter",
+                                                             "id":  "uprofit_basic_100k",
+                                                             "maxDrawdown":  0.03,
+                                                             "leverageNum":  100,
+                                                             "name":  "Basic 100K Program (12 Contracts)",
+                                                             "overnightHolding":  false,
+                                                             "dailyLoss":  0.022,
+                                                             "weekendHolding":  false,
+                                                             "newsNote":  "News allowed",
+                                                             "phases":  "1-Step Basic",
+                                                             "prohibitedStrategies":  [
+                                                                                          "Holding overnight"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  ",000 trailing drawdown (EOD). ,200 daily loss. ,000 target. 12 contracts",
+                                                             "leverage":  "Futures Margins",
+                                                             "maxTradingDays":  null,
+                                                             "accountSizes":  [
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "trailing_eod",
+                                                             "payoutFrequency":  "Weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  5,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.06
+                                                                              },
+                                                             "consistencyRule":  "Standard",
+                                                             "scalingPlan":  "Up to ,000"
+                                                         },
+                                  "uprofit_freedom":  {
+                                                          "payoutSplit":  "100% first , 90% thereafter",
+                                                          "id":  "uprofit_freedom",
+                                                          "maxDrawdown":  0.0333,
+                                                          "leverageNum":  100,
+                                                          "name":  "Freedom Program (NO Daily Loss Limit!)",
+                                                          "overnightHolding":  false,
+                                                          "dailyLoss":  0,
+                                                          "weekendHolding":  false,
+                                                          "newsNote":  "News allowed",
+                                                          "phases":  "1-Step Freedom",
+                                                          "prohibitedStrategies":  [
+                                                                                       "Holding overnight"
+                                                                                   ],
+                                                          "eaAllowed":  true,
+                                                          "drawdownNote":  ",000 trailing drawdown (EOD). ,000 target. ZERO daily loss limit! Max 16 contracts",
+                                                          "leverage":  "Futures Margins",
+                                                          "maxTradingDays":  null,
+                                                          "accountSizes":  [
+                                                                               150000
+                                                                           ],
+                                                          "drawdownType":  "trailing_eod",
+                                                          "payoutFrequency":  "Weekly",
+                                                          "newsTrading":  "allowed",
+                                                          "minTradingDays":  5,
+                                                          "profitTarget":  {
+                                                                               "phase1":  0.0667
+                                                                           },
+                                                          "consistencyRule":  "Standard",
+                                                          "scalingPlan":  "Freedom scaling"
+                                                      }
+                              },
+                    "website":  "uprofit.com",
+                    "category":  "Futures Prop Firms",
+                    "shortName":  "UProfit"
+                },
+    "elitetrader":  {
+                        "id":  "elitetrader",
+                        "name":  "Elite Trader Funding",
+                        "color":  "#0284c7",
+                        "plans":  {
+                                      "etf_fast_track_50k":  {
+                                                                 "payoutSplit":  "100% first .5k, 90% thereafter",
+                                                                 "id":  "etf_fast_track_50k",
+                                                                 "maxDrawdown":  0.04,
+                                                                 "leverageNum":  100,
+                                                                 "name":  "Fast Track 50K (EOD Trailing DD)",
+                                                                 "overnightHolding":  false,
+                                                                 "dailyLoss":  0,
+                                                                 "weekendHolding":  false,
+                                                                 "newsNote":  "News trading allowed",
+                                                                 "phases":  "1-Step Fast Track",
+                                                                 "prohibitedStrategies":  [
+                                                                                              "Holding overnight"
+                                                                                          ],
+                                                                 "eaAllowed":  true,
+                                                                 "drawdownNote":  ",000 EOD trailing drawdown. Target ,000. No daily loss limit",
+                                                                 "leverage":  "Futures Margins",
+                                                                 "maxTradingDays":  null,
+                                                                 "accountSizes":  [
+                                                                                      50000
+                                                                                  ],
+                                                                 "drawdownType":  "trailing_eod",
+                                                                 "payoutFrequency":  "Bi-weekly",
+                                                                 "newsTrading":  "allowed",
+                                                                 "minTradingDays":  1,
+                                                                 "profitTarget":  {
+                                                                                      "phase1":  0.06
+                                                                                  },
+                                                                 "consistencyRule":  "None on evaluation",
+                                                                 "scalingPlan":  "Up to ,000,000"
+                                                             },
+                                      "etf_fast_track_100k":  {
+                                                                  "payoutSplit":  "100% first .5k, 90% thereafter",
+                                                                  "id":  "etf_fast_track_100k",
+                                                                  "maxDrawdown":  0.03,
+                                                                  "leverageNum":  100,
+                                                                  "name":  "Fast Track 100K (EOD Trailing DD)",
+                                                                  "overnightHolding":  false,
+                                                                  "dailyLoss":  0,
+                                                                  "weekendHolding":  false,
+                                                                  "newsNote":  "News allowed",
+                                                                  "phases":  "1-Step Fast Track",
+                                                                  "prohibitedStrategies":  [
+                                                                                               "Holding overnight"
+                                                                                           ],
+                                                                  "eaAllowed":  true,
+                                                                  "drawdownNote":  ",000 EOD trailing drawdown. Target ,000. No daily loss limit",
+                                                                  "leverage":  "Futures Margins",
+                                                                  "maxTradingDays":  null,
+                                                                  "accountSizes":  [
+                                                                                       100000
+                                                                                   ],
+                                                                  "drawdownType":  "trailing_eod",
+                                                                  "payoutFrequency":  "Bi-weekly",
+                                                                  "newsTrading":  "allowed",
+                                                                  "minTradingDays":  1,
+                                                                  "profitTarget":  {
+                                                                                       "phase1":  0.06
+                                                                                   },
+                                                                  "consistencyRule":  "None on evaluation",
+                                                                  "scalingPlan":  "Up to ,000,000"
+                                                              },
+                                      "etf_static_100k":  {
+                                                              "payoutSplit":  "100% first .5k, 90% thereafter",
+                                                              "id":  "etf_static_100k",
+                                                              "maxDrawdown":  0.01,
+                                                              "leverageNum":  100,
+                                                              "name":  "Static 100K (NO Trailing DD!)",
+                                                              "overnightHolding":  false,
+                                                              "dailyLoss":  0,
+                                                              "weekendHolding":  false,
+                                                              "newsNote":  "News allowed",
+                                                              "phases":  "1-Step Static",
+                                                              "prohibitedStrategies":  [
+                                                                                           "Holding overnight"
+                                                                                       ],
+                                                              "eaAllowed":  true,
+                                                              "drawdownNote":  "STATIC ,000 max drawdown. NEVER trails! Target ,000. 2 contracts",
+                                                              "leverage":  "Futures Margins",
+                                                              "maxTradingDays":  null,
+                                                              "accountSizes":  [
+                                                                                   100000
+                                                                               ],
+                                                              "drawdownType":  "static",
+                                                              "payoutFrequency":  "Bi-weekly",
+                                                              "newsTrading":  "allowed",
+                                                              "minTradingDays":  1,
+                                                              "profitTarget":  {
+                                                                                   "phase1":  0.03
+                                                                               },
+                                                              "consistencyRule":  "None",
+                                                              "scalingPlan":  "Static risk"
+                                                          }
+                                  },
+                        "website":  "elitetraderfunding.com",
+                        "category":  "Futures Prop Firms",
+                        "shortName":  "Elite Trader"
+                    },
+    "tickticktrader":  {
+                           "id":  "tickticktrader",
+                           "name":  "TickTick Trader",
+                           "color":  "#14b8a6",
+                           "plans":  {
+                                         "ttt_classic_50k":  {
+                                                                 "payoutSplit":  "100% first , 90% thereafter",
+                                                                 "id":  "ttt_classic_50k",
+                                                                 "maxDrawdown":  0.04,
+                                                                 "leverageNum":  100,
+                                                                 "name":  "TTT Classic 50K (EOD Trailing DD)",
+                                                                 "overnightHolding":  false,
+                                                                 "dailyLoss":  0,
+                                                                 "weekendHolding":  false,
+                                                                 "newsNote":  "News trading allowed",
+                                                                 "phases":  "1-Step Classic",
+                                                                 "prohibitedStrategies":  [
+                                                                                              "Holding overnight"
+                                                                                          ],
+                                                                 "eaAllowed":  true,
+                                                                 "drawdownNote":  ",000 trailing drawdown calculated EOD only. Target ,000. 6 contracts. Zero daily loss limit",
+                                                                 "leverage":  "Futures Margins",
+                                                                 "maxTradingDays":  null,
+                                                                 "accountSizes":  [
+                                                                                      50000
+                                                                                  ],
+                                                                 "drawdownType":  "trailing_eod",
+                                                                 "payoutFrequency":  "Weekly payouts on live funded",
+                                                                 "newsTrading":  "allowed",
+                                                                 "minTradingDays":  2,
+                                                                 "profitTarget":  {
+                                                                                      "phase1":  0.06
+                                                                                  },
+                                                                 "consistencyRule":  "None on evaluation",
+                                                                 "scalingPlan":  "Up to ,000,000"
+                                                             },
+                                         "ttt_express":  {
+                                                             "payoutSplit":  "100% first , 90% thereafter",
+                                                             "id":  "ttt_express",
+                                                             "maxDrawdown":  0.04,
+                                                             "leverageNum":  100,
+                                                             "name":  "TTT Express (14-Day Fast Track)",
+                                                             "overnightHolding":  false,
+                                                             "dailyLoss":  0,
+                                                             "weekendHolding":  false,
+                                                             "newsNote":  "News allowed",
+                                                             "phases":  "Express Evaluation",
+                                                             "prohibitedStrategies":  [
+                                                                                          "Holding overnight"
+                                                                                      ],
+                                                             "eaAllowed":  true,
+                                                             "drawdownNote":  "Express 14-day evaluation with lowest fee",
+                                                             "leverage":  "Futures Margins",
+                                                             "maxTradingDays":  14,
+                                                             "accountSizes":  [
+                                                                                  50000,
+                                                                                  100000
+                                                                              ],
+                                                             "drawdownType":  "trailing_eod",
+                                                             "payoutFrequency":  "Weekly",
+                                                             "newsTrading":  "allowed",
+                                                             "minTradingDays":  2,
+                                                             "profitTarget":  {
+                                                                                  "phase1":  0.06
+                                                                              },
+                                                             "consistencyRule":  "None",
+                                                             "scalingPlan":  "Up to ,000,000"
+                                                         },
+                                         "ttt_direct":  {
+                                                            "payoutSplit":  "80-90%",
+                                                            "id":  "ttt_direct",
+                                                            "maxDrawdown":  0.03,
+                                                            "leverageNum":  100,
+                                                            "name":  "Direct Funding (Instant Futures)",
+                                                            "overnightHolding":  false,
+                                                            "dailyLoss":  0,
+                                                            "weekendHolding":  false,
+                                                            "newsNote":  "News allowed",
+                                                            "phases":  "Instant Futures",
+                                                            "prohibitedStrategies":  [
+                                                                                         "Holding overnight"
+                                                                                     ],
+                                                            "eaAllowed":  true,
+                                                            "drawdownNote":  "Instant funded futures account without evaluation",
+                                                            "leverage":  "Futures Margins",
+                                                            "maxTradingDays":  null,
+                                                            "accountSizes":  [
+                                                                                 50000,
+                                                                                 100000
+                                                                             ],
+                                                            "drawdownType":  "trailing_eod",
+                                                            "payoutFrequency":  "Weekly",
+                                                            "newsTrading":  "allowed",
+                                                            "minTradingDays":  0,
+                                                            "profitTarget":  {
+                                                                                 "phase1":  0.06
+                                                                             },
+                                                            "consistencyRule":  "None",
+                                                            "scalingPlan":  "Up to ,000,000"
+                                                        }
+                                     },
+                           "website":  "tickticktrader.com",
+                           "category":  "Futures Prop Firms",
+                           "shortName":  "TickTick Trader"
+                       },
+    "lucidtrading":  {
+                         "id":  "lucidtrading",
+                         "name":  "Lucid Trading",
+                         "color":  "#a855f7",
+                         "plans":  {
+                                       "lucid_combine_50k":  {
+                                                                 "payoutSplit":  "90%",
+                                                                 "id":  "lucid_combine_50k",
+                                                                 "maxDrawdown":  0.04,
+                                                                 "leverageNum":  100,
+                                                                 "name":  "Standard Combine 50K (5 Contracts)",
+                                                                 "overnightHolding":  false,
+                                                                 "dailyLoss":  0.025,
+                                                                 "weekendHolding":  false,
+                                                                 "newsNote":  "News trading permitted",
+                                                                 "phases":  "1-Step Combine",
+                                                                 "prohibitedStrategies":  [
+                                                                                              "Holding overnight"
+                                                                                          ],
+                                                                 "eaAllowed":  true,
+                                                                 "drawdownNote":  ",000 trailing drawdown (EOD). ,250 daily loss. ,000 target. 5 contracts",
+                                                                 "leverage":  "Futures Margins",
+                                                                 "maxTradingDays":  null,
+                                                                 "accountSizes":  [
+                                                                                      50000
+                                                                                  ],
+                                                                 "drawdownType":  "trailing_eod",
+                                                                 "payoutFrequency":  "Bi-weekly",
+                                                                 "newsTrading":  "allowed",
+                                                                 "minTradingDays":  1,
+                                                                 "profitTarget":  {
+                                                                                      "phase1":  0.06
+                                                                                  },
+                                                                 "consistencyRule":  "None",
+                                                                 "scalingPlan":  "Up to ,000"
+                                                             },
+                                       "lucid_combine_100k":  {
+                                                                  "payoutSplit":  "90%",
+                                                                  "id":  "lucid_combine_100k",
+                                                                  "maxDrawdown":  0.03,
+                                                                  "leverageNum":  100,
+                                                                  "name":  "Standard Combine 100K (10 Contracts)",
+                                                                  "overnightHolding":  false,
+                                                                  "dailyLoss":  0.02,
+                                                                  "weekendHolding":  false,
+                                                                  "newsNote":  "News allowed",
+                                                                  "phases":  "1-Step Combine",
+                                                                  "prohibitedStrategies":  [
+                                                                                               "Holding overnight"
+                                                                                           ],
+                                                                  "eaAllowed":  true,
+                                                                  "drawdownNote":  ",000 trailing drawdown (EOD). ,000 daily loss. ,000 target. 10 contracts",
+                                                                  "leverage":  "Futures Margins",
+                                                                  "maxTradingDays":  null,
+                                                                  "accountSizes":  [
+                                                                                       100000
+                                                                                   ],
+                                                                  "drawdownType":  "trailing_eod",
+                                                                  "payoutFrequency":  "Bi-weekly",
+                                                                  "newsTrading":  "allowed",
+                                                                  "minTradingDays":  1,
+                                                                  "profitTarget":  {
+                                                                                       "phase1":  0.06
+                                                                                   },
+                                                                  "consistencyRule":  "None",
+                                                                  "scalingPlan":  "Up to ,000"
+                                                              }
                                    },
                          "website":  "lucidtrading.com",
                          "category":  "Futures Prop Firms",
                          "shortName":  "Lucid Trading"
                      }
 };
-
-
-  // State
-  let currentSymbol = 'BTC/USDT';
-  let currentAssetCategory = 'all'; // 'all' | 'forex' | 'commodities' | 'indices' | 'crypto'
-  let currentModel = 'aether9'; // 'aether9' | 'evolvex' | 'sentinel' | 'unity' | 'orbit' | 'unified'
+  try { if (typeof window !== 'undefined') { window.PROP_FIRMS = PROP_FIRMS; } } catch (e) {}
 
   // Prop Firm Account Configuration State (Default: FTMO $10,000 for instant out-of-box institutional experience)
-  let selectedPropFirm = 'ftmo';          // key into PROP_FIRMS (40 firms)
-  let selectedPropPlan = 'standard_2step'; // key into PROP_FIRMS[selectedPropFirm].plans (95+ plans)
+  let selectedPropFirm = 'ftmo';          // key into PROP_FIRMS (59 firms)
+  let selectedPropPlan = 'standard_2step'; // key into PROP_FIRMS[selectedPropFirm].plans (178+ plans)
   let accountSize = 10000;                // $10,000 challenge
   let currentEquity = 9850;               // $9,850 current equity
   let propFirmConfigured = true;
 
+  // Active Trading & Model State
+  let currentSymbol = 'EUR/USD';
+  let currentModel = 'aether9';
+
   //  - 
-  // PROP FIRM ACTIVE PLAN RESOLVER (Dynamic across all 40 firms & 95 plans)
+  // PROP FIRM ACTIVE PLAN RESOLVER (Dynamic across all 59 firms & 178 plans)
   //  - 
   function getActivePlan(fId, pId) {
     const firmKey = fId || selectedPropFirm || 'ftmo';
@@ -6559,8 +9430,9 @@
       const q = (searchQuery || '').trim().toLowerCase();
       
       const categories = [
-        { label: 'Forex & CFDs (34 Firms)', keys: [] },
-        { label: 'Futures Prop Firms (6 Firms)', keys: [] },
+        { label: 'Forex & CFDs', keys: [] },
+        { label: 'Futures Prop Firms', keys: [] },
+        { label: 'Web3 & Crypto Prop Firms', keys: [] },
         { label: 'Instant Funding Specialists', keys: [] }
       ];
 
@@ -6577,18 +9449,20 @@
         if (matches) {
           if (cat.includes('Futures')) {
             categories[1].keys.push(k);
-          } else if (cat.includes('Instant Funding')) {
+          } else if (cat.includes('Web3') || cat.includes('Crypto')) {
             categories[2].keys.push(k);
+          } else if (cat.includes('Instant Funding')) {
+            categories[3].keys.push(k);
           } else {
             categories[0].keys.push(k);
           }
         }
       });
 
-      let html = '<option value="">-- Choose Prop Firm (40 Firms Available) --</option>';
+      let html = '<option value="">-- Choose Prop Firm (59 Top Firms & 178 Plans) --</option>';
       categories.forEach(c => {
         if (c.keys.length > 0) {
-          html += `<optgroup label="${c.label}">`;
+          html += `<optgroup label="${c.label} (${c.keys.length} Firms)">`;
           c.keys.forEach(k => {
             const f = PROP_FIRMS[k];
             const planCount = Object.keys(f.plans || {}).length;
