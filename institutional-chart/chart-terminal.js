@@ -228,7 +228,7 @@ class BinanceMarketDataProvider {
         try {
           res = await fetch(url);
           if (res.ok) break;
-        } catch (e) {}
+        } catch (e) { }
       }
 
       if (!res || !res.ok) throw new Error('Binance klines unavailable');
@@ -258,7 +258,7 @@ class BinanceMarketDataProvider {
             this.onDepthUpdate?.(depthData.bids, depthData.asks);
           }
         }
-      } catch (dErr) {}
+      } catch (dErr) { }
     } catch (err) {
       console.warn('Binance klines warning:', err.message);
     }
@@ -296,7 +296,7 @@ class BinanceMarketDataProvider {
             };
             this.onCandleUpdate?.(candle, msg.E || Date.now());
           }
-        } catch (e) {}
+        } catch (e) { }
       };
 
       ws.onclose = () => {
@@ -306,7 +306,7 @@ class BinanceMarketDataProvider {
           this.scheduleReconnect('kline', () => this.openKlineStream());
         }
       };
-      ws.onerror = () => {};
+      ws.onerror = () => { };
     } catch (err) {
       this.scheduleReconnect('kline', () => this.openKlineStream());
     }
@@ -335,7 +335,7 @@ class BinanceMarketDataProvider {
           if (bids.length > 0 || asks.length > 0) {
             this.onDepthUpdate?.(bids, asks, eventTs);
           }
-        } catch (e) {}
+        } catch (e) { }
       };
 
       ws.onclose = () => {
@@ -344,8 +344,8 @@ class BinanceMarketDataProvider {
           this.scheduleReconnect('depth', () => this.openDepthStream());
         }
       };
-      ws.onerror = () => {};
-    } catch (err) {}
+      ws.onerror = () => { };
+    } catch (err) { }
   }
 
   openAggTradeStream() {
@@ -376,7 +376,7 @@ class BinanceMarketDataProvider {
             const eventTs = msg.E || msg.T || Date.now();
             this.onAggTrade?.(trade, eventTs);
           }
-        } catch (e) {}
+        } catch (e) { }
       };
 
       ws.onclose = () => {
@@ -385,8 +385,8 @@ class BinanceMarketDataProvider {
           this.scheduleReconnect('aggTrade', () => this.openAggTradeStream());
         }
       };
-      ws.onerror = () => {};
-    } catch (err) {}
+      ws.onerror = () => { };
+    } catch (err) { }
   }
 
   openLiquidationStream() {
@@ -410,7 +410,7 @@ class BinanceMarketDataProvider {
           const target = (this.streamSymbol || this.activeSymbol || '').replace('/', '').toUpperCase();
           const isGoldTarget = target.includes('XAU') || target.includes('PAXG');
           const isTarget = order.s.toUpperCase() === target ||
-                           (isGoldTarget && (order.s === 'PAXGUSDT' || order.s === 'XAUUSDT'));
+            (isGoldTarget && (order.s === 'PAXGUSDT' || order.s === 'XAUUSDT'));
           const liq = {
             id: order.s + '_' + order.T + '_' + Math.random().toString(36).substr(2, 4),
             symbol: order.s,
@@ -422,7 +422,7 @@ class BinanceMarketDataProvider {
           };
           const eventTs = msg.E || order.T || Date.now();
           this.onLiquidation?.(liq, isTarget, eventTs);
-        } catch (e) {}
+        } catch (e) { }
       };
 
       ws.onclose = () => {
@@ -431,8 +431,8 @@ class BinanceMarketDataProvider {
           this.scheduleReconnect('liq', () => this.openLiquidationStream());
         }
       };
-      ws.onerror = () => {};
-    } catch (err) {}
+      ws.onerror = () => { };
+    } catch (err) { }
   }
 
   async fetchOpenInterestHistory() {
@@ -451,7 +451,7 @@ class BinanceMarketDataProvider {
           this.onOpenInterest?.(hist, true);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   async fetchCurrentOpenInterest() {
@@ -469,7 +469,7 @@ class BinanceMarketDataProvider {
           }], false);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   scheduleReconnect(key, fn) {
@@ -490,7 +490,7 @@ class BinanceMarketDataProvider {
       this[prop].onmessage = null;
       this[prop].onerror = null;
       this[prop].onclose = null;
-      try { this[prop].close(); } catch (e) {}
+      try { this[prop].close(); } catch (e) { }
       this[prop] = null;
     }
   }
@@ -640,7 +640,7 @@ class GlobalAssetDataProvider {
         if (rate && !isNaN(rate)) {
           this.currentPrice = rate;
         }
-      } catch (err) {}
+      } catch (err) { }
     }
 
     // 3. If candles were not available from proxy, calibrate high-fidelity institutional candles
@@ -1262,8 +1262,8 @@ class FootprintEngine {
     const totalRange = Math.max(step, candle.high - candle.low);
 
     // Institutional POC location: clustered near body close/momentum or high-volume absorption
-    const poc = isBull 
-      ? bodyLow + bodyRange * 0.65 
+    const poc = isBull
+      ? bodyLow + bodyRange * 0.65
       : bodyHigh - bodyRange * 0.65;
     const cleanPoc = Math.round(poc / step) * step;
 
@@ -1294,7 +1294,7 @@ class FootprintEngine {
     for (let i = 0; i < prices.length; i++) {
       const pr = prices[i];
       const levelVol = (weights[i] / totWeight) * candleVol;
-      
+
       // Determine Bid vs Ask directional split
       const posRatio = (pr - candle.low) / (totalRange || 1);
       let askBias = isBull ? 0.58 : 0.42;
@@ -1303,8 +1303,8 @@ class FootprintEngine {
       if (!isBull && posRatio < 0.4) askBias -= 0.12;
 
       // Add institutional stacked imbalance bursts at select levels
-      const isImbalanceLevel = (i === Math.floor(prices.length * 0.7) && isBull) || 
-                               (i === Math.floor(prices.length * 0.3) && !isBull);
+      const isImbalanceLevel = (i === Math.floor(prices.length * 0.7) && isBull) ||
+        (i === Math.floor(prices.length * 0.3) && !isBull);
       if (isImbalanceLevel) {
         if (isBull) askBias = 0.78; // Aggressive market buyer
         else askBias = 0.22; // Aggressive market seller
@@ -1822,7 +1822,7 @@ class LiquidationTracker {
 
     // Notify any UI listeners
     for (const fn of this.listeners) {
-      try { fn(liq, isTarget); } catch (e) {}
+      try { fn(liq, isTarget); } catch (e) { }
     }
   }
 
@@ -2146,11 +2146,11 @@ class LiquidationClusterEngine {
         const age = visibleCandles.length - 1 - i;
         const recency = Math.max(0.7, 1.0 - (age / visibleCandles.length) * 0.3);
         if (c.low <= visibleCandles[i - 1].low && c.low <= visibleCandles[i - 2].low &&
-            c.low <= visibleCandles[i + 1].low && c.low <= visibleCandles[i + 2].low) {
+          c.low <= visibleCandles[i + 1].low && c.low <= visibleCandles[i + 2].low) {
           swingLows.push({ price: c.low, recency, vol: c.volume });
         }
         if (c.high >= visibleCandles[i - 1].high && c.high >= visibleCandles[i - 2].high &&
-            c.high >= visibleCandles[i + 1].high && c.high >= visibleCandles[i + 2].high) {
+          c.high >= visibleCandles[i + 1].high && c.high >= visibleCandles[i + 2].high) {
           swingHighs.push({ price: c.high, recency, vol: c.volume });
         }
       }
@@ -2174,10 +2174,10 @@ class LiquidationClusterEngine {
     let rawTiers = [];
     if (isGold) {
       rawTiers = [
-        { side: 'long',  mult: 0.995, share: 0.25, label: isPureGoldSpot ? '1:200 CFD Longs (Est)' : '200x Gold Longs' },
-        { side: 'long',  mult: 0.990, share: 0.35, label: isPureGoldSpot ? '1:100 CFD Longs (Est)' : '100x Gold Longs' },
-        { side: 'long',  mult: 0.980, share: 0.30, label: isPureGoldSpot ? '1:50 CFD Longs (Est)' : '50x Gold Longs' },
-        { side: 'long',  mult: 0.950, share: 0.20, label: isPureGoldSpot ? '1:20 COMEX Longs (Est)' : '20x Gold Longs' },
+        { side: 'long', mult: 0.995, share: 0.25, label: isPureGoldSpot ? '1:200 CFD Longs (Est)' : '200x Gold Longs' },
+        { side: 'long', mult: 0.990, share: 0.35, label: isPureGoldSpot ? '1:100 CFD Longs (Est)' : '100x Gold Longs' },
+        { side: 'long', mult: 0.980, share: 0.30, label: isPureGoldSpot ? '1:50 CFD Longs (Est)' : '50x Gold Longs' },
+        { side: 'long', mult: 0.950, share: 0.20, label: isPureGoldSpot ? '1:20 COMEX Longs (Est)' : '20x Gold Longs' },
         { side: 'short', mult: 1.005, share: 0.25, label: isPureGoldSpot ? '1:200 CFD Shorts (Est)' : '200x Gold Shorts' },
         { side: 'short', mult: 1.010, share: 0.35, label: isPureGoldSpot ? '1:100 CFD Shorts (Est)' : '100x Gold Shorts' },
         { side: 'short', mult: 1.020, share: 0.30, label: isPureGoldSpot ? '1:50 CFD Shorts (Est)' : '50x Gold Shorts' },
@@ -2185,12 +2185,12 @@ class LiquidationClusterEngine {
       ];
     } else {
       rawTiers = [
-        { side: 'long',  mult: 0.9955, share: 0.18, label: '200x Longs' },
-        { side: 'long',  mult: 0.9910, share: 0.22, label: '100x Longs' },
-        { side: 'long',  mult: 0.9820, share: 0.28, label: '50x Longs' },
-        { side: 'long',  mult: 0.9620, share: 0.25, label: '25x Longs' },
-        { side: 'long',  mult: 0.9050, share: 0.15, label: '10x Longs' },
-        { side: 'long',  mult: 0.8100, share: 0.10, label: '5x Longs' },
+        { side: 'long', mult: 0.9955, share: 0.18, label: '200x Longs' },
+        { side: 'long', mult: 0.9910, share: 0.22, label: '100x Longs' },
+        { side: 'long', mult: 0.9820, share: 0.28, label: '50x Longs' },
+        { side: 'long', mult: 0.9620, share: 0.25, label: '25x Longs' },
+        { side: 'long', mult: 0.9050, share: 0.15, label: '10x Longs' },
+        { side: 'long', mult: 0.8100, share: 0.10, label: '5x Longs' },
         { side: 'short', mult: 1.0045, share: 0.18, label: '200x Shorts' },
         { side: 'short', mult: 1.0090, share: 0.22, label: '100x Shorts' },
         { side: 'short', mult: 1.0180, share: 0.28, label: '50x Shorts' },
@@ -2461,7 +2461,7 @@ class HFTEngine {
     this.lotSize = symbolInfo.lotSize || 0.001;
     this.queueModel = 'PowerProbQueueFunc3';
     this.queueN = 3.0; // Power-law exponent from hftbacktest
-    
+
     // Live resting orders queue simulation
     this.orders = []; // { id, side: 1|-1, tick, price, qty, leaves, front, level, submitT, ackT, tradesAtLevel, tradedAtLevel, status: 'NEW'|'PEND'|'FILLED'|'CANCELED'|'EXPIRED' }
     this.fills = []; // { id, side, price, qty, submitT, ackT, fillT, restMs, frontAtAck, tradedAtLevel, touchT }
@@ -2488,7 +2488,7 @@ class HFTEngine {
     this.feedMax = 42.0;
     this.feedMean = 19.4;
     this.latencyPercentiles = { p50: 17.5, p90: 24.0, p95: 28.5, p99: 45.0 };
-    
+
     // Order Round Trip (RTT) model
     this.entryLatencyMs = 21.0;
     this.respLatencyMs = 19.5;
@@ -2548,7 +2548,7 @@ class HFTEngine {
     const curPx = (side === 1 ? this.bestBid : this.bestAsk) || this.microPrice || 68000;
     const tick = Math.round(curPx / this.tickSize);
     const px = tick * this.tickSize;
-    
+
     // Level depth at this tick
     const frontQty = Math.max(0.5, side === 1 ? (this.bestBidQty * 0.75) : (this.bestAskQty * 0.75));
     const levelQty = frontQty + qty;
@@ -2584,7 +2584,7 @@ class HFTEngine {
     const skew = 1.0;
     const normPos = this.position / Math.max(0.001, orderQty);
     const reservation = fair - skew * normPos * this.tickSize;
-    
+
     const halfSpread = halfSpreadTicks * this.tickSize;
     const gridInterval = gridIntervalTicks * this.tickSize;
 
@@ -2673,7 +2673,7 @@ class HFTEngine {
 
       const bq = Math.max(0.0001, this.bestBidQty);
       const aq = Math.max(0.0001, this.bestAskQty);
-      
+
       // HFTENGINE Book-Pressure Fair Price (Micro-Price)
       this.microPrice = (this.bestBid * aq + this.bestAsk * bq) / (bq + aq);
       this.midPrice = (this.bestBid + this.bestAsk) / 2;
@@ -3436,14 +3436,14 @@ class IndicatorEngine {
       const tiers = [
         { label: '200x Longs', mult: 0.9955, side: 'long', rawMagnitude: estOIUSD * 0.18, score: 7.9, label: 'HIGH', densityBar: '████████░░', proximityPct: -0.45 },
         { label: '100x Longs', mult: 0.9910, side: 'long', rawMagnitude: estOIUSD * 0.22, score: 8.5, label: 'HIGH', densityBar: '████████░░', proximityPct: -0.90 },
-        { label: '50x Longs',  mult: 0.9820, side: 'long', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: -1.80 },
-        { label: '25x Longs',  mult: 0.9620, side: 'long', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: -3.80 },
-        { label: '10x Longs',  mult: 0.9050, side: 'long', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: -9.50 },
+        { label: '50x Longs', mult: 0.9820, side: 'long', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: -1.80 },
+        { label: '25x Longs', mult: 0.9620, side: 'long', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: -3.80 },
+        { label: '10x Longs', mult: 0.9050, side: 'long', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: -9.50 },
         { label: '200x Shorts', mult: 1.0045, side: 'short', rawMagnitude: estOIUSD * 0.18, score: 7.9, label: 'HIGH', densityBar: '████████░░', proximityPct: 0.45 },
         { label: '100x Shorts', mult: 1.0090, side: 'short', rawMagnitude: estOIUSD * 0.22, score: 8.5, label: 'HIGH', densityBar: '████████░░', proximityPct: 0.90 },
-        { label: '50x Shorts',  mult: 1.0180, side: 'short', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: 1.80 },
-        { label: '25x Shorts',  mult: 1.0380, side: 'short', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: 3.80 },
-        { label: '10x Shorts',  mult: 1.0950, side: 'short', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: 9.50 }
+        { label: '50x Shorts', mult: 1.0180, side: 'short', rawMagnitude: estOIUSD * 0.28, score: 9.2, label: 'EXTREME', densityBar: '█████████░', proximityPct: 1.80 },
+        { label: '25x Shorts', mult: 1.0380, side: 'short', rawMagnitude: estOIUSD * 0.25, score: 7.8, label: 'HIGH', densityBar: '████████░░', proximityPct: 3.80 },
+        { label: '10x Shorts', mult: 1.0950, side: 'short', rawMagnitude: estOIUSD * 0.15, score: 5.5, label: 'MED', densityBar: '█████░░░░░', proximityPct: 9.50 }
       ];
       clusters = tiers.map(t => ({
         price: curPrice * t.mult,
@@ -4278,12 +4278,12 @@ class IndicatorEngine {
     const tapeList = (hft && hft.hftTape && hft.hftTape.length > 0)
       ? hft.hftTape.slice(0, 5)
       : [
-          { isBuyerMaker: false, qty: 1.45, price: bounds.last || 68420, t: Date.now() - 200, rxLatencyMs: 18.2 },
-          { isBuyerMaker: false, qty: 3.10, price: (bounds.last || 68420) + 1, t: Date.now() - 650, rxLatencyMs: 21.4 },
-          { isBuyerMaker: true, qty: 2.22, price: (bounds.last || 68420) - 1, t: Date.now() - 1100, rxLatencyMs: 16.8 },
-          { isBuyerMaker: false, qty: 5.50, price: (bounds.last || 68420) + 2, t: Date.now() - 1800, rxLatencyMs: 19.1 },
-          { isBuyerMaker: true, qty: 1.80, price: (bounds.last || 68420) - 2, t: Date.now() - 2400, rxLatencyMs: 22.0 }
-        ];
+        { isBuyerMaker: false, qty: 1.45, price: bounds.last || 68420, t: Date.now() - 200, rxLatencyMs: 18.2 },
+        { isBuyerMaker: false, qty: 3.10, price: (bounds.last || 68420) + 1, t: Date.now() - 650, rxLatencyMs: 21.4 },
+        { isBuyerMaker: true, qty: 2.22, price: (bounds.last || 68420) - 1, t: Date.now() - 1100, rxLatencyMs: 16.8 },
+        { isBuyerMaker: false, qty: 5.50, price: (bounds.last || 68420) + 2, t: Date.now() - 1800, rxLatencyMs: 19.1 },
+        { isBuyerMaker: true, qty: 1.80, price: (bounds.last || 68420) - 2, t: Date.now() - 2400, rxLatencyMs: 22.0 }
+      ];
 
     tapeList.forEach((r, idx) => {
       const y = candleH - 95 + idx * 17;
@@ -4682,7 +4682,7 @@ class AlertsEngine {
     this.alerts.forEach(a => {
       if (a.symbol === symbol && !a.triggered) {
         if ((a.direction === 'above' && price >= a.targetPrice) ||
-            (a.direction === 'below' && price <= a.targetPrice)) {
+          (a.direction === 'below' && price <= a.targetPrice)) {
           a.triggered = true;
           onTrigger?.(a);
         }
@@ -7830,9 +7830,9 @@ class TapeDeltaTerminal {
         subcontent.innerHTML = `
           <div class="td-hft-tape-scroll">
             ${tape.slice(0, 15).map(t => {
-              const isBuy = !t.isBuyerMaker;
-              const timeStr = new Date(t.t).toTimeString().split(' ')[0];
-              return `
+          const isBuy = !t.isBuyerMaker;
+          const timeStr = new Date(t.t).toTimeString().split(' ')[0];
+          return `
                 <div class="td-hft-tape-item">
                   <span style="color:var(--td-text-dim);">${timeStr}</span>
                   <span style="color:${isBuy ? 'var(--td-up)' : 'var(--td-down)'};font-weight:700;">
@@ -7842,7 +7842,7 @@ class TapeDeltaTerminal {
                   <span class="td-hft-rx-badge">+${t.rxLatencyMs.toFixed(1)}ms</span>
                 </div>
               `;
-            }).join('')}
+        }).join('')}
           </div>
         `;
       }
@@ -7854,10 +7854,10 @@ class TapeDeltaTerminal {
         subcontent.innerHTML = `
           <div class="td-hft-tape-scroll">
             ${fills.slice(0, 15).map(f => {
-              const isBuy = f.side === 1;
-              const timeStr = new Date(f.fillT).toTimeString().split(' ')[0];
-              const restSec = (f.restMs / 1000).toFixed(1) + 's';
-              return `
+          const isBuy = f.side === 1;
+          const timeStr = new Date(f.fillT).toTimeString().split(' ')[0];
+          const restSec = (f.restMs / 1000).toFixed(1) + 's';
+          return `
                 <div class="td-hft-tape-item fill">
                   <span style="color:var(--td-text-dim);">${timeStr}</span>
                   <span style="color:${isBuy ? 'var(--td-up)' : 'var(--td-down)'};font-weight:700;">
@@ -7867,7 +7867,7 @@ class TapeDeltaTerminal {
                   <span style="color:#00e5ff;font-size:9px;">rest: ${restSec}</span>
                 </div>
               `;
-            }).join('')}
+        }).join('')}
           </div>
         `;
       }
@@ -8352,7 +8352,7 @@ if (typeof window !== 'undefined') {
         if (window.__td_terminal_instance && typeof window.__td_terminal_instance.destroy === 'function') {
           window.__td_terminal_instance.destroy();
         }
-      } catch (e) {}
+      } catch (e) { }
       window.__td_terminal_instance = new TapeDeltaTerminal('tapedelta-terminal-root');
       window.chartTerminal = window.__td_terminal_instance;
       window.__td_terminal_instance.init();
