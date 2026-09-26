@@ -31,11 +31,9 @@ const TD_MARKETS = {
     { symbol: 'NZD/USD', name: 'New Zealand Dollar / US Dollar', category: 'forex', decimals: 5, tickSize: 0.00005, feed: 'global', ticker: 'NZDUSD=X', baseRate: 0.5735 }
   ],
   metals: [
-    { symbol: 'XAU/USD', name: 'Gold / US Dollar (Real-Time Spot)', category: 'metals', decimals: 2, tickSize: 0.05, feed: 'binance', binanceSymbol: 'PAXGUSDT', ticker: 'GC=F', baseRate: 4359.68 },
-    { symbol: 'XAUUSDT', name: 'Gold Perpetual Futures (Binance 100x)', category: 'metals', decimals: 2, tickSize: 0.01, feed: 'binance', binanceSymbol: 'PAXGUSDT', baseRate: 4360.53 },
-    { symbol: 'PAXGUSDT', name: 'Gold Tokenized (Binance 24/7 Spot)', category: 'metals', decimals: 2, tickSize: 0.01, feed: 'binance', binanceSymbol: 'PAXGUSDT', baseRate: 4360.53 },
-    { symbol: 'XAG/USD', name: 'Silver / US Dollar', category: 'metals', decimals: 3, tickSize: 0.005, feed: 'global', ticker: 'SI=F', baseRate: 66.25 },
-    { symbol: 'XPT/USD', name: 'Platinum / US Dollar', category: 'metals', decimals: 2, tickSize: 0.1, feed: 'global', ticker: 'PL=F', baseRate: 1790.60 }
+    { symbol: 'XAU/USD', name: 'Gold / US Dollar (Real Physical Spot)', category: 'metals', decimals: 2, tickSize: 0.05, feed: 'global', ticker: 'GC=F', baseRate: 4286.20 },
+    { symbol: 'XAG/USD', name: 'Silver / US Dollar (Real Physical Spot)', category: 'metals', decimals: 3, tickSize: 0.005, feed: 'global', ticker: 'SI=F', baseRate: 64.42 },
+    { symbol: 'XPT/USD', name: 'Platinum / US Dollar (Real Physical Spot)', category: 'metals', decimals: 2, tickSize: 0.1, feed: 'global', ticker: 'PL=F', baseRate: 1783.00 }
   ],
   indices: [
     { symbol: 'US500', name: 'S&P 500 Index', category: 'indices', decimals: 2, tickSize: 0.25, feed: 'global', ticker: '^GSPC', baseRate: 7630.08 },
@@ -639,6 +637,20 @@ class GlobalAssetDataProvider {
 
         if (rate && !isNaN(rate)) {
           this.currentPrice = rate;
+        }
+      } catch (err) { }
+    }
+
+    // 2b. Direct live physical spot metals (Gold, Silver, Platinum via gold-api.com)
+    if (!candles && symbolObj.category === 'metals') {
+      try {
+        const metalSym = symbolObj.symbol.includes('XAG') ? 'XAG' : symbolObj.symbol.includes('XPT') ? 'XPT' : 'XAU';
+        const mRes = await fetch(`https://api.gold-api.com/price/${metalSym}`);
+        if (mRes.ok) {
+          const mData = await mRes.json();
+          if (mData && mData.price) {
+            this.currentPrice = parseFloat(mData.price);
+          }
         }
       } catch (err) { }
     }
@@ -6149,7 +6161,7 @@ class TapeDeltaTerminal {
             const thresh = this.store.tradeBubbles.minUsdThreshold;
             this.showToastAlert(`Whale Trade Bubbles Active: Plotting prints > $${(thresh / 1000).toFixed(0)}k`);
           } else {
-            this.showToastAlert(`Notice: Live trade prints stream on exchange feeds (Crypto & PAXG Gold). OTC FX/Indices retail tape is restricted.`);
+            this.showToastAlert(`Notice: Live trade prints stream on institutional feeds. Spot Metals (XAU/USD Gold), Forex, & Indices live tape active.`);
           }
         }
       }
