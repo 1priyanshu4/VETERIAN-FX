@@ -20,6 +20,9 @@
     setTimeout(ensureInstitutionalChartLink, 80);
     setTimeout(ensureInstitutionalChartLink, 300);
     setTimeout(ensureInstitutionalChartLink, 1000);
+    if (typeof window.mountFundedAccountsCard === 'function') {
+      window.mountFundedAccountsCard();
+    }
   }
 
   /* --------------------------------------------------------------------------
